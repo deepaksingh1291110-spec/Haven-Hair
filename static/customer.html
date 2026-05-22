@@ -1138,7 +1138,7 @@ async function joinQueue(){
         document.getElementById('joinBtn').textContent='Join Queue →';
       }
     } catch(e) {
-      el.innerHTML='<div class="alert err">Cannot connect — is server running on port 5000?</div>';
+      el.innerHTML=`<div class="alert err">Error: ${e.message || e}</div>`;
       document.getElementById('joinBtn').disabled=false;
       document.getElementById('joinBtn').textContent='Join Queue →';
     }
