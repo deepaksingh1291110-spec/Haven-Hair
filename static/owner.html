@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Haven Hair — Owner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --black:#0a0a0a;--dark:#111;--card:#171717;--card2:#1e1e1e;
+      --gold:#C9A84C;--gold-light:#e4c97e;
+      --white:#f5f0e8;--grey:#888;
+      --border:rgba(201,168,76,0.15);
+      --green:#4caf7d;--red:#e05555;--orange:#f5a623;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden;min-height:100vh}
+
+    /* VIEWS */
+    .view{display:none;min-height:100vh}
+    .view.active{display:block;animation:fadeUp 0.3s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;padding:0.9rem 1rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);gap:0.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    nav::-webkit-scrollbar{display:none}
+    #locationPickerMap{height:260px;border:1px solid var(--border);margin-top:0.8rem}
+    .loc-method-btn{flex:1;padding:0.7rem;font-size:0.72rem;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--grey);transition:all 0.2s;text-align:center;letter-spacing:0.04em}
+    .loc-method-btn.active{background:rgba(201,168,76,0.1);border-color:var(--gold);color:var(--gold)}
+    .loc-accuracy{font-size:0.72rem;padding:0.4rem 0.7rem;margin-top:0.4rem;display:none}
+    .loc-accuracy.good{color:var(--gold);background:rgba(201,168,76,0.08);border:1px solid var(--border)}
+    .loc-accuracy.bad{color:var(--red);background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.3)}
+    .hamburger{background:transparent;border:none;color:var(--white);font-size:1.4rem;cursor:pointer;padding:0.2rem 0.4rem;line-height:1;flex-shrink:0}
+    .drawer-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);backdrop-filter:blur(3px)}
+    .drawer-overlay.show{display:block}
+    .drawer{position:fixed;left:0;top:0;bottom:0;width:min(300px,88vw);background:var(--dark);z-index:201;transform:translateX(-100%);transition:transform 0.3s ease;border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto}
+    .drawer.open{transform:translateX(0)}
+    .drawer-head{padding:1.5rem;border-bottom:1px solid var(--border);flex-shrink:0}
+    .drawer-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--gold)}
+    .drawer-logo span{color:var(--white);font-style:italic;font-weight:400}
+    .drawer-user{font-size:0.78rem;color:var(--grey);margin-top:4px}
+    .drawer-menu{padding:0.5rem 0}
+    .drawer-item{display:flex;align-items:center;gap:0.8rem;padding:1rem 1.5rem;cursor:pointer;transition:background 0.15s;border:none;background:transparent;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:100%;text-align:left}
+    .drawer-item:hover{background:rgba(201,168,76,0.06)}
+    .drawer-item .di-icon{font-size:1.1rem;width:1.5rem;text-align:center;flex-shrink:0}
+    .drawer-item.danger{color:var(--red)}
+    .drawer-sep{height:1px;background:var(--border);margin:0.3rem 0}
+    .sub-panel{display:none;padding:0 1.5rem 0.8rem;background:rgba(0,0,0,0.2)}
+    .sub-panel.open{display:block}
+    .sub-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:0.7rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;margin-bottom:0.5rem;transition:border-color 0.2s}
+    .sub-input:focus{border-color:var(--gold)}
+    .sub-btn-sm{background:var(--gold);color:var(--black);border:none;padding:0.6rem 1rem;font-size:0.75rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s;margin-bottom:0.3rem}
+    .sub-btn-sm:hover{background:var(--gold-light)}
+    .sub-btn-sm.danger-sm{background:transparent;color:var(--red);border:1px solid rgba(224,85,85,0.3)}
+    .sub-alert-sm{font-size:0.75rem;padding:0.4rem 0.6rem;margin-bottom:0.4rem}
+    .sub-alert-sm.ok{color:var(--gold)}
+    .sub-alert-sm.err{color:var(--red)}
+    .branch-item{padding:0.6rem 0;border-bottom:1px solid var(--border);cursor:pointer}
+    .branch-item:hover{color:var(--gold)}
+    .chair-item{display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;font-size:0.82rem;border-bottom:1px solid var(--border)}
+    #view-branch-chat.active{display:flex!important;flex-direction:column;height:100vh}
+    .notif-overlay{display:none;position:fixed;inset:0;z-index:250;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px)}
+    .notif-overlay.show{display:block}
+    .notif-panel{position:fixed;top:62px;right:1rem;width:min(320px,92vw);background:var(--dark);border:1px solid var(--border);z-index:260;max-height:70vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.6);animation:fadeUp 0.2s ease}
+    .logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--gold);cursor:pointer;flex-shrink:0}
+    .logo span{color:var(--white);font-style:italic;font-weight:400}
+    .nav-right{display:flex;gap:0.4rem;align-items:center}
+    .nav-owner{font-size:0.72rem;color:var(--grey)}
+    .nbtn{padding:0.35rem 0.8rem;font-size:0.68rem;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;border:1px solid var(--border);background:transparent;color:var(--grey)}
+    .nbtn:hover{color:var(--gold);border-color:var(--gold)}
+    .nbtn.danger{color:var(--red);border-color:rgba(224,85,85,0.3)}
+    .nbtn.danger:hover{background:rgba(224,85,85,0.08)}
+
+    /* SHARED */
+    label{font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);display:block;margin-bottom:0.3rem}
+    input,select,textarea{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:0.75rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;transition:border-color 0.2s}
+    input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+    input::placeholder,textarea::placeholder{color:var(--grey)}
+    select option{background:var(--dark)}
+    .fg{margin-bottom:0.9rem}
+    .alert{padding:0.7rem 1rem;font-size:0.8rem;margin-bottom:0.8rem}
+    .alert.err{background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.3);color:var(--red)}
+    .alert.ok{background:rgba(201,168,76,0.08);border:1px solid var(--border);color:var(--gold)}
+    .alert.warn{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.3);color:var(--orange)}
+    .spinner{width:24px;height:24px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .slabel{font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:0.6rem}
+    .gbtn{background:var(--gold);color:var(--black);border:none;padding:0.85rem 1.5rem;font-size:0.82rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .gbtn:hover{background:var(--gold-light)}
+    .gbtn:disabled{opacity:0.4;cursor:not-allowed}
+    .gbtn.full{width:100%}
+    .obtn{background:transparent;color:var(--grey);border:1px solid var(--border);padding:0.85rem 1.5rem;font-size:0.82rem;font-weight:400;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;width:100%}
+    .obtn:hover{color:var(--gold);border-color:var(--gold)}
+
+    /* ── AUTH ── */
+    #view-auth{display:none;align-items:center;justify-content:center;padding:5rem 1.5rem}
+    #view-auth.active{display:flex}
+    .auth-wrap{width:100%;max-width:400px}
+    .auth-logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--gold);text-align:center;margin-bottom:0.3rem}
+    .auth-logo span{color:var(--white);font-style:italic;font-weight:400}
+    .auth-sub{text-align:center;font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:2rem}
+    .auth-box{background:var(--dark);border:1px solid var(--border);padding:2rem}
+    .auth-box h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:0.3rem}
+    .auth-box p{color:var(--grey);font-size:0.82rem;margin-bottom:1.5rem}
+    .auth-switch{text-align:center;margin-top:1.2rem;font-size:0.8rem;color:var(--grey)}
+    .auth-switch a{color:var(--gold);cursor:pointer}
+    .auth-back{text-align:center;margin-top:0.8rem;font-size:0.72rem;color:var(--grey);cursor:pointer}
+    .auth-back:hover{color:var(--gold)}
+
+    /* ── BRANCHES LIST ── */
+    #view-branches{padding-top:56px}
+    .page-hero{padding:2rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border)}
+    .page-hero h1{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700}
+    .page-hero h1 em{font-style:italic;color:var(--gold);font-weight:400}
+    .page-hero p{color:var(--grey);font-size:0.82rem;margin-top:0.3rem}
+    .branches-grid{padding:1.5rem}
+    .branch-card{background:var(--dark);border:1px solid var(--border);padding:1.5rem;margin-bottom:0.8rem;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+    .branch-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);transform:scaleY(0);transition:transform 0.25s}
+    .branch-card:hover{border-color:rgba(201,168,76,0.4);background:var(--card)}
+    .branch-card:hover::before{transform:scaleY(1)}
+    .bc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem}
+    .bc-name{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600}
+    .bc-addr{font-size:0.72rem;color:var(--grey);margin-top:2px}
+    .bc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);margin-bottom:0.8rem}
+    .bc-stat{padding:0.6rem;text-align:center;border-right:1px solid var(--border)}
+    .bc-stat:last-child{border-right:none}
+    .bc-stat .v{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--gold);line-height:1}
+    .bc-stat .l{font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--grey);margin-top:2px}
+    .bc-foot{display:flex;justify-content:space-between;align-items:center}
+    .status-pill{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.6rem}
+    .s-active{background:rgba(76,175,125,0.1);color:var(--green);border:1px solid rgba(76,175,125,0.25)}
+    .s-paused{background:rgba(245,166,35,0.1);color:var(--orange);border:1px solid rgba(245,166,35,0.25)}
+    .s-closed{background:rgba(224,85,85,0.1);color:var(--red);border:1px solid rgba(224,85,85,0.25)}
+    .bc-arrow{font-size:0.75rem;color:var(--gold)}
+    .add-branch-btn{display:flex;align-items:center;justify-content:center;gap:0.5rem;border:1px dashed var(--border);padding:1.5rem;color:var(--grey);cursor:pointer;font-size:0.82rem;transition:all 0.2s;margin-bottom:0.8rem}
+    .add-branch-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+    /* ── DASHBOARD ── */
+    #view-dashboard{padding-top:56px}
+    .dash-header{padding:1rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border)}
+    .dash-branch-name{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700}
+    .dash-branch-addr{font-size:0.72rem;color:var(--grey);margin-top:2px}
+    .dash-controls{display:flex;gap:0.4rem;margin-top:0.8rem;flex-wrap:wrap}
+    .st-toggle{display:flex;gap:0}
+    .stbtn{background:transparent;color:var(--grey);border:1px solid var(--border);padding:0.4rem 0.9rem;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;margin-right:-1px}
+    .stbtn.on-active{background:rgba(76,175,125,0.1);color:var(--green);border-color:rgba(76,175,125,0.4)!important;z-index:1}
+    .stbtn.on-paused{background:rgba(245,166,35,0.1);color:var(--orange);border-color:rgba(245,166,35,0.4)!important;z-index:1}
+    .stbtn.on-closed{background:rgba(224,85,85,0.1);color:var(--red);border-color:rgba(224,85,85,0.4)!important;z-index:1}
+    .icon-btn{background:transparent;border:1px solid var(--border);color:var(--grey);padding:0.4rem 0.7rem;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+    .icon-btn:hover{color:var(--gold);border-color:var(--gold)}
+
+    /* Chair cards */
+    .chairs-wrap{padding:1rem 1.5rem}
+    .chair-card{background:var(--dark);border:1px solid var(--border);margin-bottom:1rem;overflow:hidden}
+    .chair-head{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.2rem;border-bottom:1px solid var(--border);cursor:pointer}
+    .chair-head-left{display:flex;align-items:center;gap:0.8rem}
+    .chair-num{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--gold);min-width:1.5rem}
+    .chair-name{font-size:0.95rem;font-weight:500}
+    .chair-count{font-size:0.72rem;color:var(--grey)}
+    .chair-head-right{display:flex;gap:0.4rem;align-items:center}
+    .chair-toggle{display:flex;gap:0}
+    .ctbtn{background:transparent;color:var(--grey);border:1px solid var(--border);padding:0.3rem 0.6rem;font-size:0.65rem;letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;margin-right:-1px}
+    .ctbtn.on{background:rgba(76,175,125,0.1);color:var(--green);border-color:rgba(76,175,125,0.4)!important;z-index:1}
+    .ctbtn.off{background:rgba(245,166,35,0.1);color:var(--orange);border-color:rgba(245,166,35,0.4)!important;z-index:1}
+    .chair-body{display:none;padding:1rem 1.2rem}
+    .chair-body.open{display:block}
+
+    /* Seated area */
+    .seated-box{background:rgba(201,168,76,0.04);border:1px solid var(--gold);padding:1rem;margin-bottom:0.8rem;display:flex;justify-content:space-between;align-items:center}
+    .sb-info .sb-name{font-size:0.95rem;font-weight:500}
+    .sb-info .sb-svc{font-size:0.72rem;color:var(--grey);margin-top:2px}
+    .sb-token{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gold)}
+    .action-row{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-bottom:1rem}
+    .abtn{padding:0.7rem;border:none;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+    .abtn:active{transform:scale(0.98)}
+    .abtn:disabled{opacity:0.3;cursor:not-allowed}
+    .abtn.sit{background:var(--gold);color:var(--black)}
+    .abtn.sit:hover:not(:disabled){background:var(--gold-light)}
+    .abtn.done{background:rgba(76,175,125,0.1);color:var(--green);border:1px solid rgba(76,175,125,0.25)}
+    .abtn.done:hover:not(:disabled){background:rgba(76,175,125,0.18)}
+    .abtn.skip{background:rgba(224,85,85,0.07);color:var(--red);border:1px solid rgba(224,85,85,0.2);grid-column:1/-1}
+    .abtn.skip:hover:not(:disabled){background:rgba(224,85,85,0.13)}
+    .no-seated{border:1px dashed var(--border);padding:1rem;text-align:center;color:var(--grey);font-size:0.8rem;margin-bottom:0.8rem}
+
+    /* Queue entries */
+    .q-entry{display:flex;align-items:center;gap:0.6rem;padding:0.8rem;border:1px solid var(--border);margin-bottom:0.4rem;background:var(--black);transition:background 0.15s;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .q-entry::-webkit-scrollbar{display:none}
+    .q-entry:hover{background:var(--card2)}
+    .q-entry.has-strike{border-left:2px solid var(--orange)}
+    .q-pos{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;color:var(--grey);min-width:1.5rem}
+    .q-info{flex:1;min-width:120px}
+    .q-name{font-size:0.85rem;font-weight:500}
+    .q-svc{font-size:0.68rem;color:var(--grey);margin-top:1px}
+    .q-wait{font-size:0.68rem;color:var(--grey);text-align:right;white-space:nowrap}
+    .q-actions{display:flex;gap:0.4rem;flex-shrink:0}
+    .qa-btn{background:transparent;border:1px solid var(--border);color:var(--grey);padding:0.5rem 0.7rem;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s;white-space:nowrap;flex-shrink:0;min-width:36px;text-align:center}
+    .qa-btn:hover{color:var(--gold);border-color:var(--gold)}
+    .qa-btn.strike-btn:hover{color:var(--orange);border-color:var(--orange)}
+    .qa-btn.remove-btn:hover{color:var(--red);border-color:var(--red)}
+    .qa-btn.chat-btn:hover{color:var(--green);border-color:var(--green)}
+    .strike-badge{background:var(--orange);color:var(--black);font-size:0.6rem;padding:0.1rem 0.3rem;font-weight:700;margin-left:0.3rem}
+    .q-empty{text-align:center;padding:1.2rem;color:var(--grey);font-size:0.8rem;border:1px dashed var(--border)}
+
+    /* Add customer */
+    .add-cust{margin-top:1rem;border-top:1px solid var(--border);padding-top:1rem}
+    .add-cust-title{font-size:0.72rem;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.8rem}
+    .add-row{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+
+    /* Absent note */
+    .absent-form{background:var(--card2);border:1px solid var(--border);padding:1rem;margin-top:0.8rem;display:none}
+    .absent-form.open{display:block}
+
+    /* ── SETTINGS ── */
+    #view-settings{padding-top:56px}
+    .settings-wrap{padding:1.5rem;max-width:500px}
+    .settings-section{background:var(--dark);border:1px solid var(--border);padding:1.5rem;margin-bottom:1rem}
+    .settings-section h3{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;margin-bottom:1.2rem}
+    .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem}
+    .danger-zone{border-color:rgba(224,85,85,0.3)}
+    .danger-zone h3{color:var(--red)}
+
+    /* ── ADD BRANCH ── */
+    #view-add-branch{padding-top:56px}
+    .form-wrap{padding:1.5rem;max-width:500px}
+    .form-box{background:var(--dark);border:1px solid var(--border);padding:1.5rem}
+    .form-box h2{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:600;margin-bottom:0.3rem}
+    .form-box p{color:var(--grey);font-size:0.8rem;margin-bottom:1.5rem}
+
+    /* ── MODAL (chat + move) ── */
+    .overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);backdrop-filter:blur(6px);align-items:flex-end;justify-content:center;padding:0}
+    .overlay.show{display:flex;animation:fadeIn 0.2s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .modal{background:var(--dark);border:1px solid var(--border);border-bottom:none;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;animation:slideUp 0.3s ease}
+    @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+    .modal-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--dark);z-index:1}
+    .modal-head h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600}
+    .close-btn{background:transparent;border:none;color:var(--grey);font-size:1.6rem;cursor:pointer;line-height:1}
+    .close-btn:hover{color:var(--white)}
+    .modal-body{padding:1.2rem 1.5rem}
+
+    /* Chat */
+    .chat-msgs{min-height:150px;max-height:250px;overflow-y:auto;margin-bottom:1rem;display:flex;flex-direction:column;gap:0.5rem}
+    .chat-msg{padding:0.6rem 0.8rem;max-width:80%;font-size:0.82rem;line-height:1.4}
+    .chat-msg.barber{background:rgba(201,168,76,0.1);border:1px solid var(--border);align-self:flex-end}
+    .chat-msg.customer{background:var(--card2);border:1px solid var(--border);align-self:flex-start}
+    .chat-sender{font-size:0.62rem;color:var(--grey);margin-bottom:2px;letter-spacing:0.06em;text-transform:uppercase}
+    .chat-row{display:flex;gap:0.4rem}
+    .chat-row input{flex:1}
+    .chat-row button{background:var(--gold);color:var(--black);border:none;padding:0 1rem;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+    .chat-row button:hover{background:var(--gold-light)}
+
+    /* Move modal */
+    .move-options{display:flex;flex-direction:column;gap:0.4rem}
+    .move-opt{background:var(--card2);border:1px solid var(--border);padding:0.8rem 1rem;cursor:pointer;font-size:0.85rem;transition:all 0.15s;display:flex;justify-content:space-between}
+    .move-opt:hover{border-color:var(--gold);color:var(--gold)}
+    .move-opt.current{border-color:var(--gold);background:rgba(201,168,76,0.05)}
+
+    .back-bar{padding:0.8rem 1.5rem;border-bottom:1px solid var(--border);font-size:0.75rem;color:var(--grey);cursor:pointer;background:var(--dark)}
+    .back-bar:hover{color:var(--gold)}
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  /* ── LOCATION PICKER ── */
+  let _pickerMap = null;
+  let _pickerMarker = null;
+  let _pickerMode = 'gps';
+  let _geocodeTimer = null;
+
+  function initLocationPicker(lat, lon) {
+    const el = document.getElementById('locationPickerMap');
+    if (!el) return;
+
+    if (_pickerMap) { _pickerMap.remove(); _pickerMap = null; }
+
+    const startLat = lat || 25.2048;
+    const startLon = lon || 55.2708;
+
+    _pickerMap = L.map('locationPickerMap').setView([startLat, startLon], 17);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© CartoDB © OpenStreetMap',
+      maxZoom: 19
+    }).addTo(_pickerMap);
+
+    // Draggable marker
+    _pickerMarker = L.marker([startLat, startLon], { draggable: true }).addTo(_pickerMap);
+    _pickerMarker.bindPopup('📍 Drag me to the exact shop location').openPopup();
+
+    _pickerMarker.on('dragend', function(e) {
+      const pos = e.target.getLatLng();
+      setPickedLocation(pos.lat, pos.lng, '±5m (pin drag)', true);
+      reverseGeocode(pos.lat, pos.lng, 'abAddress');
+    });
+
+    // Click on map to move marker
+    _pickerMap.on('click', function(e) {
+      _pickerMarker.setLatLng(e.latlng);
+      setPickedLocation(e.latlng.lat, e.latlng.lng, '±10m (map tap)', true);
+      reverseGeocode(e.latlng.lat, e.latlng.lng, 'abAddress');
+    });
+
+    if (lat && lon) setPickedLocation(lat, lon, 'Existing location', false);
+  }
+
+  function setPickedLocation(lat, lon, accuracy, showOnMap) {
+    document.getElementById('abLat').value = lat.toFixed(7);
+    document.getElementById('abLon').value = lon.toFixed(7);
+
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = `✅ Location set — ${accuracy}`;
+
+    if (showOnMap && _pickerMap) {
+      _pickerMap.setView([lat, lon], 18);
+      _pickerMarker.setLatLng([lat, lon]);
+    }
+  }
+
+  function setLocMethodActive(id) {
+    ['btnGps','btnPin','btnAddr'].forEach(b => {
+      const el = document.getElementById(b);
+      if (el) el.classList.remove('active');
+    });
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  }
+
+  function useGpsLocation() {
+    setLocMethodActive('btnGps');
+    _pickerMode = 'gps';
+
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = '📡 Getting GPS location...';
+
+    if (!navigator.geolocation) {
+      el.className = 'loc-accuracy bad';
+      el.textContent = '❌ GPS not available on this device';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+        initLocationPicker(lat, lon);
+        setPickedLocation(lat, lon, `±${acc}m (GPS)`, false);
+        reverseGeocode(lat, lon, 'abAddress');
+        el.className = acc < 20 ? 'loc-accuracy good' : 'loc-accuracy good';
+        el.textContent = `✅ GPS locked — Accuracy: ±${acc} meters ${acc < 10 ? '🎯 Excellent!' : acc < 30 ? '👍 Good' : '⚠️ Move outside for better accuracy'}`;
+      },
+      (err) => {
+        el.className = 'loc-accuracy bad';
+        el.textContent = '❌ GPS failed — Allow location access or use Pin/Address method';
+        initLocationPicker();
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }
+
+  function usePinLocation() {
+    setLocMethodActive('btnPin');
+    _pickerMode = 'pin';
+    const lat = parseFloat(document.getElementById('abLat').value) || 25.2048;
+    const lon = parseFloat(document.getElementById('abLon').value) || 55.2708;
+    initLocationPicker(lat, lon);
+
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = '📌 Drag the pin or tap the map to set location';
+  }
+
+  function useAddressLocation() {
+    setLocMethodActive('btnAddr');
+    _pickerMode = 'address';
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = '🔍 Type address above to search...';
+  }
+
+  async function geocodeAddress() {
+    const addr = document.getElementById('abAddress').value.trim();
+    if (addr.length < 5) return;
+
+    // Debounce
+    clearTimeout(_geocodeTimer);
+    _geocodeTimer = setTimeout(async () => {
+      const el = document.getElementById('locAccuracy');
+      el.style.display = 'block';
+      el.className = 'loc-accuracy good';
+      el.textContent = '🔍 Searching address...';
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`;
+        const res = await fetch(url, {
+          headers: {'Accept-Language': 'en', 'User-Agent': 'HavenHair/1.0'}
+        });
+        const data = await res.json();
+
+        if (data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          const name = data[0].display_name;
+
+          initLocationPicker(lat, lon);
+          setPickedLocation(lat, lon, 'Address search (confirm with pin)', true);
+          el.textContent = `📍 Found: ${name.substring(0,60)}... — Drag pin if needed`;
+        } else {
+          el.className = 'loc-accuracy bad';
+          el.textContent = '❌ Address not found — Try GPS or Pin method';
+        }
+      } catch(e) {
+        el.className = 'loc-accuracy bad';
+        el.textContent = '❌ Search failed — Check internet connection';
+      }
+    }, 800);
+  }
+
+  // Init location picker when add-branch opens
+  function openAddBranch() {
+    showView('add-branch');
+    setTimeout(() => {
+      initLocationPicker();
+      useGpsLocation();
+    }, 300);
+  }
+
+  /* ── SETTINGS LOCATION PICKER ── */
+  let _sMap = null;
+  let _sMarker = null;
+
+  function initSettingsMap(lat, lon) {
+    const el = document.getElementById('settingsLocationMap');
+    if (!el) return;
+    if (_sMap) { _sMap.remove(); _sMap = null; }
+
+    const startLat = lat || currentBranch?.latitude || 25.2048;
+    const startLon = lon || currentBranch?.longitude || 55.2708;
+
+    _sMap = L.map('settingsLocationMap').setView([startLat, startLon], 17);
+    window._sTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(_sMap);
+
+    // Add tile switcher buttons
+    const sTileWrap = document.createElement('div');
+    sTileWrap.className = 'tile-btns';
+    sTileWrap.innerHTML = `
+      <button class="tile-btn on" onclick="switchSTile('street',this)">🗺️ Street</button>
+      <button class="tile-btn" onclick="switchSTile('dark',this)">🌙 Dark</button>
+      <button class="tile-btn" onclick="switchSTile('satellite',this)">🛰️ Satellite</button>
+      <button class="tile-btn" onclick="switchSTile('topo',this)">⛰️ Topo</button>`;
+    const mapEl = document.getElementById('settingsLocationMap');
+    const old = mapEl.parentNode.querySelector('.tile-btns');
+    if (old) old.remove();
+    mapEl.insertAdjacentElement('afterend', sTileWrap);
+
+    _sMarker = L.marker([startLat, startLon], {draggable: true}).addTo(_sMap);
+    _sMarker.bindPopup('📍 Drag to exact location').openPopup();
+
+    _sMarker.on('dragend', e => {
+      const p = e.target.getLatLng();
+      document.getElementById('sLat').value = p.lat.toFixed(7);
+      document.getElementById('sLon').value = p.lng.toFixed(7);
+      showSLocAccuracy(`✅ Pin set — ±5m`, true);
+      reverseGeocode(p.lat, p.lng, 'settingsAddress');
+    });
+
+    _sMap.on('click', e => {
+      _sMarker.setLatLng(e.latlng);
+      document.getElementById('sLat').value = e.latlng.lat.toFixed(7);
+      document.getElementById('sLon').value = e.latlng.lng.toFixed(7);
+      showSLocAccuracy(`✅ Location tapped — ±10m`, true);
+      reverseGeocode(e.latlng.lat, e.latlng.lng, 'settingsAddress');
+    });
+
+    if (lat && lon) {
+      document.getElementById('sLat').value = lat.toFixed(7);
+      document.getElementById('sLon').value = lon.toFixed(7);
+      showSLocAccuracy('📍 Current saved location — update if wrong', true);
+    }
+  }
+
+  const TILES = {
+    street: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    topo: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+  };
+
+  function switchSTile(style, btn) {
+    if (!_sMap || !window._sTileLayer) return;
+    _sMap.removeLayer(window._sTileLayer);
+    window._sTileLayer = L.tileLayer(TILES[style], {maxZoom:19}).addTo(_sMap);
+    document.querySelectorAll('.tile-btns .tile-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function switchPTile(style, btn) {
+    if (!_pickerMap || !window._pTileLayer) return;
+    _pickerMap.removeLayer(window._pTileLayer);
+    window._pTileLayer = L.tileLayer(TILES[style], {maxZoom:19}).addTo(_pickerMap);
+    document.querySelectorAll('#pickerTileBtns .tile-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function showSLocAccuracy(msg, good) {
+    const el = document.getElementById('sLocAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy ' + (good ? 'good' : 'bad');
+    el.textContent = msg;
+  }
+
+  function sSwitchActive(id) {
+    ['sBtnGps','sBtnPin','sBtnAddr'].forEach(b => {
+      const el = document.getElementById(b);
+      if (el) el.classList.remove('active');
+    });
+    document.getElementById(id)?.classList.add('active');
+  }
+
+  function sUseGps() {
+    sSwitchActive('sBtnGps');
+    showSLocAccuracy('📡 Getting GPS...', true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+        initSettingsMap(lat, lon);
+        showSLocAccuracy(`✅ GPS: ±${acc}m ${acc < 15 ? '🎯 Excellent!' : acc < 40 ? '👍 Good' : '⚠️ Move outside'}`, true);
+        reverseGeocode(lat, lon, 'settingsAddress');
+      },
+      () => showSLocAccuracy('❌ GPS failed — use Pin or Search', false),
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 0}
+    );
+  }
+
+  function sUsePin() {
+    sSwitchActive('sBtnPin');
+    const lat = parseFloat(document.getElementById('sLat').value) || currentBranch?.latitude;
+    const lon = parseFloat(document.getElementById('sLon').value) || currentBranch?.longitude;
+    initSettingsMap(lat, lon);
+    showSLocAccuracy('📌 Drag pin or tap map to set location', true);
+  }
+
+  async function sUseAddr() {
+    sSwitchActive('sBtnAddr');
+    const addr = document.getElementById('settingsAddress')?.value || currentBranch?.address || '';
+    if (!addr) { showSLocAccuracy('Type address in the address field above', false); return; }
+    showSLocAccuracy('🔍 Searching...', true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data.length) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        initSettingsMap(lat, lon);
+        showSLocAccuracy(`📍 Found — drag pin to exact door`, true);
+      } else {
+        showSLocAccuracy('❌ Not found — try GPS or Pin', false);
+      }
+    } catch(e) { showSLocAccuracy('❌ Search failed', false); }
+  }
+
+  async function saveLocation() {
+    const lat = parseFloat(document.getElementById('sLat').value);
+    const lon = parseFloat(document.getElementById('sLon').value);
+    const el = document.getElementById('saveLocAlert');
+    if (!lat || !lon) { el.innerHTML = '<div class="alert err">Set location first using GPS, Pin or Search</div>'; return; }
+    try {
+      const res = await fetch(`${API}/branches/${currentBranch.id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${ownerToken}`},
+        body: JSON.stringify({ latitude: lat, longitude: lon, address: document.getElementById('settingsAddress')?.value || '' })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        currentBranch.latitude = lat;
+        currentBranch.longitude = lon;
+        el.innerHTML = '<div class="alert ok">✅ Location saved!</div>';
+        setTimeout(() => el.innerHTML = '', 2000);
+      } else {
+        el.innerHTML = `<div class="alert err">${data.error}</div>`;
+      }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  // Called from settings button directly
+  function openSettingsWithMap() {
+    showSettings();
+    setTimeout(() => {
+      if (currentBranch?.latitude) {
+        initSettingsMap(currentBranch.latitude, currentBranch.longitude);
+      } else {
+        initSettingsMap();
+        sUseGps();
+      }
+    }, 400);
+  }
+
+  /* ── REVERSE GEOCODE ── */
+  async function reverseGeocode(lat, lon, targetInputId) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+        { headers: { 'Accept-Language': 'en', 'User-Agent': 'HavenHair/1.0' } }
+      );
+      const data = await res.json();
+      if (data && data.address) {
+        const a = data.address;
+        // Build short address: neighbourhood/suburb + city
+        const parts = [
+          a.neighbourhood || a.suburb || a.quarter || a.village || a.town,
+          a.city || a.district || a.county || a.state
+        ].filter(Boolean);
+        const shortAddr = parts.join(', ') || data.display_name.split(',').slice(0,2).join(',').trim();
+        const el = document.getElementById(targetInputId);
+        if (el) {
+          el.value = shortAddr;
+          el.style.borderColor = 'var(--gold)';
+          setTimeout(() => el.style.borderColor = '', 2000);
+        }
+      }
+    } catch(e) {}
+  }
+</script>
+</head>
+<body>
+
+<nav>
+  <button class="hamburger" onclick="openDrawer()">☰</button>
+  <div style="display:flex;align-items:center;gap:0.6rem;margin-left:auto">
+    <button class="nbtn" id="notifBtn" style="display:none;padding:0.35rem 0.7rem" onclick="toggleNotifs()">🔔 <span id="notifCount" style="color:var(--gold)"></span></button>
+    <div style="text-align:right">
+      <div class="logo" onclick="showView('branches')">Haven<span>Hair</span></div>
+      <div style="font-size:0.65rem;color:var(--grey);margin-top:1px" id="navOwner"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- OWNER DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-logo">Haven<span>Hair</span></div>
+    <div class="drawer-user" id="drawerOwnerName">Owner</div>
+  </div>
+  <div class="drawer-menu">
+    <button class="drawer-item" onclick="toggleSub('subOwnerProfile')">
+      <span class="di-icon">👤</span> Profile
+    </button>
+    <div class="sub-panel" id="subOwnerProfile">
+      <div id="ownerProfileAlert" class="sub-alert-sm"></div>
+      <input class="sub-input" id="ownerEditName" placeholder="Your name"/>
+      <input class="sub-input" id="ownerEditPhone" placeholder="Phone" type="tel"/>
+      <button class="sub-btn-sm" onclick="saveOwnerProfile()" style="width:100%">Save Profile</button>
+    </div>
+    <button class="drawer-item" onclick="toggleSub('subSecurity')">
+      <span class="di-icon">🔒</span> Security
+    </button>
+    <div class="sub-panel" id="subSecurity">
+      <div id="securityAlert" class="sub-alert-sm"></div>
+      <input class="sub-input" id="currentPass" placeholder="Current password" type="password"/>
+      <input class="sub-input" id="newPass" placeholder="New password" type="password"/>
+      <input class="sub-input" id="confirmPass" placeholder="Confirm new password" type="password"/>
+      <button class="sub-btn-sm" onclick="changePassword()" style="width:100%">Change Password</button>
+    </div>
+    <button class="drawer-item" onclick="toggleSub('subBranches');loadDrawerBranches()">
+      <span class="di-icon">🏪</span> Branches
+    </button>
+    <div class="sub-panel" id="subBranches">
+      <div id="drawerBranchesList"></div>
+    </div>
+    <div class="drawer-sep"></div>
+    <button class="drawer-item" onclick="showView('branches');closeDrawer()">
+      <span class="di-icon">📋</span> My Branches
+    </button>
+    <button class="drawer-item" onclick="switchRole()">
+      <span class="di-icon">↔️</span> Switch Role
+    </button>
+    <div class="drawer-sep"></div>
+    <button class="drawer-item danger" onclick="toggleSub('subOwnerDelete')">
+      <span class="di-icon">🗑️</span> Delete Account
+    </button>
+    <div class="sub-panel" id="subOwnerDelete">
+      <p style="font-size:0.75rem;color:var(--grey);margin-bottom:0.6rem">Permanently deletes your account.</p>
+      <button class="sub-btn-sm danger-sm" onclick="deleteOwnerAccount()" style="width:100%">Confirm Delete</button>
+    </div>
+    <div class="drawer-sep"></div>
+    <button class="drawer-item danger" onclick="if(confirm('Are you sure you want to sign out?')){logout();closeDrawer()}">
+      <span class="di-icon">🚪</span> Sign Out
+    </button>
+  </div>
+</div>
+
+<!-- ══ AUTH ══ -->
+<div class="view active" id="view-auth">
+  <div class="auth-wrap">
+    <div class="auth-logo">Haven<span>Hair</span></div>
+    <div class="auth-sub">💈 Owner Portal</div>
+    <!-- Login type tabs -->
+    <div style="display:flex;gap:0;margin-bottom:1rem">
+      <button id="tabOwner" onclick="setLoginTab('owner')" style="flex:1;padding:0.7rem;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;font-family:'DM Sans',sans-serif;cursor:pointer;background:var(--gold);color:var(--black);border:none;font-weight:500">👑 Owner</button>
+      <button id="tabStaff" onclick="setLoginTab('staff')" style="flex:1;padding:0.7rem;font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;font-family:'DM Sans',sans-serif;cursor:pointer;background:var(--card);color:var(--grey);border:1px solid var(--border);font-weight:400">✂️ Staff</button>
+    </div>
+
+    <div id="loginBox" class="auth-box">
+      <h2>Welcome back</h2>
+      <p>Sign in to manage your shops</p>
+      <div id="loginAlert"></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="loginPhone" placeholder="05xxxxxxxx" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="gbtn full" onclick="doLogin()">Sign In →</button>
+      <div class="auth-switch">No account? <a onclick="showRegister()">Register</a></div>
+      <div class="auth-back" onclick="window.location.href='/web'">← Back to home</div>
+    </div>
+    <!-- Staff Login Box -->
+    <div id="staffLoginBox" class="auth-box" style="display:none">
+      <h2>Staff Login</h2>
+      <p>Sign in with your staff account</p>
+      <div id="staffLoginAlert"></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="staffPhone" placeholder="05xxxxxxxx" onkeydown="if(event.key==='Enter')doStaffLogin()"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="staffPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doStaffLogin()"/></div>
+      <button class="gbtn full" onclick="doStaffLogin()">Sign In →</button>
+      <div class="auth-back" onclick="window.location.href='/web'">← Back to home</div>
+    </div>
+
+    <div id="registerBox" class="auth-box" style="display:none">
+      <h2>Create account</h2>
+      <p>Start managing your barbershop queue</p>
+      <div id="registerAlert"></div>
+      <div class="fg"><label>Your Name</label><input type="text" id="regName" placeholder="Ahmed"/></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="regPhone" placeholder="05xxxxxxxx"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="regPass" placeholder="Choose a password"/></div>
+      <button class="gbtn full" onclick="doRegister()">Create Account →</button>
+      <div class="auth-switch">Have account? <a onclick="showLogin()">Sign in</a></div>
+      <div class="auth-back" onclick="window.location.href='/web'">← Back to home</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BRANCHES LIST ══ -->
+<div class="view" id="view-branches">
+  <div class="page-hero">
+    <span style="font-size:0.68rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold)">Owner Dashboard</span>
+    <h1>Your <em>Branches</em></h1>
+    <p id="ownerGreeting">Loading...</p>
+  </div>
+  <div class="branches-grid">
+    <div id="branchesList"><div style="text-align:center;padding:3rem;color:var(--grey)"><div class="spinner"></div></div></div>
+    <div class="add-branch-btn" onclick="openAddBranch()">+ Add New Branch</div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="view" id="view-dashboard">
+  <div class="dash-header">
+    <div class="back-bar" style="padding:0;border:none;margin-bottom:0.5rem" onclick="showView('branches')">← All Branches</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+        <div class="dash-branch-name" id="dashName">Loading...</div>
+        <button onclick="openBranchInboxFromDash()" title="Messages"
+          style="background:rgba(201,168,76,0.1);border:1px solid var(--gold);color:var(--gold);padding:0.5rem 1rem;font-size:0.9rem;cursor:pointer;flex-shrink:0;transition:all 0.2s;font-family:'DM Sans',sans-serif;font-size:0.8rem;letter-spacing:0.06em"
+          onmouseover="this.style.background='rgba(201,168,76,0.2)'"
+          onmouseout="this.style.background='rgba(201,168,76,0.1)'">💬 Messages</button>
+      </div>
+    <div class="dash-branch-addr" id="dashAddr"></div>
+    <div class="dash-controls">
+      <div class="st-toggle" id="branchToggle">
+        <button class="stbtn" onclick="setBranchStatus('active')">🟢 Active</button>
+        <button class="stbtn" onclick="setBranchStatus('paused')">⏸ Pause</button>
+        <button class="stbtn" onclick="setBranchStatus('closed')">🔴 Close</button>
+      </div>
+      <button class="icon-btn" onclick="openSettingsWithMap()">⚙ Settings</button>
+      <button class="icon-btn" onclick="openHistory()">📋 History</button>
+      <button class="icon-btn" onclick="refreshDashboard()">↻ Refresh</button>
+    </div>
+  </div>
+  <div id="dashAlert" style="padding:0 1.5rem;margin-top:0.5rem"></div>
+  <div class="chairs-wrap" id="chairsWrap">
+    <div style="text-align:center;padding:3rem;color:var(--grey)"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS ══ -->
+<div class="view" id="view-settings">
+  <div class="back-bar" onclick="showView('dashboard')">← Back to Dashboard</div>
+  <div class="settings-wrap">
+    <div class="settings-section">
+      <h3>Branch Info</h3>
+      <div id="settingsAlert"></div>
+      <div class="fg"><label>Branch Name</label><input type="text" id="setName"/></div>
+      <div class="fg"><label>Address</label><input type="text" id="setAddress"/></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="setPhone"/></div>
+      <button class="gbtn full" onclick="saveSettings()">Save Changes →</button>
+    </div>
+    <div class="settings-section">
+      <h3>Prices</h3>
+      <div class="price-grid">
+        <div class="fg"><label>✂️ Haircut</label><input type="number" id="pHaircut" placeholder="0"/></div>
+        <div class="fg"><label>🪒 Beard</label><input type="number" id="pBeard" placeholder="0"/></div>
+        <div class="fg"><label>✨ Both</label><input type="number" id="pBoth" placeholder="0"/></div>
+        <div class="fg"><label>👦 Kids</label><input type="number" id="pKids" placeholder="0"/></div>
+        <div class="fg"><label>🎨 Color</label><input type="number" id="pColor" placeholder="0"/></div>
+        <div class="fg"><label>💆 Facial</label><input type="number" id="pFacial" placeholder="0"/></div>
+      </div>
+      <button class="gbtn full" onclick="savePrices()">Save Prices →</button>
+    </div>
+    <div class="settings-section">
+      <h3>Add Chair / Barber</h3>
+      <div id="addChairAlert"></div>
+      <div class="fg"><label>Barber Name</label><input type="text" id="newBarberName" placeholder="Ali"/></div>
+      <button class="gbtn full" onclick="addChair()">Add Chair →</button>
+    </div>
+    <div class="settings-section">
+      <h3>Staff Management</h3>
+      <div id="staffList" style="margin-bottom:1rem"><div style="color:var(--grey);font-size:0.8rem">Loading staff...</div></div>
+      <div style="border-top:1px solid var(--border);padding-top:1rem;margin-top:0.5rem">
+        <div style="font-size:0.72rem;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:0.8rem">Add Staff Member</div>
+        <div id="addStaffAlert"></div>
+        <div class="fg"><label>Name</label><input type="text" id="sfName" placeholder="Ali"/></div>
+        <div class="fg"><label>Phone (login)</label><input type="tel" id="sfPhone" placeholder="05xxxxxxxx"/></div>
+        <div class="fg"><label>Password</label><input type="password" id="sfPass" placeholder="Choose password"/></div>
+        <div class="fg">
+          <label>Role</label>
+          <select id="sfRole">
+            <option value="barber">✂️ Barber</option>
+            <option value="manager">🏪 Branch Manager</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Assign to Chair</label>
+          <select id="sfChair">
+            <option value="">— Select chair —</option>
+          </select>
+        </div>
+        <button class="gbtn full" onclick="addStaff()">Add Staff Member →</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h3>Shop Location</h3>
+      <p style="font-size:0.78rem;color:var(--grey);margin-bottom:0.8rem">Update your exact shop location for customers to find you</p>
+      <div style="display:flex;gap:0.4rem;margin-bottom:0.6rem">
+        <button class="loc-method-btn active" id="sBtnGps" onclick="sUseGps()">📡 GPS<br/><span style="font-size:0.62rem">Most Accurate</span></button>
+        <button class="loc-method-btn" id="sBtnPin" onclick="sUsePin()">📌 Pin<br/><span style="font-size:0.62rem">Drag to Set</span></button>
+        <button class="loc-method-btn" id="sBtnAddr" onclick="sUseAddr()">🔍 Search<br/><span style="font-size:0.62rem">By Address</span></button>
+      </div>
+      <div class="loc-accuracy" id="sLocAccuracy"></div>
+      <input type="text" id="settingsAddress" placeholder="Address auto-fills from GPS/pin..." style="width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:0.6rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;margin-bottom:0.4rem"/>
+      <div id="settingsLocationMap" style="height:220px;border:1px solid var(--border);margin:0.5rem 0"></div>
+      <div style="display:flex;gap:0.5rem;margin-top:0.4rem">
+        <input class="fg" type="number" id="sLat" placeholder="Latitude" readonly style="flex:1;background:rgba(201,168,76,0.04)"/>
+        <input class="fg" type="number" id="sLon" placeholder="Longitude" readonly style="flex:1;background:rgba(201,168,76,0.04)"/>
+      </div>
+      <div id="saveLocAlert"></div>
+      <button class="gbtn full" onclick="saveLocation()">Update Location →</button>
+    </div>
+
+    <div class="settings-section danger-zone">
+      <h3>Danger Zone</h3>
+      <button class="obtn" style="color:var(--red);border-color:rgba(224,85,85,0.3);margin-bottom:0.5rem" onclick="pauseBranch()">⏸ Pause This Branch</button>
+      <p style="font-size:0.72rem;color:var(--grey)">Pausing hides the branch from customers temporarily</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- HISTORY VIEW -->
+<div class="view" id="view-history">
+  <div class="back-bar" onclick="showView('dashboard')">← Back to Dashboard</div>
+  <div style="padding:1.5rem">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;margin-bottom:0.3rem">Action <em style="color:var(--gold);font-style:italic;font-weight:400">History</em></div>
+    <p style="color:var(--grey);font-size:0.82rem;margin-bottom:1.5rem">Full log of all staff actions · Clears every 7 days</p>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap">
+      <input type="text" id="histStaff" placeholder="Filter by staff name..." style="flex:1;min-width:150px" oninput="loadHistory()"/>
+      <input type="date" id="histDate" style="width:auto" onchange="loadHistory()"/>
+      <button class="nbtn" style="white-space:nowrap" onclick="toggleSuspicious()">⚠️ Suspicious Only</button>
+      <button class="nbtn" onclick="clearHistoryFilters()">Clear</button>
+    </div>
+
+    <div id="historyList"><div style="text-align:center;padding:3rem;color:var(--grey)"><div class="spinner"></div></div></div>
+  </div>
+</div>
+<!-- ══ ADD BRANCH ══ -->
+<div class="view" id="view-add-branch">
+  <div class="back-bar" onclick="showView('branches')">← Back to Branches</div>
+  <div class="form-wrap">
+    <div class="form-box">
+      <h2>New Branch</h2>
+      <p>Add a new shop location to your account</p>
+      <div id="addBranchAlert"></div>
+      <div class="fg"><label>Branch Name</label><input type="text" id="abName" placeholder="Royal Cuts — Al Olaya"/></div>
+      <div class="fg"><label>Address</label><input type="text" id="abAddress" placeholder="Main Street, Riyadh"/></div>
+      <div class="fg"><label>Phone</label><input type="tel" id="abPhone" placeholder="05xxxxxxxx"/></div>
+      <p style="font-size:0.72rem;color:var(--grey);margin-bottom:1rem">Prices (optional — can set later in settings)</p>
+      <div class="price-grid">
+        <div class="fg"><label>✂️ Haircut</label><input type="number" id="abHaircut" placeholder="0"/></div>
+        <div class="fg"><label>🪒 Beard</label><input type="number" id="abBeard" placeholder="0"/></div>
+        <div class="fg"><label>✨ Both</label><input type="number" id="abBoth" placeholder="0"/></div>
+        <div class="fg"><label>👦 Kids</label><input type="number" id="abKids" placeholder="0"/></div>
+        <div class="fg"><label>🎨 Color</label><input type="number" id="abColor" placeholder="0"/></div>
+        <div class="fg"><label>💆 Facial</label><input type="number" id="abFacial" placeholder="0"/></div>
+      </div>
+      <button class="gbtn full" onclick="createBranch()">Create Branch →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CHAT MODAL ══ -->
+<div class="overlay" id="chatOverlay" onclick="handleOverlay(event,'chatOverlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="chatTitle">Chat</h3>
+      <button class="close-btn" onclick="closeModal('chatOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:0.7rem;color:var(--grey);margin-bottom:0.5rem;text-align:center" id="chatLimitBar">Loading...</div>
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-row">
+        <input type="text" id="chatInput" placeholder="Type message..." onkeydown="if(event.key==='Enter')sendMsg()"/>
+        <button onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MOVE MODAL ══ -->
+<div class="overlay" id="moveOverlay" onclick="handleOverlay(event,'moveOverlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Move to Position</h3>
+      <button class="close-btn" onclick="closeModal('moveOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--grey);font-size:0.82rem;margin-bottom:1rem">Select new position for <strong id="moveCustomerName"></strong></p>
+      <div class="move-options" id="moveOptions"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- TRANSFER MODAL -->
+<div class="overlay" id="transferOverlay" onclick="handleOverlay(event,'transferOverlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Transfer Customer</h3>
+      <button class="close-btn" onclick="closeModal('transferOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--grey);font-size:0.82rem;margin-bottom:1rem">Transfer <strong id="transferName" style="color:var(--gold)"></strong> to another barber</p>
+      <div id="transferOptions"></div>
+    </div>
+  </div>
+</div>
+<!-- ══ ADD CUSTOMER MODAL ══ -->
+<div class="overlay" id="addCustOverlay" onclick="handleOverlay(event,'addCustOverlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add Walk-in Customer</h3>
+      <button class="close-btn" onclick="closeModal('addCustOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="addCustAlert"></div>
+      <p style="color:var(--grey);font-size:0.8rem;margin-bottom:1rem">Adding to: <strong id="addCustChairName" style="color:var(--gold)"></strong></p>
+      <div class="fg"><label>Customer Name</label><input type="text" id="acName" placeholder="Mohammed"/></div>
+      <div class="fg"><label>Phone <span style="color:var(--grey);font-size:0.65rem">(optional)</span></label><input type="tel" id="acPhone" placeholder="05xxxxxxxx — optional"/></div>
+      <div class="fg">
+        <label>Service</label>
+        <select id="acService">
+          <option value="haircut">✂️ Haircut</option>
+          <option value="beard">🪒 Beard Trim</option>
+          <option value="both">✨ Haircut + Beard</option>
+          <option value="facial">💆 Facial</option>
+          <option value="kids">👦 Kids Cut</option>
+          <option value="color">🎨 Color</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Type</label>
+        <select id="acType">
+          <option value="walkin">Walk-in</option>
+          <option value="booked">Booking</option>
+        </select>
+      </div>
+      <div class="fg"><label>Notes (optional)</label><input type="text" id="acNotes" placeholder="Prefers short on sides..."/></div>
+      <button class="gbtn full" onclick="addCustomer()">Add to Queue →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const cleanPhone = p => p ? p.toString().trim().replace(/['"]/g,'') : '';
+  const API = 'https://haven-hair-2-0.onrender.com';
+  let ownerToken = null, ownerId = null, ownerName = '';
+  let branches = [], currentBranch = null, currentChairs = [];
+  let dashTimer = null;
+  let chatEntryId = null, moveEntryId = null, moveChairQueue = [];
+  let addCustChairId = null, addCustBranchId = null;
+
+  /* ── INIT ── */
+  window.addEventListener('load', () => {
+    localStorage.setItem('hh_role', 'owner');
+    try {
+      const savedStaff = localStorage.getItem('hh_staff');
+      if (savedStaff) {
+        staffInfo = JSON.parse(savedStaff);
+        updateNavStaff();
+        openStaffDashboard();
+        return;
+      }
+    } catch(e) {
+      localStorage.removeItem('hh_staff');
+    }
+    try {
+      ownerToken = localStorage.getItem('hh_owner_token');
+      if (ownerToken) { updateNav(true); loadBranches(); showView('branches'); }
+      else showView('auth');
+    } catch(e) {
+      showView('auth');
+    }
+  });
+
+  function updateNav(loggedIn) {
+    document.getElementById('navOwner').textContent = ownerName || '';
+    const nb = document.getElementById('notifBtn');
+    if (nb) nb.style.display = loggedIn ? 'inline-block' : 'none';
+  }
+
+  function switchRole() { localStorage.removeItem('hh_role'); window.location.href = '/web'; }
+
+  function logout() {
+    ownerToken = null; ownerId = null; ownerName = '';
+    localStorage.removeItem('hh_owner_token');
+    if (dashTimer) { clearInterval(dashTimer); dashTimer = null; }
+    updateNav(false);
+    showView('auth');
+  }
+
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + name).classList.add('active');
+    window.scrollTo(0, 0);
+    if (name !== 'dashboard' && dashTimer) { clearInterval(dashTimer); dashTimer = null; }
+  }
+
+  /* ── AUTH ── */
+  function showLogin() { document.getElementById('loginBox').style.display='block'; document.getElementById('registerBox').style.display='none'; }
+  function showRegister() { document.getElementById('loginBox').style.display='none'; document.getElementById('registerBox').style.display='block'; }
+
+  async function doLogin() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+    const el = document.getElementById('loginAlert');
+    if (!phone || !pass) { el.innerHTML = '<div class="alert err">Fill all fields</div>'; return; }
+    try {
+      const res = await fetch(`${API}/auth/owner/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ phone, password: pass }) });
+      const data = await res.json();
+      if (res.ok) {
+        ownerToken = data.token; ownerId = data.owner_id;
+        localStorage.setItem('hh_owner_token', ownerToken);
+        await loadProfile();
+        updateNav(true);
+        loadBranches();
+        showView('branches');
+      } else { el.innerHTML = `<div class="alert err">${data.error}</div>`; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Cannot connect to server</div>'; }
+  }
+
+  async function doRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const pass = document.getElementById('regPass').value.trim();
+    const el = document.getElementById('registerAlert');
+    if (!name || !phone || !pass) { el.innerHTML = '<div class="alert err">Fill all fields</div>'; return; }
+    try {
+      const res = await fetch(`${API}/auth/owner/register`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ name, phone, password: pass }) });
+      const data = await res.json();
+      if (res.ok) {
+        ownerToken = data.token; ownerId = data.owner_id; ownerName = name;
+        localStorage.setItem('hh_owner_token', ownerToken);
+        updateNav(true);
+        loadBranches();
+        showView('branches');
+      } else { el.innerHTML = `<div class="alert err">${data.error}</div>`; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Cannot connect</div>'; }
+  }
+
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API}/auth/owner/me`, { headers: { 'Authorization': `Bearer ${ownerToken}` } });
+      const data = await res.json();
+      if (res.ok) { ownerName = data.name; ownerId = data.id; document.getElementById('navOwner').textContent = ownerName; }
+    } catch(e) {}
+  }
+
+  /* ── BRANCHES ── */
+  async function loadBranches() {
+    try {
+      const res = await fetch(`${API}/owner/branches`, { headers: { 'Authorization': `Bearer ${ownerToken}` } });
+      branches = await res.json();
+      document.getElementById('ownerGreeting').textContent = `Welcome back, ${ownerName || 'Owner'}`;
+
+      // Load queue counts
+      await Promise.all(branches.map(async b => {
+        try {
+          const q = await fetch(`${API}/queue/branch/${b.id}`);
+          const chairs = await q.json();
+          b.totalWaiting = chairs.reduce((s, c) => s + c.total_waiting, 0);
+          b.activeChairs = chairs.filter(c => c.status === 'active').length;
+          b.totalChairs = chairs.length;
+        } catch { b.totalWaiting = 0; b.activeChairs = 0; b.totalChairs = b.chairs?.length || 0; }
+      }));
+
+      if (!branches.length) {
+        document.getElementById('branchesList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--grey)"><p>No branches yet — add your first shop!</p></div>';
+        return;
+      }
+
+      document.getElementById('branchesList').innerHTML = branches.map(b => `
+        <div class="branch-card" onclick="openBranch(${b.id})">
+          <div class="bc-top">
+            <div>
+              <div class="bc-name">${b.name}</div>
+              <div class="bc-addr">📍 ${b.address}</div>
+            </div>
+            <span class="status-pill s-${b.status}">${b.status}</span>
+          </div>
+          <div class="bc-stats">
+            <div class="bc-stat"><div class="v">${b.totalWaiting}</div><div class="l">Waiting</div></div>
+            <div class="bc-stat"><div class="v">${b.activeChairs}</div><div class="l">Active Chairs</div></div>
+            <div class="bc-stat"><div class="v">${b.reputation_score}</div><div class="l">Score</div></div>
+          </div>
+          <div class="bc-foot">
+            <span style="font-size:0.72rem;color:var(--grey)">${b.totalChairs} chair${b.totalChairs !== 1 ? 's' : ''}</span>
+            <span class="bc-arrow">Manage →</span>
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('branchesList').innerHTML = '<div class="alert err">Cannot load branches</div>';
+    }
+  }
+
+  async function openBranch(branchId) {
+    currentBranch = branches.find(b => b.id === branchId) || { id: branchId };
+    document.getElementById('dashName').textContent = currentBranch.name || 'Loading...';
+    document.getElementById('dashAddr').textContent = currentBranch.address ? '📍 ' + currentBranch.address : '';
+    showView('dashboard');
+    await refreshDashboard();
+    if (dashTimer) clearInterval(dashTimer);
+    dashTimer = setInterval(refreshDashboard, 15000);
+    loadNotifications();
+  }
+
+  async function refreshDashboard() {
+    if (!currentBranch) return;
+    try {
+      const res = await fetch(`${API}/queue/branch/${currentBranch.id}`);
+      currentChairs = await res.json();
+      renderChairs(currentChairs);
+      updateBranchToggle(currentBranch.status);
+    } catch(e) {
+      document.getElementById('chairsWrap').innerHTML = '<div class="alert err">Cannot load queue</div>';
+    }
+  }
+
+  function renderChairs(chairs) {
+    if (!chairs.length) {
+      document.getElementById('chairsWrap').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--grey)">No chairs yet — add chairs in Settings</div>';
+      return;
+    }
+
+    document.getElementById('chairsWrap').innerHTML = chairs.map((c, i) => `
+      <div class="chair-card" id="chair-${c.chair_id}">
+        <div class="chair-head" onclick="toggleChair(${c.chair_id})">
+          <div class="chair-head-left">
+            <div class="chair-num">${i + 1}</div>
+            <div>
+              <div class="chair-name">${c.barber_name}</div>
+              <div class="chair-count">${c.total_waiting} waiting${c.seated ? ' · 1 in chair' : ''}</div>
+            </div>
+          </div>
+          <div class="chair-head-right" onclick="event.stopPropagation()">
+            <div class="chair-toggle">
+              <button class="ctbtn ${c.status === 'active' ? 'on' : ''}" onclick="setChairStatus(${c.chair_id},'active')">Active</button>
+              <button class="ctbtn ${c.status === 'absent' ? 'off' : ''}" onclick="setChairStatus(${c.chair_id},'absent')">Absent</button>
+            </div>
+            <button class="qa-btn" onclick="event.stopPropagation();openAddCust(${c.chair_id},'${c.barber_name}')">+ Add</button>
+          </div>
+        </div>
+        <div class="chair-body ${c.status === 'absent' ? '' : 'open'}" id="body-${c.chair_id}">
+          ${c.status === 'absent' ? `
+            <div class="alert warn">⚠️ ${c.barber_name} is absent today${c.absent_note ? ' — ' + c.absent_note : ''}</div>
+            <button class="obtn" onclick="editAbsentNote(${c.chair_id})">Edit Note</button>
+            <div class="absent-form" id="absent-${c.chair_id}">
+              <div class="fg"><label>Absent Note</label><input type="text" id="anote-${c.chair_id}" placeholder="Returns tomorrow..." value="${c.absent_note || ''}"/></div>
+              <button class="gbtn" onclick="saveAbsentNote(${c.chair_id})">Save Note</button>
+            </div>
+          ` : ''}
+
+          ${c.seated ? `
+            <div class="slabel">In Chair</div>
+            <div class="seated-box">
+              <div class="sb-info">
+                <div class="sb-name">${c.seated.name} ✂️</div>
+                <div class="sb-svc">${c.seated.service}</div>
+              </div>
+              <div class="sb-token">${c.seated.token}</div>
+            </div>
+            <div class="action-row">
+              <button class="abtn sit" disabled>✓ Seated</button>
+              <button class="abtn done" onclick="markDone(${c.seated.id},${c.chair_id})">Done ✅</button>
+              <button class="abtn skip" onclick="skipEntry(${c.seated.id},${c.chair_id})">Skip / Remove</button>
+            </div>
+          ` : c.waiting.length ? `
+            <div class="no-seated">
+              Next: <strong>${c.waiting[0].name}</strong> — tap Seat when ready
+            </div>
+            <div class="action-row">
+              <button class="abtn sit" onclick="seatNext(${c.chair_id})">✓ Customer Sits</button>
+              <button class="abtn done" disabled>Done ✅</button>
+              <button class="abtn skip" onclick="skipEntry(${c.waiting[0].id},${c.chair_id})">Skip Next</button>
+            </div>
+          ` : `
+            <div class="no-seated">Queue is empty — no customers waiting</div>
+          `}
+
+          ${c.waiting.length ? `
+            <div class="slabel" style="margin-top:0.5rem">Waiting Queue</div>
+            ${c.waiting.map(e => `
+              <div class="q-entry ${e.strikes > 0 ? 'has-strike' : ''}">
+                <div class="q-pos" style="font-size:1rem;color:var(--gold);min-width:3rem">${e.token}</div>
+                <div class="q-info">
+                  <div class="q-name">${e.name}${e.strikes > 0 ? `<span class="strike-badge">⚠️ ${e.strikes}</span>` : ''}${e.booking_type === 'booked' ? '<span style="color:var(--gold);font-size:0.6rem;margin-left:0.3rem">BOOKED</span>' : ''}</div>
+                  <div class="q-svc">${e.service}${e.notes ? ' · ' + e.notes : ''}</div>
+                </div>
+                <div class="q-wait">${fmtWait(e.estimated_wait)}</div>
+                <div class="q-actions">
+                  <button class="qa-btn" onclick="openMove(${e.id},'${e.name}',${c.chair_id},${e.position})">↕</button>
+                  <button class="qa-btn strike-btn" onclick="addStrike(${e.id},${c.chair_id})">⚠</button>
+                  <button class="qa-btn" style="color:var(--gold)" onclick="openTransfer(${e.id},'${e.name}',${c.chair_id})">⇄</button>
+                  <button class="qa-btn chat-btn" onclick="openChat(${e.id},'${e.name}')">💬</button>
+                  <button class="qa-btn remove-btn" onclick="removeEntry(${e.id},${c.chair_id})">✕</button>
+                  <button class="qa-btn" style="color:var(--orange);border-color:rgba(245,166,35,0.3)" onclick="openComplaint('${e.name}','${e.phone||'N/A'}',${c.chair_id},${e.id})">⚑</button>
+                </div>
+              </div>`).join('')}
+          ` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  function toggleChair(chairId) {
+    const body = document.getElementById(`body-${chairId}`);
+    body.classList.toggle('open');
+  }
+
+  /* ── BRANCH STATUS ── */
+  async function setBranchStatus(status) {
+    if (!currentBranch) return;
+    try {
+      await fetch(`${API}/branches/${currentBranch.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({ status })
+      });
+      currentBranch.status = status;
+      updateBranchToggle(status);
+      flash('dashAlert', `Branch status set to ${status}`, 'ok');
+    } catch(e) { flash('dashAlert', 'Connection error', 'err'); }
+  }
+
+  function updateBranchToggle(status) {
+    document.querySelectorAll('.stbtn').forEach(b => b.className = 'stbtn');
+    const map = { active: 0, paused: 1, closed: 2 };
+    const cls = { active: 'on-active', paused: 'on-paused', closed: 'on-closed' };
+    const btns = document.querySelectorAll('.stbtn');
+    if (btns[map[status]]) btns[map[status]].classList.add(cls[status]);
+  }
+
+  /* ── CHAIR STATUS ── */
+  async function setChairStatus(chairId, status) {
+    try {
+      await fetch(`${API}/chairs/${chairId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({ status })
+      });
+      await refreshDashboard();
+    } catch(e) {}
+  }
+
+  function editAbsentNote(chairId) {
+    const f = document.getElementById(`absent-${chairId}`);
+    f.classList.toggle('open');
+  }
+
+  async function saveAbsentNote(chairId) {
+    const note = document.getElementById(`anote-${chairId}`).value.trim();
+    try {
+      await fetch(`${API}/chairs/${chairId}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({ absent_note: note })
+      });
+      await refreshDashboard();
+    } catch(e) {}
+  }
+
+  /* ── QUEUE ACTIONS ── */
+  async function seatNext(chairId) {
+    const chair = currentChairs.find(c => c.chair_id === chairId);
+    if (!chair || !chair.waiting.length) return;
+    const next = chair.waiting[0];
+    try {
+      await fetch(`${API}/queue/${next.id}/seat`, { method: 'PATCH' });
+      await refreshDashboard();
+    } catch(e) { flash('dashAlert', 'Connection error', 'err'); }
+  }
+
+  async function markDone(entryId, chairId) {
+    try {
+      await fetch(`${API}/queue/${entryId}/done`, { method: 'PATCH' });
+      await refreshDashboard();
+    } catch(e) { flash('dashAlert', 'Connection error', 'err'); }
+  }
+
+  async function skipEntry(entryId, chairId) {
+    if (!confirm('Skip this customer?')) return;
+    try {
+      await fetch(`${API}/queue/${entryId}/skip`, { method: 'PATCH' });
+      await refreshDashboard();
+    } catch(e) { flash('dashAlert', 'Connection error', 'err'); }
+  }
+
+  async function removeEntry(entryId, chairId) {
+    if (!confirm('Remove this customer from queue?')) return;
+    try {
+      await fetch(`${API}/queue/${entryId}/skip`, { method: 'PATCH' });
+      await refreshDashboard();
+    } catch(e) {}
+  }
+
+  async function addStrike(entryId, chairId) {
+    try {
+      const res = await fetch(`${API}/queue/${entryId}/strike`, { method: 'PATCH' });
+      const data = await res.json();
+      flash('dashAlert', data.message, data.message.includes('removed') ? 'err' : 'warn');
+      await refreshDashboard();
+    } catch(e) {}
+  }
+
+  /* ── MOVE POSITION ── */
+  function openMove(entryId, name, chairId, currentPos) {
+    moveEntryId = entryId;
+    const chair = currentChairs.find(c => c.chair_id === chairId);
+    moveChairQueue = chair ? chair.waiting : [];
+    document.getElementById('moveCustomerName').textContent = name;
+    const opts = moveChairQueue.map((e, i) => `
+      <div class="move-opt ${e.id === entryId ? 'current' : ''}" onclick="doMove(${i + 1})">
+        <span>Position ${i + 1}</span>
+        <span style="color:var(--grey);font-size:0.78rem">${e.name}${e.id === entryId ? ' (current)' : ''}</span>
+      </div>`).join('');
+    document.getElementById('moveOptions').innerHTML = opts;
+    document.getElementById('moveOverlay').classList.add('show');
+  }
+
+  async function doMove(newPos) {
+    if (!moveEntryId) return;
+    try {
+      await fetch(`${API}/queue/${moveEntryId}/move`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position: newPos })
+      });
+      closeModal('moveOverlay');
+      await refreshDashboard();
+    } catch(e) {}
+  }
+
+  /* ── CHAT ── */
+  async function openChat(entryId, name) {
+    chatEntryId = entryId;
+    document.getElementById('chatTitle').textContent = `Chat — ${name}`;
+    document.getElementById('chatMsgs').innerHTML = '<div style="text-align:center;color:var(--grey);font-size:0.8rem">Loading...</div>';
+    document.getElementById('chatOverlay').classList.add('show');
+    await loadMsgs();
+  }
+
+  async function loadMsgs() {
+    try {
+      const res = await fetch(`${API}/messages/${chatEntryId}`);
+      const data = await res.json();
+      const msgs = data.messages || [];
+      document.getElementById('chatLimitBar').textContent =
+        `${data.used}/${data.limit} messages · auto-deletes in 24h`;
+      const container = document.getElementById('chatMsgs');
+      if (!msgs.length) { container.innerHTML = '<div style="text-align:center;color:var(--grey);font-size:0.8rem">No messages yet</div>'; return; }
+      container.innerHTML = msgs.map(m => `
+        <div class="chat-msg ${m.sender}">
+          <div class="chat-sender">${m.sender} · ${m.time}</div>
+          ${m.text}
+        </div>`).join('');
+      container.scrollTop = container.scrollHeight;
+    } catch(e) {}
+  }
+
+  async function sendMsg() {
+    const text = document.getElementById('chatInput').value.trim();
+    if (!text || !chatEntryId) return;
+    try {
+      const res = await fetch(`${API}/messages/${chatEntryId}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender: 'barber', text })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('chatLimitBar').textContent = data.error;
+        return;
+      }
+      document.getElementById('chatInput').value = '';
+      document.getElementById('chatLimitBar').textContent =
+        `${data.used}/${data.limit} messages used`;
+      await loadMsgs();
+    } catch(e) {}
+  }
+
+  /* ── ADD CUSTOMER ── */
+  function openAddCust(chairId, barberName) {
+    addCustChairId = chairId;
+    addCustBranchId = currentBranch.id;
+    document.getElementById('addCustChairName').textContent = barberName;
+    document.getElementById('addCustAlert').innerHTML = '';
+    document.getElementById('acName').value = '';
+    document.getElementById('acPhone').value = '';
+    document.getElementById('acNotes').value = '';
+    document.getElementById('addCustOverlay').classList.add('show');
+  }
+
+  async function addCustomer() {
+    const name = document.getElementById('acName').value.trim();
+    const phone = document.getElementById('acPhone').value.trim();
+    const service = document.getElementById('acService').value;
+    const type = document.getElementById('acType').value;
+    const notes = document.getElementById('acNotes').value.trim();
+    const el = document.getElementById('addCustAlert');
+    if (!name) { el.innerHTML = '<div class="alert err">Customer name is required</div>'; return; }
+    try {
+      const res = await fetch(`${API}/queue/join`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ branch_id: addCustBranchId, chair_id: addCustChairId, customer_name: name, customer_phone: phone || "N/A", service, booking_type: type, notes, source: "owner" })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        el.innerHTML = `<div class="alert ok">✅ Added — Token ${data.token}, Position ${data.position}, ${fmtWait(data.estimated_wait_mins)}</div>`;
+        document.getElementById('acName').value = '';
+        document.getElementById('acPhone').value = '';
+        await refreshDashboard();
+      } else { el.innerHTML = `<div class="alert err">${data.error}</div>`; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  /* ── SETTINGS ── */
+  function showSettings() {
+    if (!currentBranch) return;
+    loadStaffList();
+    document.getElementById('setName').value = currentBranch.name || '';
+    document.getElementById('setAddress').value = currentBranch.address || '';
+    document.getElementById('setPhone').value = currentBranch.phone || '';
+    if (currentBranch.prices) {
+      document.getElementById('pHaircut').value = currentBranch.prices.haircut || '';
+      document.getElementById('pBeard').value = currentBranch.prices.beard || '';
+      document.getElementById('pBoth').value = currentBranch.prices.both || '';
+      document.getElementById('pKids').value = currentBranch.prices.kids || '';
+      document.getElementById('pColor').value = currentBranch.prices.color || '';
+      document.getElementById('pFacial').value = currentBranch.prices.facial || '';
+    }
+    showView('settings');
+  }
+
+  async function saveSettings() {
+    const el = document.getElementById('settingsAlert');
+    try {
+      const res = await fetch(`${API}/branches/${currentBranch.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({
+          name: document.getElementById('setName').value.trim(),
+          address: document.getElementById('setAddress').value.trim(),
+          phone: document.getElementById('setPhone').value.trim()
+        })
+      });
+      if (res.ok) {
+        el.innerHTML = '<div class="alert ok">✅ Settings saved</div>';
+        currentBranch.name = document.getElementById('setName').value.trim();
+        currentBranch.address = document.getElementById('setAddress').value.trim();
+      } else { el.innerHTML = '<div class="alert err">Failed to save</div>'; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  async function savePrices() {
+    const el = document.getElementById('settingsAlert');
+    try {
+      const res = await fetch(`${API}/branches/${currentBranch.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({
+          haircut_price: parseFloat(document.getElementById('pHaircut').value) || 0,
+          beard_price: parseFloat(document.getElementById('pBeard').value) || 0,
+          both_price: parseFloat(document.getElementById('pBoth').value) || 0,
+          kids_price: parseFloat(document.getElementById('pKids').value) || 0,
+          color_price: parseFloat(document.getElementById('pColor').value) || 0,
+          facial_price: parseFloat(document.getElementById('pFacial').value) || 0
+        })
+      });
+      if (res.ok) el.innerHTML = '<div class="alert ok">✅ Prices saved</div>';
+      else el.innerHTML = '<div class="alert err">Failed to save prices</div>';
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  async function addChair() {
+    const name = document.getElementById('newBarberName').value.trim();
+    const el = document.getElementById('addChairAlert');
+    if (!name) { el.innerHTML = '<div class="alert err">Enter barber name</div>'; return; }
+    try {
+      const res = await fetch(`${API}/branches/${currentBranch.id}/chairs`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({ barber_name: name })
+      });
+      if (res.ok) {
+        el.innerHTML = `<div class="alert ok">✅ ${name}'s chair added</div>`;
+        document.getElementById('newBarberName').value = '';
+      } else { el.innerHTML = '<div class="alert err">Failed to add chair</div>'; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  async function pauseBranch() {
+    if (!confirm('Pause this branch? It will be hidden from customers.')) return;
+    await setBranchStatus('paused');
+    showView('branches');
+    loadBranches();
+  }
+
+  /* ── ADD BRANCH ── */
+  async function createBranch() {
+    const name = document.getElementById('abName').value.trim();
+    const address = document.getElementById('abAddress').value.trim();
+    const phone = document.getElementById('abPhone').value.trim();
+    const el = document.getElementById('addBranchAlert');
+    if (!name || !address) { el.innerHTML = '<div class="alert err">Fill name and address</div>'; return; }
+
+    el.innerHTML = '<div class="alert warn">Geocoding address...</div>';
+    let lat = 24.7136, lon = 46.6753;
+    try {
+      const geo = await fetch(`${API}/maps/geocode?address=${encodeURIComponent(address)}`);
+      const gd = await geo.json();
+      if (gd.lat) { lat = parseFloat(gd.lat); lon = parseFloat(gd.lon); }
+    } catch(e) {}
+
+    try {
+      const res = await fetch(`${API}/branches`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({
+          name, address, phone, latitude: lat, longitude: lon,
+          haircut_price: parseFloat(document.getElementById('abHaircut').value) || 0,
+          beard_price: parseFloat(document.getElementById('abBeard').value) || 0,
+          both_price: parseFloat(document.getElementById('abBoth').value) || 0,
+          kids_price: parseFloat(document.getElementById('abKids').value) || 0,
+          color_price: parseFloat(document.getElementById('abColor').value) || 0,
+          facial_price: parseFloat(document.getElementById('abFacial').value) || 0
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        el.innerHTML = `<div class="alert ok">✅ Branch created! Now add barbers in Settings.</div>`;
+        await loadBranches();
+        setTimeout(() => { const b = branches.find(x => x.id === data.id); if (b) openBranch(b.id); else showView('branches'); }, 1500);
+      } else { el.innerHTML = `<div class="alert err">${data.error}</div>`; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  /* ── MODALS ── */
+  function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+  function handleOverlay(e, id) { if (e.target.id === id) closeModal(id); }
+
+  /* ── HELPERS ── */
+  function flash(id, msg, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+    setTimeout(() => { el.innerHTML = ''; }, 4000);
+  }
+
+  let suspiciousOnly = false;
+  let transferEntryId = null;
+
+  /* ── NOTIFICATIONS ── */
+  async function loadNotifications() {
+    if (!ownerToken) return;
+    try {
+      const res = await fetch(`${API}/notifications`, {
+        headers: { 'Authorization': `Bearer ${ownerToken}` }
+      });
+      const data = await res.json();
+      const btn = document.getElementById('notifBtn');
+      const count = document.getElementById('notifCount');
+      const list = document.getElementById('notifList');
+      if (data.length > 0) {
+        btn.style.display = 'inline-block';
+        count.textContent = data.length;
+        list.innerHTML = data.map(n => `
+          <div style="padding:0.8rem 1rem;border-bottom:1px solid var(--border);cursor:pointer" onclick="markRead(${n.id})">
+            <div style="font-size:0.82rem;font-weight:500;color:${n.type==='warning'?'var(--orange)':n.type==='danger'?'var(--red)':'var(--white)'}">${n.title}</div>
+            <div style="font-size:0.72rem;color:var(--grey);margin-top:2px">${n.message}</div>
+            <div style="font-size:0.65rem;color:var(--grey);margin-top:2px">${n.time} · tap to dismiss</div>
+          </div>`).join('');
+      } else {
+        btn.style.display = 'none';
+      }
+    } catch(e) {}
+  }
+
+  function toggleNotifs() {
+    const panel = document.getElementById('notifPanel');
+    const overlay = document.getElementById('notifOverlay');
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    overlay.classList.toggle('show', !isOpen);
+  }
+
+  async function markRead(id) {
+    try {
+      await fetch(`${API}/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${ownerToken}` } });
+      await loadNotifications();
+      document.getElementById('notifPanel').style.display = 'none';
+      document.getElementById('notifOverlay').classList.remove('show');
+    } catch(e) {}
+  }
+
+  /* ── HISTORY ── */
+  function openHistory() {
+    showView('history');
+    loadHistory();
+  }
+
+  async function loadHistory() {
+    if (!currentBranch) return;
+    const staff = document.getElementById('histStaff')?.value || '';
+    const date = document.getElementById('histDate')?.value || '';
+    let url = `${API}/history/${currentBranch.id}?`;
+    if (staff) url += `staff=${encodeURIComponent(staff)}&`;
+    if (date) url += `date=${date}&`;
+    if (suspiciousOnly) url += `suspicious=true`;
+
+    document.getElementById('historyList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--grey)"><div class="spinner"></div></div>';
+
+    try {
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${ownerToken}` } });
+      const logs = await res.json();
+      if (!logs.length) {
+        document.getElementById('historyList').innerHTML = '<div style="text-align:center;padding:3rem;color:var(--grey)">No actions found</div>';
+        return;
+      }
+      document.getElementById('historyList').innerHTML = logs.map(l => `
+        <div style="padding:0.9rem 1rem;border-bottom:1px solid var(--border);background:${l.suspicious?'rgba(224,85,85,0.04)':'transparent'}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <span style="font-size:0.85rem;font-weight:500">${l.staff}</span>
+              <span style="font-size:0.65rem;color:var(--grey);text-transform:uppercase;letter-spacing:0.08em">${l.role}</span>
+              ${l.suspicious ? '<span style="background:var(--red);color:white;font-size:0.6rem;padding:0.1rem 0.4rem;font-weight:700">⚠️ SUSPICIOUS</span>' : ''}
+            </div>
+            <span style="font-size:0.68rem;color:var(--grey)">${l.time}</span>
+          </div>
+          <div style="font-size:0.78rem;color:var(--white)">${actionLabel(l.action)} ${l.customer ? '· <strong>' + l.customer + '</strong>' : ''}</div>
+          ${l.details ? '<div style="font-size:0.72rem;color:var(--grey);margin-top:2px">' + l.details + '</div>' : ''}
+          ${l.suspicious ? '<div style="font-size:0.72rem;color:var(--red);margin-top:3px">⚠️ ' + l.reason + '</div>' : ''}
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('historyList').innerHTML = '<div class="alert err">Cannot load history</div>';
+    }
+  }
+
+  function actionLabel(action) {
+    const map = {
+      'add_walkin': '➕ Added customer',
+      'seated': '✓ Seated customer',
+      'done': '✅ Haircut done',
+      'skip': '⏭ Skipped customer',
+      'strike': '⚠️ Strike added',
+      'move': '↕️ Position moved',
+      'transfer': '⇄ Customer transferred'
+    };
+    return map[action] || action;
+  }
+
+  function toggleSuspicious() {
+    suspiciousOnly = !suspiciousOnly;
+    const btn = document.querySelector('[onclick="toggleSuspicious()"]');
+    if (btn) btn.style.color = suspiciousOnly ? 'var(--red)' : '';
+    loadHistory();
+  }
+
+  function clearHistoryFilters() {
+    document.getElementById('histStaff').value = '';
+    document.getElementById('histDate').value = '';
+    suspiciousOnly = false;
+    loadHistory();
+  }
+
+  /* ── TRANSFER ── */
+  function openTransfer(entryId, name, currentChairId) {
+    transferEntryId = entryId;
+    document.getElementById('transferName').textContent = name;
+    const options = currentChairs
+      .filter(c => c.chair_id !== currentChairId && c.status === 'active')
+      .map(c => `
+        <div class="move-opt" onclick="doTransfer(${c.chair_id})">
+          <div>
+            <div style="font-size:0.88rem;font-weight:500">${c.barber_name}</div>
+            <div style="font-size:0.72rem;color:var(--grey)">${c.total_waiting} waiting · ${fmtWait(c.total_waiting * 20)}</div>
+          </div>
+          <span style="color:var(--gold);font-size:0.8rem">Transfer →</span>
+        </div>`).join('');
+    document.getElementById('transferOptions').innerHTML = options || '<div style="color:var(--grey);font-size:0.82rem;padding:1rem">No other active chairs available</div>';
+    document.getElementById('transferOverlay').classList.add('show');
+  }
+
+  async function doTransfer(newChairId) {
+    if (!transferEntryId) return;
+    try {
+      const res = await fetch(`${API}/queue/${transferEntryId}/transfer`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chair_id: newChairId })
+      });
+      const data = await res.json();
+      closeModal('transferOverlay');
+      flash('dashAlert', data.message, 'ok');
+      await refreshDashboard();
+    } catch(e) { flash('dashAlert', 'Connection error', 'err'); }
+  }
+
+  /* ── STAFF MANAGEMENT ── */
+  async function loadStaffList() {
+    if (!currentBranch) return;
+    try {
+      const res = await fetch(`${API}/branches/${currentBranch.id}/staff`, {
+        headers: { 'Authorization': `Bearer ${ownerToken}` }
+      });
+      const staff = await res.json();
+
+      // Fill chair select
+      const sel = document.getElementById('sfChair');
+      if (sel && currentChairs.length) {
+        sel.innerHTML = '<option value="">— Select chair —</option>' +
+          currentChairs.map(c => `<option value="${c.chair_id}">${c.barber_name}</option>`).join('');
+      }
+
+      if (!staff.length) {
+        document.getElementById('staffList').innerHTML = '<div style="color:var(--grey);font-size:0.8rem">No staff added yet</div>';
+        return;
+      }
+      document.getElementById('staffList').innerHTML = staff.map(s => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:0.85rem;font-weight:500">${s.name} <span style="font-size:0.65rem;color:var(--grey);text-transform:uppercase">${s.role}</span></div>
+            <div style="font-size:0.7rem;color:var(--grey)">${s.phone}</div>
+          </div>
+          <div style="display:flex;gap:0.4rem">
+            <button class="nbtn" style="font-size:0.65rem;color:${s.is_active?'var(--green)':'var(--red)'}" onclick="toggleStaff(${s.id},${!s.is_active})">${s.is_active?'Active':'Disabled'}</button>
+            <button class="nbtn danger" style="font-size:0.65rem" onclick="removeStaff(${s.id})">Remove</button>
+          </div>
+        </div>`).join('');
+    } catch(e) {}
+  }
+
+  async function addStaff() {
+    const name = document.getElementById('sfName').value.trim();
+    const phone = document.getElementById('sfPhone').value.trim();
+    const pass = document.getElementById('sfPass').value.trim();
+    const role = document.getElementById('sfRole').value;
+    const chair_id = document.getElementById('sfChair').value;
+    const el = document.getElementById('addStaffAlert');
+    if (!name || !phone || !pass) { el.innerHTML = '<div class="alert err">Fill name, phone and password</div>'; return; }
+    try {
+      const res = await fetch(`${API}/staff`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({ name, phone, password: pass, role, branch_id: currentBranch.id, chair_id: chair_id || null })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        el.innerHTML = `<div class="alert ok">✅ ${data.message}</div>`;
+        document.getElementById('sfName').value = '';
+        document.getElementById('sfPhone').value = '';
+        document.getElementById('sfPass').value = '';
+        loadStaffList();
+      } else { el.innerHTML = `<div class="alert err">${data.error}</div>`; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  async function toggleStaff(id, active) {
+    try {
+      await fetch(`${API}/staff/${id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${ownerToken}` },
+        body: JSON.stringify({ is_active: active })
+      });
+      loadStaffList();
+    } catch(e) {}
+  }
+
+  async function removeStaff(id) {
+    if (!confirm('Remove this staff member?')) return;
+    try {
+      await fetch(`${API}/staff/${id}`, {
+        method: 'DELETE', headers: { 'Authorization': `Bearer ${ownerToken}` }
+      });
+      loadStaffList();
+    } catch(e) {}
+  }
+
+  /* ── STAFF LOGIN ── */
+  let staffInfo = null; // { id, name, role, branch_id, chair_id, token }
+
+  function setLoginTab(tab) {
+    const ownerTab = document.getElementById('tabOwner');
+    const staffTab = document.getElementById('tabStaff');
+    const loginBox = document.getElementById('loginBox');
+    const staffBox = document.getElementById('staffLoginBox');
+    const registerBox = document.getElementById('registerBox');
+
+    if (tab === 'owner') {
+      ownerTab.style.background = 'var(--gold)'; ownerTab.style.color = 'var(--black)'; ownerTab.style.fontWeight = '500';
+      staffTab.style.background = 'var(--card)'; staffTab.style.color = 'var(--grey)'; staffTab.style.fontWeight = '400';
+      loginBox.style.display = 'block';
+      staffBox.style.display = 'none';
+      registerBox.style.display = 'none';
+    } else {
+      staffTab.style.background = 'var(--gold)'; staffTab.style.color = 'var(--black)'; staffTab.style.fontWeight = '500';
+      ownerTab.style.background = 'var(--card)'; ownerTab.style.color = 'var(--grey)'; ownerTab.style.fontWeight = '400';
+      loginBox.style.display = 'none';
+      staffBox.style.display = 'block';
+      registerBox.style.display = 'none';
+    }
+  }
+
+  async function doStaffLogin() {
+    const phone = document.getElementById('staffPhone').value.trim();
+    const pass = document.getElementById('staffPass').value.trim();
+    const el = document.getElementById('staffLoginAlert');
+    if (!phone || !pass) { el.innerHTML = '<div class="alert err">Fill all fields</div>'; return; }
+    try {
+      const res = await fetch(`${API}/auth/staff/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, password: pass })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        staffInfo = {
+          id: data.staff_id,
+          name: data.name,
+          role: data.role,
+          branch_id: data.branch_id,
+          chair_id: data.chair_id,
+          token: data.token
+        };
+        localStorage.setItem('hh_staff', JSON.stringify(staffInfo));
+        updateNavStaff();
+        openStaffDashboard();
+      } else { el.innerHTML = `<div class="alert err">${data.error}</div>`; }
+    } catch(e) { el.innerHTML = '<div class="alert err">Cannot connect to server</div>'; }
+  }
+
+  function updateNavStaff() {
+    document.getElementById('navOwner').textContent = staffInfo.name;
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('navBranches').style.display = 'none';
+    document.getElementById('logoutBtn').onclick = logoutStaff;
+  }
+
+  function logoutStaff() {
+    staffInfo = null;
+    localStorage.removeItem('hh_staff');
+    if (dashTimer) { clearInterval(dashTimer); dashTimer = null; }
+    showView('auth');
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('navOwner').textContent = '';
+  }
+
+  async function openStaffDashboard() {
+    // Load the branch directly using staff's branch_id
+    currentBranch = { id: staffInfo.branch_id };
+    showView('dashboard');
+
+    // Hide owner-only controls
+    document.getElementById('notifBtn').style.display = 'none';
+    document.getElementById('navBranches').style.display = 'none';
+
+    await refreshDashboard();
+    renderStaffView();
+
+    if (dashTimer) clearInterval(dashTimer);
+    dashTimer = setInterval(() => { refreshDashboard().then(renderStaffView); }, 15000);
+  }
+
+  function renderStaffView() {
+    if (!staffInfo) return;
+
+    // Update header
+    document.getElementById('dashName').textContent = staffInfo.role === 'manager'
+      ? 'Branch Manager View'
+      : `${staffInfo.name}'s Chair`;
+    document.getElementById('dashAddr').textContent =
+      staffInfo.role === 'barber'
+        ? 'You have full control of your chair · Other chairs are read-only'
+        : 'You have full control of this branch';
+
+    // Manager sees everything — no restrictions
+    if (staffInfo.role === 'manager') return;
+
+    // Barber — restrict other chairs
+    const chairs = document.querySelectorAll('.chair-card');
+    chairs.forEach(card => {
+      const chairId = parseInt(card.id.replace('chair-', ''));
+      if (chairId !== staffInfo.chair_id) {
+        // Other chairs — read only
+        card.querySelectorAll('.abtn, .qa-btn.remove-btn, .qa-btn.strike-btn').forEach(btn => {
+          btn.disabled = true;
+          btn.style.opacity = '0.3';
+          btn.title = 'Read only';
+        });
+        // Add read-only label
+        const head = card.querySelector('.chair-head-left');
+        if (head && !head.querySelector('.readonly-badge')) {
+          const badge = document.createElement('span');
+          badge.className = 'readonly-badge';
+          badge.style.cssText = 'font-size:0.6rem;color:var(--grey);border:1px solid var(--border);padding:0.1rem 0.4rem;letter-spacing:0.06em;text-transform:uppercase';
+          badge.textContent = 'Read Only';
+          head.appendChild(badge);
+        }
+        // Keep transfer button enabled (barber can transfer TO their chair)
+        card.querySelectorAll('.qa-btn[style*="gold"]').forEach(btn => {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        });
+        // Hide add button for other chairs
+        const addBtn = card.querySelector('.qa-btn[onclick*="openAddCust"]');
+        if (addBtn) addBtn.style.display = 'none';
+      } else {
+        // My chair — highlight it
+        card.style.borderColor = 'var(--gold)';
+        const head = card.querySelector('.chair-head');
+        if (head) head.style.background = 'rgba(201,168,76,0.05)';
+      }
+    });
+
+    // Hide settings and history for barber
+    document.querySelector('[onclick="openSettingsWithMap()"]').style.display = 'none';
+    document.querySelector('[onclick="openHistory()"]').style.display = 'none';
+    const toggle = document.querySelector('.st-toggle'); if(toggle) toggle.style.display = 'none';
+  }
+
+  // Fallback: ensure a view always shows
+  setTimeout(function() {
+    const active = document.querySelector('.view.active');
+    if (!active) {
+      try { showView('auth'); } catch(e) {}
+    }
+  }, 300);
+
+  /* ── COMPLAINTS ── */
+  let complaintPhone = '';
+  let complaintName = '';
+  let complaintChairId = null;
+
+  let complaintEntryId = null;
+  function openComplaint(name, phone, chairId, entryId) {
+    complaintName = name;
+    complaintPhone = phone;
+    complaintChairId = chairId;
+    complaintEntryId = entryId;
+    document.getElementById('complaintCustomer').textContent = name;
+    document.getElementById('complaintAlert').innerHTML = '';
+    document.getElementById('complaintOverlay').classList.add('show');
+  }
+
+  async function submitComplaint() {
+    const reason = document.getElementById('complaintReason').value;
+    const el = document.getElementById('complaintAlert');
+    try {
+      const res = await fetch(`${API}/behaviour/complaint`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${ownerToken || ''}`},
+        body: JSON.stringify({
+          customer_phone: complaintPhone || 'unknown',
+          customer_name: complaintName,
+          type: reason,
+          branch_id: currentBranch?.id,
+          queue_entry_id: complaintEntryId
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        el.innerHTML = `<div class="alert ok">✅ Complaint filed · ${complaintName} score: ${data.new_score} ${data.badge}</div>`;
+        setTimeout(() => closeModal('complaintOverlay'), 2000);
+      } else {
+        el.innerHTML = `<div class="alert err">${data.error}</div>`;
+      }
+    } catch(e) {
+      el.innerHTML = '<div class="alert err">Connection error</div>';
+    }
+  }
+
+  /* ── BRANCH INBOX ── */
+  let inboxBranchId = null;
+  let activeBranchChatEntryId = null;
+  let branchChatTimer = null;
+
+  function openBranchInboxFromDash() {
+    if (!currentBranch) return;
+    openBranchInbox(currentBranch.id, document.getElementById('dashName').textContent);
+  }
+
+  async function openBranchInbox(branchId, branchName) {
+    inboxBranchId = branchId;
+    document.getElementById('inboxBranchName').textContent = branchName + ' — Messages';
+    showView('inbox');
+    loadInboxList();
+  }
+
+  async function loadInboxList() {
+    if (!inboxBranchId) return;
+    const el = document.getElementById('inboxList');
+    try {
+      const res = await fetch(`${API}/branches/${inboxBranchId}/conversations`, {
+        headers: { 'Authorization': `Bearer ${ownerToken}` }
+      });
+      const data = await res.json();
+
+      if (!data.length) {
+        el.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--grey)">
+          <div style="font-size:2rem;margin-bottom:0.5rem">💬</div>
+          <p>No conversations yet</p>
+        </div>`;
+        return;
+      }
+
+      el.innerHTML = data.map(e => `
+        <div onclick="openBranchChat(${e.entry_id},'${e.customer_name}','${e.service}',${e.msg_count})"
+          style="display:flex;align-items:center;gap:1rem;padding:1rem 1.5rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s"
+          onmouseover="this.style.background='var(--dark)'" onmouseout="this.style.background='transparent'">
+          <div style="width:46px;height:46px;border-radius:50%;background:rgba(201,168,76,0.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">
+            ${e.status==='done'?'✅':e.status==='seated'?'✂️':'⏳'}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:0.9rem;font-weight:500">${e.customer_name}</span>
+              <span style="font-size:0.65rem;color:var(--grey)">${e.last_msg_time || e.joined_at}</span>
+            </div>
+            <div style="font-size:0.72rem;color:var(--grey);margin-top:2px">${e.service} · Token ${String(e.token).padStart(2,'0')} · ${e.status}</div>
+            <div style="font-size:0.75rem;color:${e.last_msg_sender==='customer'?'var(--gold)':'var(--grey)'};margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${e.last_message ? (e.last_msg_sender==='customer'?'👤 ':'✂️ ') + e.last_message : 'No messages yet'}
+            </div>
+          </div>
+          ${e.msg_count > 0 ? `<span style="background:var(--gold);color:var(--black);font-size:0.62rem;font-weight:700;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0">${e.msg_count}</span>` : ''}
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="alert err" style="margin:1rem">Cannot load conversations</div>';
+    }
+  }
+
+  async function openBranchChat(entryId, name, service, msgCount) {
+    activeBranchChatEntryId = entryId;
+    document.getElementById('branchChatTitle').textContent = name;
+    document.getElementById('branchChatSub').textContent = '✂️ ' + service;
+    showView('branch-chat');
+    await loadBranchChatMsgs();
+    if (branchChatTimer) clearInterval(branchChatTimer);
+    branchChatTimer = setInterval(loadBranchChatMsgs, 8000);
+  }
+
+  async function loadBranchChatMsgs() {
+    if (!activeBranchChatEntryId) return;
+    try {
+      const res = await fetch(`${API}/messages/${activeBranchChatEntryId}`);
+      const data = await res.json();
+      const msgs = data.messages || [];
+      document.getElementById('branchChatLimit').textContent =
+        `${data.used}/${data.limit} messages · auto-deletes in 24h`;
+      const container = document.getElementById('branchChatMsgs');
+      if (!msgs.length) {
+        container.innerHTML = '<div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:2rem">No messages yet — start the conversation</div>';
+        return;
+      }
+      container.innerHTML = msgs.map(m => `
+        <div style="display:flex;flex-direction:column;align-items:${m.sender==='barber'?'flex-end':'flex-start'}">
+          <div style="background:${m.sender==='barber'?'rgba(201,168,76,0.1)':'var(--card)'};border:1px solid var(--border);padding:0.6rem 0.9rem;max-width:78%;font-size:0.83rem;line-height:1.5;border-radius:${m.sender==='barber'?'8px 0 8px 8px':'0 8px 8px 8px'}">
+            <div style="font-size:0.62rem;color:var(--grey);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em">${m.sender==='barber'?'✂️ You':'👤 Customer'} · ${m.time}</div>
+            ${m.text}
+          </div>
+        </div>`).join('');
+      container.scrollTop = container.scrollHeight;
+    } catch(e) {}
+  }
+
+  async function sendBranchMsg() {
+    if (!activeBranchChatEntryId) return;
+    const input = document.getElementById('branchChatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    try {
+      const res = await fetch(`${API}/messages/${activeBranchChatEntryId}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({sender:'barber', text})
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error); return; }
+      input.value = '';
+      await loadBranchChatMsgs();
+    } catch(e) {}
+  }
+
+  function fmtWait(mins) {
+    if (!mins || mins <= 0) return '~0 min';
+    if (mins < 60) return `~${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `~${h}h ${m}min` : `~${h}h`;
+  }
+
+  /* ── OWNER DRAWER ── */
+  function openDrawer() {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('show');
+    document.getElementById('drawerOwnerName').textContent = ownerName || 'Owner';
+    document.getElementById('ownerEditName').value = ownerName || '';
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('show');
+    document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('open'));
+  }
+
+  function toggleSub(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  }
+
+  async function saveOwnerProfile() {
+    const name = document.getElementById('ownerEditName').value.trim();
+    const phone = document.getElementById('ownerEditPhone').value.trim();
+    const el = document.getElementById('ownerProfileAlert');
+    if (!name) { el.innerHTML = '<div class="sub-alert-sm err">Enter your name</div>'; return; }
+    try {
+      const res = await fetch(`${API}/auth/owner/profile`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${ownerToken}`},
+        body: JSON.stringify({ name, phone })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        ownerName = name;
+        document.getElementById('navOwner').textContent = name;
+        document.getElementById('drawerOwnerName').textContent = name;
+        el.innerHTML = '✅ Profile updated';
+        el.className = 'sub-alert-sm ok';
+      } else {
+        el.innerHTML = data.error;
+        el.className = 'sub-alert-sm err';
+      }
+    } catch(e) { el.innerHTML = 'Connection error'; el.className = 'sub-alert-sm err'; }
+  }
+
+  async function changePassword() {
+    const current = document.getElementById('currentPass').value;
+    const newp = document.getElementById('newPass').value;
+    const confirm = document.getElementById('confirmPass').value;
+    const el = document.getElementById('securityAlert');
+    if (!current || !newp) { el.innerHTML = 'Fill all fields'; el.className = 'sub-alert-sm err'; return; }
+    if (newp !== confirm) { el.innerHTML = 'Passwords do not match'; el.className = 'sub-alert-sm err'; return; }
+    try {
+      const res = await fetch(`${API}/auth/owner/password`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${ownerToken}`},
+        body: JSON.stringify({ current_password: current, new_password: newp })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        el.innerHTML = '✅ Password changed';
+        el.className = 'sub-alert-sm ok';
+        document.getElementById('currentPass').value = '';
+        document.getElementById('newPass').value = '';
+        document.getElementById('confirmPass').value = '';
+      } else {
+        el.innerHTML = data.error;
+        el.className = 'sub-alert-sm err';
+      }
+    } catch(e) { el.innerHTML = 'Connection error'; el.className = 'sub-alert-sm err'; }
+  }
+
+  async function loadDrawerBranches() {
+    const el = document.getElementById('drawerBranchesList');
+    el.innerHTML = '<div style="color:var(--grey);font-size:0.8rem">Loading...</div>';
+    try {
+      const res = await fetch(`${API}/owner/branches`, {
+        headers: {'Authorization':`Bearer ${ownerToken}`}
+      });
+      const data = await res.json();
+      if (!data.length) { el.innerHTML = '<div style="color:var(--grey);font-size:0.78rem">No branches</div>'; return; }
+
+      el.innerHTML = data.map(b => `
+        <div style="margin-bottom:1rem;border:1px solid var(--border);padding:0.8rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <div style="font-size:0.88rem;font-weight:500">${b.name}</div>
+            <button onclick="deleteBranch(${b.id})" style="background:transparent;border:none;color:var(--red);cursor:pointer;font-size:0.75rem">🗑️</button>
+          </div>
+          <input class="sub-input" id="bname-${b.id}" value="${b.name}" placeholder="Branch name" style="margin-bottom:0.4rem"/>
+          <button class="sub-btn-sm" onclick="renameBranch(${b.id})" style="width:100%;margin-bottom:0.5rem">Rename Branch</button>
+          <div id="chairs-${b.id}" style="font-size:0.75rem;color:var(--grey)">
+            ${b.chairs.map(c => `
+              <div class="chair-item">
+                <span>${c.barber_name}</span>
+                <button onclick="deleteChair(${c.id})" style="background:transparent;border:none;color:var(--red);cursor:pointer;font-size:0.72rem">🗑️ Remove</button>
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div style="color:var(--red);font-size:0.78rem">Error loading</div>'; }
+  }
+
+  async function renameBranch(id) {
+    const name = document.getElementById(`bname-${id}`).value.trim();
+    if (!name) return;
+    try {
+      await fetch(`${API}/branches/${id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${ownerToken}`},
+        body: JSON.stringify({ name })
+      });
+      loadDrawerBranches();
+      loadBranches();
+    } catch(e) {}
+  }
+
+  async function deleteBranch(id) {
+    if (!confirm('Delete this branch? All chairs and queue data will be removed.')) return;
+    try {
+      await fetch(`${API}/branches/${id}`, {
+        method: 'DELETE',
+        headers: {'Authorization':`Bearer ${ownerToken}`}
+      });
+      loadDrawerBranches();
+      loadBranches();
+    } catch(e) {}
+  }
+
+  async function deleteChair(id) {
+    if (!confirm('Remove this barber/chair?')) return;
+    try {
+      await fetch(`${API}/chairs/${id}`, {
+        method: 'DELETE',
+        headers: {'Authorization':`Bearer ${ownerToken}`}
+      });
+      loadDrawerBranches();
+    } catch(e) {}
+  }
+
+  async function deleteOwnerAccount() {
+    if (!confirm('Delete your owner account permanently?')) return;
+    try {
+      await fetch(`${API}/auth/owner/account`, {
+        method: 'DELETE',
+        headers: {'Authorization':`Bearer ${ownerToken}`}
+      });
+      logout();
+    } catch(e) {}
+  }
+
+  /* ── LOCATION PICKER ── */
+  let _pickerMap = null;
+  let _pickerMarker = null;
+  let _pickerMode = 'gps';
+  let _geocodeTimer = null;
+
+  function initLocationPicker(lat, lon) {
+    const el = document.getElementById('locationPickerMap');
+    if (!el) return;
+
+    if (_pickerMap) { _pickerMap.remove(); _pickerMap = null; }
+
+    const startLat = lat || 25.2048;
+    const startLon = lon || 55.2708;
+
+    _pickerMap = L.map('locationPickerMap').setView([startLat, startLon], 17);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© CartoDB © OpenStreetMap',
+      maxZoom: 19
+    }).addTo(_pickerMap);
+
+    // Draggable marker
+    _pickerMarker = L.marker([startLat, startLon], { draggable: true }).addTo(_pickerMap);
+    _pickerMarker.bindPopup('📍 Drag me to the exact shop location').openPopup();
+
+    _pickerMarker.on('dragend', function(e) {
+      const pos = e.target.getLatLng();
+      setPickedLocation(pos.lat, pos.lng, '±5m (pin drag)', true);
+      reverseGeocode(pos.lat, pos.lng, 'abAddress');
+    });
+
+    // Click on map to move marker
+    _pickerMap.on('click', function(e) {
+      _pickerMarker.setLatLng(e.latlng);
+      setPickedLocation(e.latlng.lat, e.latlng.lng, '±10m (map tap)', true);
+      reverseGeocode(e.latlng.lat, e.latlng.lng, 'abAddress');
+    });
+
+    if (lat && lon) setPickedLocation(lat, lon, 'Existing location', false);
+  }
+
+  function setPickedLocation(lat, lon, accuracy, showOnMap) {
+    document.getElementById('abLat').value = lat.toFixed(7);
+    document.getElementById('abLon').value = lon.toFixed(7);
+
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = `✅ Location set — ${accuracy}`;
+
+    if (showOnMap && _pickerMap) {
+      _pickerMap.setView([lat, lon], 18);
+      _pickerMarker.setLatLng([lat, lon]);
+    }
+  }
+
+  function setLocMethodActive(id) {
+    ['btnGps','btnPin','btnAddr'].forEach(b => {
+      const el = document.getElementById(b);
+      if (el) el.classList.remove('active');
+    });
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+  }
+
+  function useGpsLocation() {
+    setLocMethodActive('btnGps');
+    _pickerMode = 'gps';
+
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = '📡 Getting GPS location...';
+
+    if (!navigator.geolocation) {
+      el.className = 'loc-accuracy bad';
+      el.textContent = '❌ GPS not available on this device';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+        initLocationPicker(lat, lon);
+        setPickedLocation(lat, lon, `±${acc}m (GPS)`, false);
+        reverseGeocode(lat, lon, 'abAddress');
+        el.className = acc < 20 ? 'loc-accuracy good' : 'loc-accuracy good';
+        el.textContent = `✅ GPS locked — Accuracy: ±${acc} meters ${acc < 10 ? '🎯 Excellent!' : acc < 30 ? '👍 Good' : '⚠️ Move outside for better accuracy'}`;
+      },
+      (err) => {
+        el.className = 'loc-accuracy bad';
+        el.textContent = '❌ GPS failed — Allow location access or use Pin/Address method';
+        initLocationPicker();
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }
+
+  function usePinLocation() {
+    setLocMethodActive('btnPin');
+    _pickerMode = 'pin';
+    const lat = parseFloat(document.getElementById('abLat').value) || 25.2048;
+    const lon = parseFloat(document.getElementById('abLon').value) || 55.2708;
+    initLocationPicker(lat, lon);
+
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = '📌 Drag the pin or tap the map to set location';
+  }
+
+  function useAddressLocation() {
+    setLocMethodActive('btnAddr');
+    _pickerMode = 'address';
+    const el = document.getElementById('locAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy good';
+    el.textContent = '🔍 Type address above to search...';
+  }
+
+  async function geocodeAddress() {
+    const addr = document.getElementById('abAddress').value.trim();
+    if (addr.length < 5) return;
+
+    // Debounce
+    clearTimeout(_geocodeTimer);
+    _geocodeTimer = setTimeout(async () => {
+      const el = document.getElementById('locAccuracy');
+      el.style.display = 'block';
+      el.className = 'loc-accuracy good';
+      el.textContent = '🔍 Searching address...';
+
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`;
+        const res = await fetch(url, {
+          headers: {'Accept-Language': 'en', 'User-Agent': 'HavenHair/1.0'}
+        });
+        const data = await res.json();
+
+        if (data.length > 0) {
+          const lat = parseFloat(data[0].lat);
+          const lon = parseFloat(data[0].lon);
+          const name = data[0].display_name;
+
+          initLocationPicker(lat, lon);
+          setPickedLocation(lat, lon, 'Address search (confirm with pin)', true);
+          el.textContent = `📍 Found: ${name.substring(0,60)}... — Drag pin if needed`;
+        } else {
+          el.className = 'loc-accuracy bad';
+          el.textContent = '❌ Address not found — Try GPS or Pin method';
+        }
+      } catch(e) {
+        el.className = 'loc-accuracy bad';
+        el.textContent = '❌ Search failed — Check internet connection';
+      }
+    }, 800);
+  }
+
+  // Init location picker when add-branch opens
+  function openAddBranch() {
+    showView('add-branch');
+    setTimeout(() => {
+      initLocationPicker();
+      useGpsLocation();
+    }, 300);
+  }
+
+  /* ── SETTINGS LOCATION PICKER ── */
+  let _sMap = null;
+  let _sMarker = null;
+
+  function initSettingsMap(lat, lon) {
+    const el = document.getElementById('settingsLocationMap');
+    if (!el) return;
+    if (_sMap) { _sMap.remove(); _sMap = null; }
+
+    const startLat = lat || currentBranch?.latitude || 25.2048;
+    const startLon = lon || currentBranch?.longitude || 55.2708;
+
+    _sMap = L.map('settingsLocationMap').setView([startLat, startLon], 17);
+    window._sTileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(_sMap);
+
+    // Add tile switcher buttons
+    const sTileWrap = document.createElement('div');
+    sTileWrap.className = 'tile-btns';
+    sTileWrap.innerHTML = `
+      <button class="tile-btn on" onclick="switchSTile('street',this)">🗺️ Street</button>
+      <button class="tile-btn" onclick="switchSTile('dark',this)">🌙 Dark</button>
+      <button class="tile-btn" onclick="switchSTile('satellite',this)">🛰️ Satellite</button>
+      <button class="tile-btn" onclick="switchSTile('topo',this)">⛰️ Topo</button>`;
+    const mapEl = document.getElementById('settingsLocationMap');
+    const old = mapEl.parentNode.querySelector('.tile-btns');
+    if (old) old.remove();
+    mapEl.insertAdjacentElement('afterend', sTileWrap);
+
+    _sMarker = L.marker([startLat, startLon], {draggable: true}).addTo(_sMap);
+    _sMarker.bindPopup('📍 Drag to exact location').openPopup();
+
+    _sMarker.on('dragend', e => {
+      const p = e.target.getLatLng();
+      document.getElementById('sLat').value = p.lat.toFixed(7);
+      document.getElementById('sLon').value = p.lng.toFixed(7);
+      showSLocAccuracy(`✅ Pin set — ±5m`, true);
+      reverseGeocode(p.lat, p.lng, 'settingsAddress');
+    });
+
+    _sMap.on('click', e => {
+      _sMarker.setLatLng(e.latlng);
+      document.getElementById('sLat').value = e.latlng.lat.toFixed(7);
+      document.getElementById('sLon').value = e.latlng.lng.toFixed(7);
+      showSLocAccuracy(`✅ Location tapped — ±10m`, true);
+      reverseGeocode(e.latlng.lat, e.latlng.lng, 'settingsAddress');
+    });
+
+    if (lat && lon) {
+      document.getElementById('sLat').value = lat.toFixed(7);
+      document.getElementById('sLon').value = lon.toFixed(7);
+      showSLocAccuracy('📍 Current saved location — update if wrong', true);
+    }
+  }
+
+  const TILES = {
+    street: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    topo: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png'
+  };
+
+  function switchSTile(style, btn) {
+    if (!_sMap || !window._sTileLayer) return;
+    _sMap.removeLayer(window._sTileLayer);
+    window._sTileLayer = L.tileLayer(TILES[style], {maxZoom:19}).addTo(_sMap);
+    document.querySelectorAll('.tile-btns .tile-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function switchPTile(style, btn) {
+    if (!_pickerMap || !window._pTileLayer) return;
+    _pickerMap.removeLayer(window._pTileLayer);
+    window._pTileLayer = L.tileLayer(TILES[style], {maxZoom:19}).addTo(_pickerMap);
+    document.querySelectorAll('#pickerTileBtns .tile-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function showSLocAccuracy(msg, good) {
+    const el = document.getElementById('sLocAccuracy');
+    el.style.display = 'block';
+    el.className = 'loc-accuracy ' + (good ? 'good' : 'bad');
+    el.textContent = msg;
+  }
+
+  function sSwitchActive(id) {
+    ['sBtnGps','sBtnPin','sBtnAddr'].forEach(b => {
+      const el = document.getElementById(b);
+      if (el) el.classList.remove('active');
+    });
+    document.getElementById(id)?.classList.add('active');
+  }
+
+  function sUseGps() {
+    sSwitchActive('sBtnGps');
+    showSLocAccuracy('📡 Getting GPS...', true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        const acc = Math.round(pos.coords.accuracy);
+        initSettingsMap(lat, lon);
+        showSLocAccuracy(`✅ GPS: ±${acc}m ${acc < 15 ? '🎯 Excellent!' : acc < 40 ? '👍 Good' : '⚠️ Move outside'}`, true);
+        reverseGeocode(lat, lon, 'settingsAddress');
+      },
+      () => showSLocAccuracy('❌ GPS failed — use Pin or Search', false),
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 0}
+    );
+  }
+
+  function sUsePin() {
+    sSwitchActive('sBtnPin');
+    const lat = parseFloat(document.getElementById('sLat').value) || currentBranch?.latitude;
+    const lon = parseFloat(document.getElementById('sLon').value) || currentBranch?.longitude;
+    initSettingsMap(lat, lon);
+    showSLocAccuracy('📌 Drag pin or tap map to set location', true);
+  }
+
+  async function sUseAddr() {
+    sSwitchActive('sBtnAddr');
+    const addr = document.getElementById('settingsAddress')?.value || currentBranch?.address || '';
+    if (!addr) { showSLocAccuracy('Type address in the address field above', false); return; }
+    showSLocAccuracy('🔍 Searching...', true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`);
+      const data = await res.json();
+      if (data.length) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        initSettingsMap(lat, lon);
+        showSLocAccuracy(`📍 Found — drag pin to exact door`, true);
+      } else {
+        showSLocAccuracy('❌ Not found — try GPS or Pin', false);
+      }
+    } catch(e) { showSLocAccuracy('❌ Search failed', false); }
+  }
+
+  async function saveLocation() {
+    const lat = parseFloat(document.getElementById('sLat').value);
+    const lon = parseFloat(document.getElementById('sLon').value);
+    const el = document.getElementById('saveLocAlert');
+    if (!lat || !lon) { el.innerHTML = '<div class="alert err">Set location first using GPS, Pin or Search</div>'; return; }
+    try {
+      const newAddr = document.getElementById('settingsAddress')?.value || '';
+      const res = await fetch(`${API}/branches/${currentBranch.id}`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${ownerToken}`},
+        body: JSON.stringify({ latitude: lat, longitude: lon, address: newAddr })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        currentBranch.latitude = lat;
+        currentBranch.longitude = lon;
+        el.innerHTML = '<div class="alert ok">✅ Location saved!</div>';
+        setTimeout(() => el.innerHTML = '', 2000);
+      } else {
+        el.innerHTML = `<div class="alert err">${data.error}</div>`;
+      }
+    } catch(e) { el.innerHTML = '<div class="alert err">Connection error</div>'; }
+  }
+
+  // Called from settings button directly
+  function openSettingsWithMap() {
+    showSettings();
+    setTimeout(() => {
+      if (currentBranch?.latitude) {
+        initSettingsMap(currentBranch.latitude, currentBranch.longitude);
+      } else {
+        initSettingsMap();
+        sUseGps();
+      }
+    }, 400);
+  }
+
+  /* ── REVERSE GEOCODE ── */
+  async function reverseGeocode(lat, lon, targetInputId) {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
+        { headers: { 'Accept-Language': 'en', 'User-Agent': 'HavenHair/1.0' } }
+      );
+      const data = await res.json();
+      if (data && data.address) {
+        const a = data.address;
+        // Build short address: neighbourhood/suburb + city
+        const parts = [
+          a.neighbourhood || a.suburb || a.quarter || a.village || a.town,
+          a.city || a.district || a.county || a.state
+        ].filter(Boolean);
+        const shortAddr = parts.join(', ') || data.display_name.split(',').slice(0,2).join(',').trim();
+        const el = document.getElementById(targetInputId);
+        if (el) {
+          el.value = shortAddr;
+          el.style.borderColor = 'var(--gold)';
+          setTimeout(() => el.style.borderColor = '', 2000);
+        }
+      }
+    } catch(e) {}
+  }
+</script>
+<!-- BRANCH INBOX VIEW -->
+<div class="view" id="view-inbox" style="padding-top:62px">
+  <div style="padding:1rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem">
+    <span style="cursor:pointer;color:var(--grey);font-size:0.8rem" onclick="showView('branches')">← Branches</span>
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700" id="inboxBranchName">Messages</div>
+      <div style="font-size:0.7rem;color:var(--grey)">All customer conversations</div>
+    </div>
+  </div>
+  <div id="inboxList" style="padding:0">
+    <div style="text-align:center;padding:3rem;color:var(--grey)"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- BRANCH CHAT VIEW -->
+<div class="view" id="view-branch-chat" style="padding-top:62px">
+  <div style="padding:1rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-shrink:0">
+    <span style="cursor:pointer;color:var(--grey);font-size:0.8rem" id="chatBackBtn" onclick="showView('inbox')">← Messages</span>
+    <div style="flex:1">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700" id="branchChatTitle">Chat</div>
+      <div style="font-size:0.7rem;color:var(--grey)" id="branchChatSub"></div>
+    </div>
+  </div>
+  <div style="font-size:0.68rem;color:var(--grey);text-align:center;padding:0.4rem" id="branchChatLimit"></div>
+  <div id="branchChatMsgs" style="flex:1;overflow-y:auto;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:0.6rem">
+    <div style="text-align:center;color:var(--grey);font-size:0.8rem">Loading...</div>
+  </div>
+  <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.4rem;flex-shrink:0">
+    <input type="text" id="branchChatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendBranchMsg()" style="flex:1"/>
+    <button onclick="sendBranchMsg()" style="background:var(--gold);color:var(--black);border:none;padding:0 1.2rem;font-size:0.82rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">Send</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION OVERLAY -->
+<div class="notif-overlay" id="notifOverlay" onclick="toggleNotifs()"></div>
+<div class="notif-panel" id="notifPanel" style="display:none">
+  <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+    <span style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)">Notifications</span>
+    <span onclick="toggleNotifs()" style="cursor:pointer;color:var(--grey);font-size:1.2rem;line-height:1">×</span>
+  </div>
+  <div id="notifList"></div>
+</div>
+
+<!-- COMPLAINT MODAL -->
+<div class="overlay" id="complaintOverlay" onclick="handleOverlay(event,'complaintOverlay')">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>File Complaint</h3>
+      <button class="close-btn" onclick="closeModal('complaintOverlay')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--grey);font-size:0.82rem;margin-bottom:1rem">Against: <strong id="complaintCustomer" style="color:var(--white)"></strong></p>
+      <div id="complaintAlert"></div>
+      <div class="fg">
+        <label>Reason</label>
+        <select id="complaintReason">
+          <option value="late">⏰ Late arrival — barber waited</option>
+          <option value="noshow">🚫 No-show — barber waited 5+ min</option>
+          <option value="cancel_chair">❌ Cancelled at position 1</option>
+          <option value="rude">😠 Rude behaviour</option>
+        </select>
+      </div>
+      <button class="gbtn full" onclick="submitComplaint()">Submit Complaint →</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Haven Hair — Find Your Barber</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --black:#0a0a0a; --dark:#111; --card:#171717;
+      --gold:#C9A84C; --gold-light:#e4c97e;
+      --white:#f5f0e8; --grey:#888;
+      --border:rgba(201,168,76,0.15);
+      --green:#4caf7d; --red:#e05555;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; font-weight:300; overflow-x:hidden; }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1.1rem 4rem;
+      background:rgba(10,10,10,0.92); backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border);
+    }
+    .logo { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:var(--gold); text-decoration:none; cursor:pointer; }
+    .logo span { color:var(--white); font-style:italic; font-weight:400; }
+    .nav-center { font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--grey); }
+    .nav-right { display:flex; gap:0.8rem; align-items:center; }
+    .nav-btn { padding:0.5rem 1.1rem; font-size:0.78rem; font-family:'DM Sans',sans-serif; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; border:none; cursor:pointer; transition:all 0.2s; }
+    .btn-ghost { background:transparent; color:var(--grey); border:1px solid var(--border) !important; }
+    .btn-ghost:hover { color:var(--gold); border-color:var(--gold) !important; }
+
+    /* ── HERO STRIP ── */
+    .hero-strip {
+      margin-top:62px; padding:3.5rem 4rem 2.5rem;
+      background:var(--dark); border-bottom:1px solid var(--border);
+      position:relative; overflow:hidden;
+    }
+    .hero-strip::before {
+      content:''; position:absolute; right:-5%; top:-50%;
+      width:500px; height:500px;
+      background:radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .strip-tag { font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:0.6rem; display:block; }
+    .hero-strip h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,4vw,3rem); font-weight:700; line-height:1.1; }
+    .hero-strip h1 em { font-style:italic; color:var(--gold); font-weight:400; }
+    .strip-desc { color:var(--grey); font-size:0.88rem; margin-top:0.5rem; }
+
+    /* ── SEARCH BAR ── */
+    .search-wrap { padding:1.8rem 4rem; background:var(--black); border-bottom:1px solid var(--border); }
+    .search-row { display:flex; gap:0; max-width:700px; }
+    .search-row input {
+      flex:1; background:var(--card); border:1px solid var(--border); border-right:none;
+      color:var(--white); padding:0.85rem 1.2rem;
+      font-family:'DM Sans',sans-serif; font-size:0.9rem; outline:none;
+      transition:border-color 0.2s;
+    }
+    .search-row input:focus { border-color:var(--gold); }
+    .search-row input::placeholder { color:var(--grey); }
+    .search-row button {
+      background:var(--gold); color:var(--black); border:none;
+      padding:0 1.8rem; font-size:0.82rem; font-weight:500;
+      cursor:pointer; font-family:'DM Sans',sans-serif;
+      letter-spacing:0.06em; text-transform:uppercase; transition:background 0.2s;
+      white-space:nowrap;
+    }
+    .search-row button:hover { background:var(--gold-light); }
+
+    /* Filters */
+    .filters { display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap; }
+    .filter-btn {
+      background:transparent; color:var(--grey); border:1px solid var(--border);
+      padding:0.35rem 0.9rem; font-size:0.72rem; letter-spacing:0.08em;
+      text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif;
+      transition:all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active { background:var(--gold); color:var(--black); border-color:var(--gold); font-weight:500; }
+
+    /* ── MAIN CONTENT ── */
+    .main-wrap { padding:2rem 4rem; }
+
+    .results-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .results-count { font-size:0.8rem; color:var(--grey); }
+    .results-count strong { color:var(--gold); font-family:'Cormorant Garamond',serif; font-size:1.2rem; }
+    .sort-select {
+      background:var(--card); border:1px solid var(--border); color:var(--grey);
+      padding:0.4rem 0.8rem; font-size:0.78rem; font-family:'DM Sans',sans-serif;
+      outline:none; cursor:pointer;
+    }
+    .sort-select option { background:var(--dark); }
+
+    /* Shop grid */
+    .shops-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); }
+
+    .shop-card {
+      background:var(--dark); padding:1.8rem;
+      cursor:pointer; transition:background 0.2s;
+      display:flex; flex-direction:column; gap:1rem;
+      position:relative;
+    }
+    .shop-card:hover { background:var(--card); }
+    .shop-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+      background:var(--gold); transform:scaleY(0); transition:transform 0.25s;
+    }
+    .shop-card:hover::before { transform:scaleY(1); }
+
+    .card-top { display:flex; justify-content:space-between; align-items:flex-start; }
+    .shop-name { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; line-height:1.1; }
+    .shop-owner { font-size:0.75rem; color:var(--grey); margin-top:2px; }
+
+    .status-pill { font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.3rem 0.7rem; white-space:nowrap; }
+    .status-open { background:rgba(76,175,125,0.1); color:var(--green); border:1px solid rgba(76,175,125,0.25); }
+    .status-busy { background:rgba(255,165,0,0.1); color:orange; border:1px solid rgba(255,165,0,0.25); }
+    .status-closed { background:rgba(224,85,85,0.1); color:var(--red); border:1px solid rgba(224,85,85,0.25); }
+
+    .card-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--border); }
+    .stat-box { padding:0.7rem 0.6rem; text-align:center; border-right:1px solid var(--border); }
+    .stat-box:last-child { border-right:none; }
+    .stat-box .val { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:600; color:var(--gold); line-height:1; }
+    .stat-box .lbl { font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--grey); margin-top:2px; }
+
+    .card-address { font-size:0.78rem; color:var(--grey); display:flex; align-items:center; gap:0.4rem; }
+
+    .card-bottom { display:flex; justify-content:space-between; align-items:center; padding-top:0.8rem; border-top:1px solid var(--border); }
+    .shop-badge { font-size:0.72rem; }
+    .join-btn {
+      background:var(--gold); color:var(--black); border:none;
+      padding:0.55rem 1.2rem; font-size:0.75rem; font-weight:500;
+      cursor:pointer; font-family:'DM Sans',sans-serif;
+      letter-spacing:0.06em; text-transform:uppercase; transition:all 0.2s;
+    }
+    .join-btn:hover { background:var(--gold-light); }
+    .join-btn:disabled { opacity:0.35; cursor:not-allowed; background:var(--grey); }
+
+    /* States */
+    .loading-state, .empty-state {
+      text-align:center; padding:5rem 2rem; color:var(--grey);
+      grid-column:1/-1;
+    }
+    .loading-state .spinner {
+      width:32px; height:32px; border:2px solid var(--border);
+      border-top-color:var(--gold); border-radius:50%;
+      animation:spin 0.8s linear infinite; margin:0 auto 1rem;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .empty-state h3 { font-family:'Cormorant Garamond',serif; font-size:2rem; color:var(--white); margin-bottom:0.5rem; }
+
+    /* ── MODAL ── */
+    .overlay {
+      display:none; position:fixed; inset:0; z-index:200;
+      background:rgba(0,0,0,0.82); backdrop-filter:blur(6px);
+      align-items:center; justify-content:center; padding:1.5rem;
+    }
+    .overlay.show { display:flex; animation:fadeIn 0.25s ease; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+    .modal {
+      background:var(--dark); border:1px solid var(--border);
+      width:100%; max-width:520px; max-height:92vh;
+      overflow-y:auto; animation:slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(16px);opacity:0} to{transform:none;opacity:1} }
+
+    .modal-head {
+      padding:1.5rem 2rem; border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center;
+      position:sticky; top:0; background:var(--dark); z-index:1;
+    }
+    .modal-head h2 { font-family:'Cormorant Garamond',serif; font-size:1.7rem; font-weight:600; }
+    .modal-head .sub { font-size:0.75rem; color:var(--grey); margin-top:2px; }
+    .close-btn { background:transparent; border:none; color:var(--grey); font-size:1.8rem; cursor:pointer; line-height:1; padding:0 0.3rem; }
+    .close-btn:hover { color:var(--white); }
+
+    .modal-body { padding:1.8rem 2rem; }
+
+    /* Live queue inside modal */
+    .section-label { font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); margin-bottom:0.8rem; display:block; }
+
+    .live-queue { margin-bottom:2rem; }
+    .q-row {
+      display:flex; align-items:center; gap:1rem;
+      padding:0.85rem 1rem; border:1px solid var(--border); margin-bottom:0.4rem;
+      transition:background 0.2s;
+    }
+    .q-row.in-chair { border-color:var(--gold); background:rgba(201,168,76,0.04); }
+    .q-num { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--grey); min-width:2rem; }
+    .q-row.in-chair .q-num { color:var(--gold); }
+    .q-details { flex:1; }
+    .q-name { font-size:0.88rem; font-weight:500; }
+    .q-service { font-size:0.73rem; color:var(--grey); margin-top:1px; }
+    .q-wait { font-size:0.75rem; color:var(--grey); text-align:right; white-space:nowrap; }
+    .q-empty { text-align:center; padding:1.5rem; color:var(--grey); font-size:0.85rem; border:1px dashed var(--border); }
+
+    /* My token */
+    .my-token-box {
+      background:var(--black); border:1px solid var(--gold);
+      padding:1.8rem; text-align:center; margin-bottom:2rem;
+      position:relative; overflow:hidden;
+    }
+    .my-token-box::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(circle at center, rgba(201,168,76,0.05) 0%, transparent 70%);
+    }
+    .token-label { font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--grey); margin-bottom:0.5rem; }
+    .token-number { font-family:'Cormorant Garamond',serif; font-size:5rem; font-weight:700; color:var(--gold); line-height:1; }
+    .token-info { font-size:0.83rem; color:var(--grey); margin-top:0.6rem; }
+    .token-info strong { color:var(--white); }
+
+    /* Join form */
+    .join-divider { border:none; border-top:1px solid var(--border); margin:1.5rem 0; }
+    .form-group { margin-bottom:1.1rem; }
+    label { font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); display:block; margin-bottom:0.35rem; }
+    input[type=text], input[type=tel] {
+      width:100%; background:var(--card); border:1px solid var(--border);
+      color:var(--white); padding:0.8rem 1rem; font-family:'DM Sans',sans-serif;
+      font-size:0.88rem; outline:none; transition:border-color 0.2s;
+    }
+    input:focus { border-color:var(--gold); }
+    input::placeholder { color:var(--grey); }
+
+    /* Service selector */
+    .services { display:grid; grid-template-columns:repeat(3,1fr); gap:0.4rem; margin-bottom:1.2rem; }
+    .svc-btn {
+      background:var(--card); border:1px solid var(--border); color:var(--white);
+      padding:0.75rem 0.4rem; font-size:0.75rem; cursor:pointer;
+      font-family:'DM Sans',sans-serif; transition:all 0.2s; text-align:center; line-height:1.4;
+    }
+    .svc-btn:hover { border-color:var(--gold); }
+    .svc-btn.picked { background:rgba(201,168,76,0.08); border-color:var(--gold); color:var(--gold); }
+
+    .submit-btn {
+      width:100%; background:var(--gold); color:var(--black); border:none;
+      padding:1rem; font-size:0.85rem; font-weight:500; letter-spacing:0.08em;
+      text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif;
+      transition:background 0.2s;
+    }
+    .submit-btn:hover { background:var(--gold-light); }
+    .submit-btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .alert { padding:0.75rem 1rem; font-size:0.83rem; margin-bottom:1rem; }
+    .alert.err { background:rgba(224,85,85,0.08); border:1px solid rgba(224,85,85,0.3); color:var(--red); }
+    .alert.ok { background:rgba(201,168,76,0.08); border:1px solid var(--border); color:var(--gold); }
+
+    /* ── REVIEW ── */
+    .review-section { margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1.5rem; }
+    .star-row { display:flex; gap:0.4rem; margin-bottom:1rem; }
+    .star { font-size:1.6rem; cursor:pointer; opacity:0.3; transition:opacity 0.15s; }
+    .star.on { opacity:1; }
+    .review-textarea {
+      width:100%; background:var(--card); border:1px solid var(--border);
+      color:var(--white); padding:0.8rem 1rem; font-family:'DM Sans',sans-serif;
+      font-size:0.85rem; outline:none; resize:none; height:80px;
+      transition:border-color 0.2s;
+    }
+    .review-textarea:focus { border-color:var(--gold); }
+
+    /* ── FOOTER ── */
+    .page-footer {
+      margin-top:5rem; padding:2rem 4rem; border-top:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;
+    }
+    .footer-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:700; color:var(--gold); }
+    .footer-logo span { color:var(--white); font-style:italic; font-weight:400; }
+    .footer-note { font-size:0.75rem; color:var(--grey); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px) {
+      nav { padding:1rem 1.5rem; }
+      .nav-center { display:none; }
+      .hero-strip { padding:2.5rem 1.5rem 2rem; }
+      .search-wrap { padding:1.2rem 1.5rem; }
+      .main-wrap { padding:1.5rem; }
+      .page-footer { padding:2rem 1.5rem; flex-direction:column; text-align:center; }
+      .modal-head { padding:1.2rem 1.5rem; }
+      .modal-body { padding:1.4rem 1.5rem; }
+      .services { grid-template-columns:repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="window.location.href='/web'">Haven<span>Hair</span></div>
+  <div class="nav-center">✂️ Customer</div>
+  <div class="nav-right">
+    <button class="nav-btn btn-ghost" onclick="switchRole()">Switch Role</button>
+  </div>
+</nav>
+
+<!-- HERO STRIP -->
+<div class="hero-strip">
+  <span class="strip-tag">Customer</span>
+  <h1>Find your <em>barber.</em></h1>
+  <p class="strip-desc">Live queues, real wait times, and zero guessing.</p>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Search by name or area..." oninput="applyFilters()"/>
+    <button onclick="loadShops()">Search</button>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All Shops</button>
+    <button class="filter-btn" onclick="setFilter('open',this)">🟢 Available Now</button>
+    <button class="filter-btn" onclick="setFilter('top',this)">🏅 Top Rated</button>
+    <button class="filter-btn" onclick="setFilter('trusted',this)">✓ Trusted</button>
+  </div>
+</div>
+
+<!-- SHOP LIST -->
+<div class="main-wrap">
+  <div class="results-header">
+    <div class="results-count" id="resultsCount">Loading...</div>
+    <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+      <option value="distance">Sort: Nearest</option>
+      <option value="rating">Sort: Top Rated</option>
+      <option value="queue">Sort: Shortest Queue</option>
+    </select>
+  </div>
+  <div class="shops-grid" id="shopsGrid">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Finding barbershops near you...</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="page-footer">
+  <div class="footer-logo">Haven<span>Hair</span></div>
+  <div class="footer-note">© 2026 Haven Hair</div>
+</div>
+
+<!-- SHOP MODAL -->
+<div class="overlay" id="overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="modalTitle">Shop Name</h2>
+        <div class="sub" id="modalSub">Loading...</div>
+      </div>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Alert -->
+      <div id="modalAlert"></div>
+
+      <!-- My token (shown after joining) -->
+      <div id="myTokenSection" style="display:none">
+        <span class="section-label">Your Token</span>
+        <div class="my-token-box">
+          <div class="token-label">Token Number</div>
+          <div class="token-number" id="myTokenNum">—</div>
+          <div class="token-info" id="myTokenInfo">Calculating wait...</div>
+        </div>
+      </div>
+
+      <!-- Live queue -->
+      <div class="live-queue">
+        <span class="section-label">Live Queue</span>
+        <div id="liveQueue"><div class="q-empty">Loading queue...</div></div>
+      </div>
+
+      <hr class="join-divider"/>
+
+      <!-- Join form (hidden after joining) -->
+      <div id="joinSection">
+        <span class="section-label">Join Queue</span>
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="joinName" placeholder="Mohammed"/>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="joinPhone" placeholder="05xxxxxxxx"/>
+        </div>
+        <label style="margin-bottom:0.5rem">Select Service</label>
+        <div class="services" id="serviceGrid">
+          <button class="svc-btn" onclick="pickService('haircut',this)">✂️<br/>Haircut</button>
+          <button class="svc-btn" onclick="pickService('beard',this)">🪒<br/>Beard</button>
+          <button class="svc-btn" onclick="pickService('both',this)">✨<br/>Both</button>
+          <button class="svc-btn" onclick="pickService('facial',this)">💆<br/>Facial</button>
+          <button class="svc-btn" onclick="pickService('kids',this)">👦<br/>Kids Cut</button>
+          <button class="svc-btn" onclick="pickService('color',this)">🎨<br/>Color</button>
+        </div>
+        <button class="submit-btn" id="joinBtn" onclick="joinQueue()">Join Queue →</button>
+      </div>
+
+      <!-- Review section -->
+      <div class="review-section" id="reviewSection" style="display:none">
+        <span class="section-label">Leave a Review</span>
+        <div id="reviewAlert"></div>
+        <div class="star-row" id="starRow">
+          <span class="star" onclick="setRating(1)">★</span>
+          <span class="star" onclick="setRating(2)">★</span>
+          <span class="star" onclick="setRating(3)">★</span>
+          <span class="star" onclick="setRating(4)">★</span>
+          <span class="star" onclick="setRating(5)">★</span>
+        </div>
+        <div class="form-group">
+          <textarea class="review-textarea" id="reviewComment" placeholder="Share your experience..."></textarea>
+        </div>
+        <button class="submit-btn" onclick="submitReview()">Submit Review →</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:5000';
+  let allShops = [];
+  let activeFilter = 'all';
+  let currentShopId = null;
+  let selectedService = null;
+  let queueRefreshTimer = null;
+
+  /* ── INIT ── */
+  window.addEventListener('load', () => {
+    // Redirect if not customer
+    const role = localStorage.getItem('hh_role');
+    if (role && role !== 'customer') {
+      window.location.href = '/owner';
+      return;
+    }
+    localStorage.setItem('hh_role', 'customer');
+    loadShops();
+  });
+
+  function switchRole() {
+    localStorage.removeItem('hh_role');
+    window.location.href = '/web';
+  }
+
+  /* ── LOAD SHOPS ── */
+  async function loadShops() {
+    document.getElementById('shopsGrid').innerHTML = `
+      <div class="loading-state"><div class="spinner"></div><p>Finding barbershops...</p></div>`;
+    try {
+      const url = userLat ? `${API}/maps/shops?lat=${userLat}&lon=${userLon}` : `${API}/maps/shops`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      allShops = await res.json();
+
+      // Load queue count for each shop
+      await Promise.all(allShops.map(async shop => {
+        try {
+          const q = await fetch(`${API}/queue/${shop.id}`);
+          const qd = await q.json();
+          shop.waiting = qd.total_waiting || 0;
+          shop.seated = qd.currently_seated ? 1 : 0;
+        } catch { shop.waiting = 0; shop.seated = 0; }
+      }));
+
+      applyFilters();
+    } catch(e) {
+      document.getElementById('shopsGrid').innerHTML = `
+        <div class="empty-state">
+          <h3>Can't connect</h3>
+          <p>Make sure the API server is running on port 5000</p>
+        </div>`;
+      document.getElementById('resultsCount').innerHTML = '';
+    }
+  }
+
+  /* ── FILTERS & SORT ── */
+  function setFilter(f, btn) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const sort = document.getElementById('sortSelect').value;
+
+    let list = allShops.filter(s => {
+      const matchSearch = s.name.toLowerCase().includes(search) || s.address.toLowerCase().includes(search);
+      const matchFilter =
+        activeFilter === 'all' ? true :
+        activeFilter === 'open' ? s.status === 'open' :
+        activeFilter === 'top' ? s.reputation_score >= 90 :
+        activeFilter === 'trusted' ? s.reputation_score >= 70 : true;
+      return matchSearch && matchFilter;
+    });
+
+    list.sort((a,b) =>
+      sort === 'rating' ? b.reputation_score - a.reputation_score :
+      sort === 'queue' ? a.waiting - b.waiting :
+      (a.distance_km||0) - (b.distance_km||0)
+    );
+
+    renderShops(list);
+  }
+
+  /* ── RENDER ── */
+  function getBadge(score) {
+    if (score >= 90) return '🏅 Top Rated';
+    if (score >= 70) return '✓ Trusted';
+    if (score >= 50) return '';
+    return '⚠️ Warning';
+  }
+
+  function renderShops(list) {
+    document.getElementById('resultsCount').innerHTML =
+      `<strong>${list.length}</strong> barbershop${list.length !== 1 ? 's' : ''} found`;
+
+    if (!list.length) {
+      document.getElementById('shopsGrid').innerHTML = `
+        <div class="empty-state">
+          <h3>No shops found</h3>
+          <p>Try adjusting your search or filters</p>
+        </div>`;
+      return;
+    }
+
+    document.getElementById('shopsGrid').innerHTML = list.map(s => `
+      <div class="shop-card" onclick="openModal(${s.id})">
+        <div class="card-top">
+          <div>
+            <div class="shop-name">${s.name}</div>
+            <div class="shop-owner">📍 ${s.address}</div>
+          </div>
+          <div class="status-pill status-${s.status}">${s.status}</div>
+        </div>
+
+        <div class="card-stats">
+          <div class="stat-box">
+            <div class="val">${s.waiting}</div>
+            <div class="lbl">Waiting</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">${s.reputation_score}</div>
+            <div class="lbl">Score</div>
+          </div>
+          <div class="stat-box">
+            <div class="val">${s.distance_km !== undefined ? s.distance_km + 'km' : '—'}</div>
+            <div class="lbl">Distance</div>
+          </div>
+        </div>
+
+        <div class="card-bottom">
+          <span class="shop-badge">${getBadge(s.reputation_score)}</span>
+          <button class="join-btn" ${s.status === 'closed' ? 'disabled' : ''}
+            onclick="event.stopPropagation(); openModal(${s.id})">
+            ${s.status === 'closed' ? 'Closed' : 'Join Queue →'}
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── MODAL ── */
+  async function openModal(shopId) {
+    currentShopId = shopId;
+    selectedService = null;
+    const shop = allShops.find(s => s.id === shopId);
+
+    // Reset modal
+    document.getElementById('modalAlert').innerHTML = '';
+    document.getElementById('myTokenSection').style.display = 'none';
+    document.getElementById('joinSection').style.display = 'block';
+    document.getElementById('joinBtn').disabled = false;
+    document.getElementById('joinName').value = '';
+    document.getElementById('joinPhone').value = '';
+    document.querySelectorAll('.svc-btn').forEach(b => b.classList.remove('picked'));
+
+    document.getElementById('modalTitle').textContent = shop?.name || 'Shop';
+    document.getElementById('modalSub').textContent = `${shop?.address || ''} · ${shop?.status || ''}`;
+    document.getElementById('overlay').classList.add('show');
+
+    await refreshQueue(shopId);
+
+    // Auto-refresh queue every 15s
+    queueRefreshTimer = setInterval(() => refreshQueue(shopId), 15000);
+  }
+
+  async function refreshQueue(shopId) {
+    try {
+      const res = await fetch(`${API}/queue/${shopId}`);
+      const data = await res.json();
+      let html = '';
+
+      if (data.currently_seated) {
+        html += `
+          <div class="q-row in-chair">
+            <div class="q-num">${String(data.currently_seated.token).padStart(2,'0')}</div>
+            <div class="q-details">
+              <div class="q-name">${data.currently_seated.name} ✂️</div>
+              <div class="q-service">${data.currently_seated.service} · In chair now</div>
+            </div>
+          </div>`;
+      }
+
+      data.waiting.forEach(q => {
+        html += `
+          <div class="q-row">
+            <div class="q-num">${String(q.token).padStart(2,'0')}</div>
+            <div class="q-details">
+              <div class="q-name">${q.name}</div>
+              <div class="q-service">${q.service}</div>
+            </div>
+            <div class="q-wait">~${q.estimated_wait_mins} min</div>
+          </div>`;
+      });
+
+      if (!data.currently_seated && !data.waiting.length) {
+        html = '<div class="q-empty">Queue is empty — walk right in! 🎉</div>';
+      }
+
+      document.getElementById('liveQueue').innerHTML = html;
+    } catch(e) {
+      document.getElementById('liveQueue').innerHTML = '<div class="q-empty">Could not load queue</div>';
+    }
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('show');
+    if (queueRefreshTimer) { clearInterval(queueRefreshTimer); queueRefreshTimer = null; }
+    currentShopId = null;
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  /* ── SERVICE PICKER ── */
+  function pickService(service, btn) {
+    selectedService = service;
+    document.querySelectorAll('.svc-btn').forEach(b => b.classList.remove('picked'));
+    btn.classList.add('picked');
+  }
+
+  /* ── JOIN QUEUE ── */
+  async function joinQueue() {
+    const name = document.getElementById('joinName').value.trim();
+    const phone = document.getElementById('joinPhone').value.trim();
+    const alertEl = document.getElementById('modalAlert');
+
+    if (!name) { alertEl.innerHTML = '<div class="alert err">Please enter your name</div>'; return; }
+    if (!phone) { alertEl.innerHTML = '<div class="alert err">Please enter your phone number</div>'; return; }
+    if (!selectedService) { alertEl.innerHTML = '<div class="alert err">Please select a service</div>'; return; }
+
+    document.getElementById('joinBtn').disabled = true;
+    document.getElementById('joinBtn').textContent = 'Joining...';
+
+    try {
+      const res = await fetch(`${API}/queue/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop_id: currentShopId,
+          customer_name: name,
+          customer_phone: phone,
+          service: selectedService
+        })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        // Show token
+        document.getElementById('myTokenSection').style.display = 'block';
+        document.getElementById('myTokenNum').textContent = String(data.token).padStart(2, '0');
+        document.getElementById('myTokenInfo').innerHTML =
+          `Position <strong>${data.position}</strong> in queue · ~<strong>${data.estimated_wait_mins} min</strong> estimated`;
+
+        // Hide join form
+        document.getElementById('joinSection').style.display = 'none';
+        alertEl.innerHTML = '<div class="alert ok">✅ You\'re in the queue! Head over when your turn is near.</div>';
+
+        document.getElementById('reviewSection').style.display = 'block';
+        await refreshQueue(currentShopId);
+        loadShops();
+      } else {
+        alertEl.innerHTML = `<div class="alert err">${data.error || 'Something went wrong'}</div>`;
+        document.getElementById('joinBtn').disabled = false;
+        document.getElementById('joinBtn').textContent = 'Join Queue →';
+      }
+    } catch(e) {
+      alertEl.innerHTML = '<div class="alert err">Cannot connect to server</div>';
+      document.getElementById('joinBtn').disabled = false;
+      document.getElementById('joinBtn').textContent = 'Join Queue →';
+    }
+  }
+
+  /* ── REVIEW ── */
+  let selectedRating = 0;
+
+  function setRating(r) {
+    selectedRating = r;
+    document.querySelectorAll('.star').forEach((s, i) => {
+      s.classList.toggle('on', i < r);
+    });
+  }
+
+  async function submitReview() {
+    const name = document.getElementById('joinName').value.trim();
+    const phone = document.getElementById('joinPhone').value.trim();
+    const comment = document.getElementById('reviewComment').value.trim();
+    const alertEl = document.getElementById('reviewAlert');
+
+    if (!selectedRating) { alertEl.innerHTML = '<div class="alert err">Please select a star rating</div>'; return; }
+    if (!name || !phone) { alertEl.innerHTML = '<div class="alert err">We need your name and phone to verify the review</div>'; return; }
+
+    try {
+      const res = await fetch(`${API}/reviews`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          shop_id: currentShopId,
+          customer_name: name,
+          customer_phone: phone,
+          rating: selectedRating,
+          comment
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alertEl.innerHTML = '<div class="alert ok">✅ Review submitted! Thank you.</div>';
+        document.getElementById('reviewComment').value = '';
+        selectedRating = 0;
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('on'));
+      } else {
+        alertEl.innerHTML = `<div class="alert err">${data.error}</div>`;
+      }
+    } catch(e) {
+      alertEl.innerHTML = '<div class="alert err">Connection error</div>';
+    }
+  }
+</script>
+</body>
+</html>

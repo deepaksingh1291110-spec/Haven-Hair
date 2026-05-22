@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Haven Hair — Skip the Wait, Keep the Style</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --black: #0a0a0a;
+      --dark: #111111;
+      --card: #171717;
+      --gold: #C9A84C;
+      --gold-light: #e4c97e;
+      --white: #f5f0e8;
+      --grey: #888;
+      --border: rgba(201,168,76,0.15);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 4rem;
+      background: rgba(10,10,10,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      transition: padding 0.3s;
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--white); font-style: italic; font-weight: 400; }
+
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--black) !important;
+      padding: 0.6rem 1.4rem;
+      border-radius: 2px;
+      font-weight: 500 !important;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--gold-light) !important; color: var(--black) !important; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 8rem 4rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 80% 50%, rgba(201,168,76,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 80% at 10% 80%, rgba(201,168,76,0.03) 0%, transparent 60%);
+    }
+
+    .hero-lines {
+      position: absolute; inset: 0; overflow: hidden;
+    }
+    .hero-lines::before {
+      content: '';
+      position: absolute;
+      top: -20%; right: 5%;
+      width: 1px; height: 140%;
+      background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.2), transparent);
+      transform: rotate(8deg);
+    }
+    .hero-lines::after {
+      content: '';
+      position: absolute;
+      top: -20%; right: 15%;
+      width: 1px; height: 140%;
+      background: linear-gradient(to bottom, transparent, rgba(201,168,76,0.08), transparent);
+      transform: rotate(8deg);
+    }
+
+    .hero-content { position: relative; max-width: 700px; }
+
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--border);
+      padding: 0.4rem 1rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.2rem, 7vw, 6rem);
+      font-weight: 700;
+      line-height: 1.05;
+      margin-bottom: 1.8rem;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--gold);
+      font-weight: 400;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--grey);
+      line-height: 1.8;
+      max-width: 480px;
+      margin-bottom: 2.8rem;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-btns {
+      display: flex; gap: 1rem; flex-wrap: wrap;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: var(--black);
+      padding: 0.9rem 2.2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      padding: 0.9rem 2.2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(245,240,232,0.2);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-1px); }
+
+    .hero-stats {
+      position: absolute;
+      right: 4rem; bottom: 4rem;
+      display: flex; gap: 3rem;
+      animation: fadeUp 0.8s 0.4s ease both;
+    }
+
+    .stat { text-align: right; }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 600;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--grey);
+      margin-top: 0.3rem;
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 7rem 4rem; }
+
+    .section-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 4vw, 3.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 1.2rem;
+    }
+
+    h2 em { font-style: italic; color: var(--gold); font-weight: 400; }
+
+    .section-desc {
+      color: var(--grey);
+      font-size: 1rem;
+      line-height: 1.8;
+      max-width: 520px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how {
+      background: var(--dark);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .how-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      margin-top: 4rem;
+      align-items: center;
+    }
+
+    .steps { display: flex; flex-direction: column; gap: 0; }
+
+    .step {
+      display: flex; gap: 1.8rem;
+      padding: 2rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: padding-left 0.3s;
+      cursor: default;
+    }
+    .step:last-child { border-bottom: none; }
+    .step:hover { padding-left: 0.5rem; }
+
+    .step-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      font-weight: 600;
+      color: var(--border);
+      line-height: 1;
+      min-width: 2.5rem;
+      transition: color 0.3s;
+    }
+    .step:hover .step-num { color: var(--gold); }
+
+    .step-text h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.02em;
+    }
+    .step-text p { color: var(--grey); font-size: 0.9rem; line-height: 1.6; }
+
+    .phone-mockup {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 2rem 1.5rem;
+      max-width: 280px;
+      margin: 0 auto;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(201,168,76,0.1);
+    }
+
+    .phone-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .phone-header span {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .queue-item {
+      background: var(--dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      margin-bottom: 0.7rem;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .queue-item.active {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+    .q-name { font-size: 0.85rem; font-weight: 500; }
+    .q-service { font-size: 0.72rem; color: var(--grey); margin-top: 2px; }
+    .q-token {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+
+    .barber-btns {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 0.6rem; margin-top: 1.2rem;
+    }
+
+    .barber-btn {
+      padding: 0.8rem;
+      border: none;
+      border-radius: 6px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .barber-btn:active { transform: scale(0.97); }
+    .barber-btn.sit { background: var(--gold); color: var(--black); }
+    .barber-btn.done { background: rgba(201,168,76,0.1); color: var(--gold); border: 1px solid var(--border); }
+
+    /* ── FEATURES ── */
+    #features { background: var(--black); }
+
+    .features-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 4rem;
+      flex-wrap: wrap; gap: 2rem;
+    }
+
+    .tabs {
+      display: flex; gap: 0;
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 0.6rem 1.4rem;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--grey);
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .tab.active { background: var(--gold); color: var(--black); font-weight: 500; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .feature-card {
+      background: var(--dark);
+      padding: 2.5rem 2rem;
+      transition: background 0.2s;
+    }
+    .feature-card:hover { background: var(--card); }
+
+    .feature-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+    .feature-card h3 {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.02em;
+    }
+    .feature-card p { color: var(--grey); font-size: 0.88rem; line-height: 1.6; }
+
+    /* panel switching */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── AI SECTION ── */
+    #ai {
+      background: var(--dark);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      margin-top: 4rem;
+      align-items: center;
+    }
+
+    .ai-table {
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .ai-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .ai-row:last-child { border-bottom: none; }
+    .ai-row.header { background: rgba(201,168,76,0.05); }
+    .ai-cell {
+      padding: 0.9rem 1.2rem;
+      font-size: 0.82rem;
+      border-right: 1px solid var(--border);
+    }
+    .ai-cell:last-child { border-right: none; }
+    .ai-row.header .ai-cell {
+      color: var(--gold);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .ai-cell span { color: var(--grey); }
+
+    .score-bar {
+      margin-top: 2rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+    .score-label {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 0.8rem;
+    }
+    .score-label span:first-child { font-size: 0.8rem; color: var(--grey); }
+    .score-label span:last-child {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    .bar { height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; }
+    .bar-fill {
+      height: 100%; border-radius: 2px;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      transition: width 1s ease;
+    }
+
+    /* ── PHILOSOPHY ── */
+    #philosophy { background: var(--black); text-align: center; }
+
+    .quote {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-style: italic;
+      font-weight: 400;
+      color: var(--white);
+      max-width: 700px;
+      margin: 3rem auto;
+      line-height: 1.4;
+      position: relative;
+    }
+    .quote::before {
+      content: '"';
+      font-size: 6rem;
+      color: var(--gold);
+      opacity: 0.2;
+      position: absolute;
+      top: -2rem; left: -2rem;
+      line-height: 1;
+      font-style: normal;
+    }
+
+    .philosophy-points {
+      display: flex; justify-content: center; gap: 4rem;
+      margin-top: 4rem; flex-wrap: wrap;
+    }
+    .phil-point { text-align: center; max-width: 200px; }
+    .phil-icon { font-size: 1.5rem; margin-bottom: 0.8rem; display: block; }
+    .phil-point h4 { font-size: 0.9rem; font-weight: 500; margin-bottom: 0.4rem; }
+    .phil-point p { font-size: 0.82rem; color: var(--grey); line-height: 1.5; }
+
+    /* ── CTA ── */
+    #cta {
+      background: var(--dark);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 8rem 4rem;
+    }
+
+    #cta h2 { margin-bottom: 1rem; }
+    #cta .section-desc { margin: 0 auto 3rem; text-align: center; }
+
+    .cta-options {
+      display: flex; gap: 3rem; justify-content: center;
+      flex-wrap: wrap; margin-top: 4rem;
+    }
+
+    .cta-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      width: 280px;
+      text-align: left;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .cta-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+    .cta-card .role {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .cta-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+    }
+    .cta-card p { color: var(--grey); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.5rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black);
+      border-top: 1px solid var(--border);
+      padding: 3rem 4rem;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .footer-logo span { color: var(--white); font-style: italic; font-weight: 400; }
+
+    .footer-links { display: flex; gap: 2rem; }
+    .footer-links a {
+      color: var(--grey);
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--gold); }
+
+    .footer-copy { color: var(--grey); font-size: 0.75rem; }
+
+    /* ── ROLE CARDS ── */
+    .role-cards { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+    .role-card {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 2rem 1.8rem; width: 220px; cursor: pointer;
+      transition: border-color 0.25s, transform 0.25s;
+      position: relative; overflow: hidden;
+    }
+    .role-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 2px; background: var(--gold);
+      transform: scaleX(0); transition: transform 0.3s;
+    }
+    .role-card:hover { border-color: var(--gold); transform: translateY(-5px); }
+    .role-card:hover::after { transform: scaleX(1); }
+    .role-icon { font-size: 1.8rem; margin-bottom: 1rem; display: block; }
+    .role-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem; font-weight: 600; margin-bottom: 0.4rem;
+    }
+    .role-card p { color: var(--grey); font-size: 0.82rem; line-height: 1.5; margin-bottom: 1rem; }
+    .role-arrow { color: var(--gold); font-size: 1.1rem; transition: transform 0.2s; display: inline-block; }
+    .role-card:hover .role-arrow { transform: translateX(4px); }
+
+    /* ── RETURN BANNER ── */
+    .return-banner {
+      display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: var(--dark); border-bottom: 1px solid var(--gold);
+      padding: 1rem 4rem; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.8rem;
+    }
+    .return-banner.show { display: flex; animation: fadeUp 0.3s ease; }
+    .return-text { font-size: 0.88rem; }
+    .return-text strong { color: var(--gold); }
+    .return-actions { display: flex; gap: 0.8rem; align-items: center; }
+    .countdown-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.6rem; color: var(--gold); min-width: 1.2rem; text-align: center;
+    }
+    .skip-link { font-size: 0.75rem; color: var(--grey); cursor: pointer; }
+    .skip-link:hover { color: var(--white); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 5rem 1.5rem; }
+      #hero { padding: 7rem 1.5rem 3rem; }
+      .hero-stats { position: static; margin-top: 3rem; justify-content: flex-start; }
+      .how-grid, .ai-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .features-grid { grid-template-columns: 1fr; }
+      .features-header { flex-direction: column; align-items: flex-start; }
+      .philosophy-points { gap: 2rem; }
+      footer { flex-direction: column; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- RETURN BANNER -->
+<div class="return-banner" id="returnBanner">
+  <div class="return-text">Welcome back! Taking you to your <strong id="returnRoleName"></strong> page in <span class="countdown-num" id="countdown">3</span></div>
+  <div class="return-actions">
+    <button class="btn-primary" style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;" onclick="goNow()">Go Now</button>
+    <span class="skip-link" onclick="dismissBanner()">Stay on landing</span>
+  </div>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <a href="#hero" class="logo">Haven<span>Hair</span></a>
+  <ul class="nav-links">
+    <li><a href="#how">How it Works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#ai">AI</a></li>
+    <li><a href="#philosophy">Philosophy</a></li>
+    <li><a href="#cta" class="nav-cta">Get Started</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-lines"></div>
+  <div class="hero-content">
+    <div class="hero-tag">💈 The Intelligent Barbershop Platform</div>
+    <h1>Skip the wait,<br/><em>keep the style.</em></h1>
+    <p class="hero-desc">
+      Haven Hair connects customers to barbershops in real time — live queue tracking, smart booking, and AI-powered insights that help great shops rise to the top.
+    </p>
+    <p style="font-size:0.78rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:1.2rem;animation:fadeUp 0.8s 0.25s ease both;">Who are you?</p>
+    <div class="role-cards" style="animation:fadeUp 0.8s 0.3s ease both;">
+      <div class="role-card" onclick="chooseRole('customer')">
+        <span class="role-icon">✂️</span>
+        <h3>I'm a Customer</h3>
+        <p>Find nearby barbers, track the queue live, and arrive only when it's your turn.</p>
+        <span class="role-arrow">→</span>
+      </div>
+      <div class="role-card" onclick="chooseRole('owner')">
+        <span class="role-icon">💈</span>
+        <h3>I'm a Shop Owner</h3>
+        <p>Manage your queue with 2 taps, get AI insights, and grow your reputation.</p>
+        <span class="role-arrow">→</span>
+      </div>
+    </div>
+    <a href="#how" style="display:inline-block;margin-top:1.5rem;font-size:0.78rem;color:var(--grey);text-decoration:none;letter-spacing:0.08em;animation:fadeUp 0.8s 0.4s ease both;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--grey)'">↓ See how it works</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">2</div>
+      <div class="stat-label">Taps per customer</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Minutes wasted</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <span class="section-tag reveal">How it works</span>
+  <h2 class="reveal">Effortless for <em>everyone.</em></h2>
+  <p class="section-desc reveal">The entire barbershop experience — redesigned around your time.</p>
+
+  <div class="how-grid">
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-text">
+          <h3>Find your barber</h3>
+          <p>See nearby shops on the map with live queue status, wait times, and ratings — all in real time.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-text">
+          <h3>Grab your token</h3>
+          <p>Book a slot or grab a walk-in token. Track your position from home — no plastic chair required.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-text">
+          <h3>Arrive on time</h3>
+          <p>Get notified when you're 2 customers away. Walk in, sit down, get your cut. Simple.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-text">
+          <h3>Leave your review</h3>
+          <p>Your verified review shapes the reputation of the shop — keeping quality high for everyone.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal" style="display:flex;justify-content:center;">
+      <div class="phone-mockup">
+        <div class="phone-header">
+          <span>Royal Cuts — Live Queue</span>
+          <span style="color:var(--grey);font-size:0.7rem;">3 waiting</span>
+        </div>
+        <div class="queue-item active">
+          <div>
+            <div class="q-name">Mohammed ✂️</div>
+            <div class="q-service">Haircut · In chair</div>
+          </div>
+          <div class="q-token">01</div>
+        </div>
+        <div class="queue-item">
+          <div>
+            <div class="q-name">Ahmed</div>
+            <div class="q-service">Beard Trim · ~10 min</div>
+          </div>
+          <div class="q-token" style="color:var(--grey);">02</div>
+        </div>
+        <div class="queue-item">
+          <div>
+            <div class="q-name">Khalid</div>
+            <div class="q-service">Haircut · ~28 min</div>
+          </div>
+          <div class="q-token" style="color:var(--grey);">03</div>
+        </div>
+        <div class="barber-btns">
+          <button class="barber-btn sit">✓ Customer Sits</button>
+          <button class="barber-btn done">Done ✅</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="features-header">
+    <div>
+      <span class="section-tag reveal">Features</span>
+      <h2 class="reveal">Built for <em>both sides.</em></h2>
+    </div>
+    <div class="tabs reveal">
+      <button class="tab active" onclick="switchTab('customer', this)">For Customers</button>
+      <button class="tab" onclick="switchTab('owner', this)">For Owners</button>
+    </div>
+  </div>
+
+  <div class="panel active" id="panel-customer">
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <span class="feature-icon">🗺️</span>
+        <h3>Live Map</h3>
+        <p>See every open barbershop near you with real-time queue counts and wait times on an interactive map.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🪙</span>
+        <h3>Virtual Token</h3>
+        <p>Grab a walk-in token without going to the shop. Track your queue position from anywhere.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔔</span>
+        <h3>Smart Alerts</h3>
+        <p>Get notified when you're 2 customers away. No more guessing, no more wasted time.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📅</span>
+        <h3>Advance Booking</h3>
+        <p>Reserve your slot in advance. Pick your barber, pick your time, show up ready.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⭐</span>
+        <h3>Verified Reviews</h3>
+        <p>Only real customers who booked through Haven Hair can leave reviews — no fake ratings.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔍</span>
+        <h3>Smart Filters</h3>
+        <p>Filter by distance, rating, availability, or specialty. Find exactly what you need fast.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-owner">
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <span class="feature-icon">👆</span>
+        <h3>2-Button System</h3>
+        <p>Your entire workflow is two taps. Customer Sits → Haircut Done. Nothing more, nothing less.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🔁</span>
+        <h3>Auto Queue</h3>
+        <p>Queue manages itself. Tokens issue automatically, wait times update instantly for all customers.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <h3>No-Show Protection</h3>
+        <p>If a booked slot passes without being started, AI auto-skips it and moves the queue forward.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">💬</span>
+        <h3>Customer Outreach</h3>
+        <p>AI flags unhappy customers and nudges you to reach out. You write the message — in your own words.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Weekly Reports</h3>
+        <p>Every week, a full performance summary — complaints, happy customers, reputation change, AI insights.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🏅</span>
+        <h3>Reputation Score</h3>
+        <p>AI scores your shop and awards badges. Top Rated shops appear first in search — automatically.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AI SECTION -->
+<section id="ai">
+  <span class="section-tag reveal">Intelligence</span>
+  <h2 class="reveal">AI works in the <em>background.</em></h2>
+  <p class="section-desc reveal">You stay in front. Haven Hair's AI handles the invisible work so barbers can focus on what they do best.</p>
+
+  <div class="ai-grid">
+    <div class="reveal">
+      <div class="ai-table">
+        <div class="ai-row header">
+          <div class="ai-cell">Feature</div>
+          <div class="ai-cell">AI Role</div>
+          <div class="ai-cell">Human Role</div>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell">Reviews</div>
+          <div class="ai-cell"><span>Analyze & score</span></div>
+          <div class="ai-cell"><span>Writes freely</span></div>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell">Chat</div>
+          <div class="ai-cell"><span>Suggest & nudge</span></div>
+          <div class="ai-cell"><span>Types themselves</span></div>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell">Reports</div>
+          <div class="ai-cell"><span>Show insights</span></div>
+          <div class="ai-cell"><span>Decides action</span></div>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell">Queue</div>
+          <div class="ai-cell"><span>Predict timing</span></div>
+          <div class="ai-cell"><span>Controls flow</span></div>
+        </div>
+        <div class="ai-row">
+          <div class="ai-cell">Reputation</div>
+          <div class="ai-cell"><span>Calculate score</span></div>
+          <div class="ai-cell"><span>Earns it</span></div>
+        </div>
+      </div>
+
+      <div class="score-bar" style="margin-top:1.5rem;">
+        <div class="score-label">
+          <span>🏅 Royal Cuts — Reputation Score</span>
+          <span>87</span>
+        </div>
+        <div class="bar"><div class="bar-fill" id="repBar" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:0.5rem;">
+          <span style="font-size:0.7rem;color:var(--grey);">⚠️ Warning</span>
+          <span style="font-size:0.7rem;color:var(--grey);">✓ Trusted</span>
+          <span style="font-size:0.7rem;color:var(--gold);">🏅 Top Rated</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:1.5rem;">
+        The incentive loop
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:0;">
+        <div style="padding:1.2rem 1.5rem;border:1px solid var(--border);border-bottom:none;background:var(--card);">
+          <span style="color:var(--gold);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">01</span>
+          <p style="margin-top:0.3rem;font-size:0.9rem;">Good service → Good reviews</p>
+        </div>
+        <div style="padding:1.2rem 1.5rem;border:1px solid var(--border);border-bottom:none;background:var(--dark);">
+          <span style="color:var(--gold);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">02</span>
+          <p style="margin-top:0.3rem;font-size:0.9rem;">AI rewards → Higher reputation score</p>
+        </div>
+        <div style="padding:1.2rem 1.5rem;border:1px solid var(--border);border-bottom:none;background:var(--card);">
+          <span style="color:var(--gold);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">03</span>
+          <p style="margin-top:0.3rem;font-size:0.9rem;">More visibility → More customers</p>
+        </div>
+        <div style="padding:1.2rem 1.5rem;border:1px solid var(--border);background:var(--dark);">
+          <span style="color:var(--gold);font-size:0.75rem;letter-spacing:0.1em;text-transform:uppercase;">04</span>
+          <p style="margin-top:0.3rem;font-size:0.9rem;">More revenue → Happy shop owner</p>
+        </div>
+      </div>
+      <p style="color:var(--grey);font-size:0.82rem;margin-top:1rem;line-height:1.6;">Bad shops fall naturally. Great shops rise automatically. No manual intervention needed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<section id="philosophy">
+  <span class="section-tag reveal">Philosophy</span>
+  <div class="quote reveal">
+    We give you intelligence,<br/>you bring the humanity.
+  </div>
+  <div class="philosophy-points">
+    <div class="phil-point reveal">
+      <span class="phil-icon">🤖</span>
+      <h4>AI in the background</h4>
+      <p>The machine handles timing, scoring, and patterns — invisibly.</p>
+    </div>
+    <div class="phil-point reveal">
+      <span class="phil-icon">✋</span>
+      <h4>Humans in front</h4>
+      <p>Every customer interaction is driven by a real person, not a script.</p>
+    </div>
+    <div class="phil-point reveal">
+      <span class="phil-icon">💬</span>
+      <h4>Real words matter</h4>
+      <p>A message with imperfections feels genuine. AI never writes for you.</p>
+    </div>
+    <div class="phil-point reveal">
+      <span class="phil-icon">⏱️</span>
+      <h4>Time is dignity</h4>
+      <p>No one should sit in a plastic chair guessing when their turn comes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <span class="section-tag reveal">Get started</span>
+  <h2 class="reveal">Join Haven <em>Hair.</em></h2>
+  <p class="section-desc reveal">Whether you're a customer tired of waiting or a shop owner ready to level up — Haven Hair is for you.</p>
+  <div class="cta-options">
+    <div class="cta-card reveal">
+      <span class="role">For Customers</span>
+      <h3>Find your barber</h3>
+      <p>See live queues, grab a token, and show up only when it's your turn.</p>
+      <button onclick="chooseRole('customer')" class="btn-primary" style="display:inline-block;border:none;cursor:pointer;">Find a Barber →</button>
+    </div>
+    <div class="cta-card reveal">
+      <span class="role">For Shop Owners</span>
+      <h3>Run your shop smarter</h3>
+      <p>2-tap workflow, AI insights, and a reputation system that rewards quality.</p>
+      <button onclick="chooseRole('owner')" class="btn-outline" style="display:inline-block;border:1px solid rgba(245,240,232,0.2);cursor:pointer;">Owner Dashboard →</button>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Haven<span>Hair</span></div>
+  <div class="footer-links">
+    <a href="#how">How it Works</a>
+    <a href="#features">Features</a>
+    <a href="#ai">AI</a>
+    <a href="#philosophy">Philosophy</a>
+  </div>
+  <div class="footer-copy">© 2026 Haven Hair. All rights reserved.</div>
+</footer>
+
+<script>
+  // Tab switching
+  function switchTab(panel, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + panel).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Reputation bar animation
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        setTimeout(() => {
+          document.getElementById('repBar').style.width = '87%';
+        }, 400);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  const bar = document.getElementById('repBar');
+  if (bar) barObserver.observe(bar.parentElement);
+
+  // Navbar shrink on scroll
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    if (window.scrollY > 60) {
+      nav.style.padding = '0.9rem 4rem';
+    } else {
+      nav.style.padding = '1.4rem 4rem';
+    }
+  });
+
+  // ── ROLE MEMORY ──
+  let returnTimer = null;
+
+  function chooseRole(role) {
+    localStorage.setItem('hh_role', role);
+    if (role === 'customer') window.location.href = '/customer';
+    else window.location.href = '/owner';
+  }
+
+  function checkReturn() {
+    const role = localStorage.getItem('hh_role');
+    if (!role) return;
+    const banner = document.getElementById('returnBanner');
+    const roleEl = document.getElementById('returnRoleName');
+    const countEl = document.getElementById('countdown');
+    roleEl.textContent = role === 'customer' ? 'Customer' : 'Owner';
+    banner.classList.add('show');
+    // push nav down
+    document.querySelector('nav').style.top = banner.offsetHeight + 'px';
+    let count = 3;
+    countEl.textContent = count;
+    returnTimer = setInterval(() => {
+      count--;
+      countEl.textContent = count;
+      if (count <= 0) { clearInterval(returnTimer); goNow(); }
+    }, 1000);
+  }
+
+  function goNow() {
+    const role = localStorage.getItem('hh_role');
+    dismissBanner();
+    if (role === 'customer') window.location.href = '/customer';
+    else window.location.href = '/owner';
+  }
+
+  function dismissBanner() {
+    document.getElementById('returnBanner').classList.remove('show');
+    document.querySelector('nav').style.top = '0';
+    if (returnTimer) { clearInterval(returnTimer); returnTimer = null; }
+  }
+
+  window.addEventListener('load', checkReturn);
+</script>
+</body>
+</html>

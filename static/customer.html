@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Haven Hair — Find Your Barber</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --black:#0a0a0a;--dark:#111;--card:#171717;
+      --gold:#C9A84C;--gold-light:#e4c97e;
+      --white:#f5f0e8;--grey:#888;
+      --border:rgba(201,168,76,0.15);
+      --green:#4caf7d;--red:#e05555;
+    }
+    html{scroll-behavior:smooth}
+    body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;font-weight:300;overflow-x:hidden;min-height:100vh}
+
+    .view{display:none;min-height:100vh}
+    .view.active{display:block;animation:fadeUp 0.3s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+    nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0.9rem 1.2rem;background:rgba(10,10,10,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+    .hamburger{background:transparent;border:none;color:var(--white);font-size:1.4rem;cursor:pointer;padding:0.2rem 0.4rem;line-height:1;flex-shrink:0}
+    .nav-brand{display:flex;flex-direction:column;align-items:flex-end}
+    .logo{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--gold);cursor:pointer;line-height:1}
+    .logo span{color:var(--white);font-style:italic;font-weight:400}
+    .nav-user{font-size:0.68rem;color:var(--grey);margin-top:1px}
+    .msg-icon-wrap{position:relative;cursor:pointer;font-size:1.1rem}
+    /* DRAWER */
+    .drawer-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.7);backdrop-filter:blur(3px)}
+    .drawer-overlay.show{display:block}
+    .drawer{position:fixed;left:0;top:0;bottom:0;width:min(280px,85vw);background:var(--dark);z-index:201;transform:translateX(-100%);transition:transform 0.3s ease;border-right:1px solid var(--border);display:flex;flex-direction:column}
+    .drawer.open{transform:translateX(0)}
+    .drawer-head{padding:1.5rem;border-bottom:1px solid var(--border)}
+    .drawer-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--gold)}
+    .drawer-logo span{color:var(--white);font-style:italic;font-weight:400}
+    .drawer-user{font-size:0.78rem;color:var(--grey);margin-top:4px}
+    .drawer-menu{flex:1;overflow-y:auto;padding:0.5rem 0}
+    .drawer-item{display:flex;align-items:center;gap:0.8rem;padding:1rem 1.5rem;cursor:pointer;transition:background 0.15s;border:none;background:transparent;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.9rem;width:100%;text-align:left}
+    .drawer-item:hover{background:rgba(201,168,76,0.06)}
+    .drawer-item .di-icon{font-size:1.1rem;width:1.5rem;text-align:center;flex-shrink:0}
+    .drawer-item.danger{color:var(--red)}
+    .drawer-sep{height:1px;background:var(--border);margin:0.3rem 0}
+    /* SUB PANEL */
+    .sub-panel{display:none;padding:0 1.5rem 1rem}
+    .sub-panel.open{display:block}
+    .sub-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:0.7rem 0.9rem;font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;margin-bottom:0.6rem;transition:border-color 0.2s}
+    .sub-input:focus{border-color:var(--gold)}
+    .sub-btn{background:var(--gold);color:var(--black);border:none;padding:0.7rem 1.2rem;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.4rem;transition:background 0.2s}
+    .sub-btn:hover{background:var(--gold-light)}
+    .sub-btn.outline{background:transparent;color:var(--grey);border:1px solid var(--border)}
+    .sub-btn.outline:hover{border-color:var(--gold);color:var(--gold)}
+    .sub-btn.danger-btn{background:transparent;color:var(--red);border:1px solid rgba(224,85,85,0.3)}
+    .sub-alert{font-size:0.78rem;padding:0.5rem 0.7rem;margin-bottom:0.5rem}
+    .sub-alert.ok{color:var(--gold);background:rgba(201,168,76,0.08);border:1px solid var(--border)}
+    .sub-alert.err{color:var(--red);background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.3)}
+
+    label{font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);display:block;margin-bottom:0.35rem}
+    input,select,textarea{width:100%;background:var(--card);border:1px solid var(--border);color:var(--white);padding:0.8rem 1rem;font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s}
+    input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+    input::placeholder,textarea::placeholder{color:var(--grey)}
+    select option{background:var(--dark)}
+    .form-group{margin-bottom:1rem}
+    .alert{padding:0.75rem 1rem;font-size:0.82rem;margin-bottom:1rem}
+    .alert.err{background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.3);color:var(--red)}
+    .alert.ok{background:rgba(201,168,76,0.08);border:1px solid var(--border);color:var(--gold)}
+    .spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .slabel{font-size:0.7rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:0.8rem}
+    .submit-btn{width:100%;background:var(--gold);color:var(--black);border:none;padding:1rem;font-size:0.85rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.2s}
+    .submit-btn:hover{background:var(--gold-light)}
+    .submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+    .status-pill{font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.6rem}
+    .status-open{background:rgba(76,175,125,0.1);color:var(--green);border:1px solid rgba(76,175,125,0.25)}
+    .status-busy{background:rgba(255,165,0,0.1);color:orange;border:1px solid rgba(255,165,0,0.25)}
+    .status-closed{background:rgba(224,85,85,0.1);color:var(--red);border:1px solid rgba(224,85,85,0.25)}
+
+    /* AUTH */
+    #view-auth{display:none;align-items:center;justify-content:center;padding:5rem 1.5rem}
+    #view-auth.active{display:flex}
+    .auth-wrap{width:100%;max-width:400px}
+    .auth-logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--gold);text-align:center;margin-bottom:0.3rem}
+    .auth-logo span{color:var(--white);font-style:italic;font-weight:400}
+    .auth-sub{text-align:center;font-size:0.75rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:2rem}
+    .auth-box{background:var(--dark);border:1px solid var(--border);padding:2rem}
+    .auth-box h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:0.3rem}
+    .auth-box p{color:var(--grey);font-size:0.83rem;margin-bottom:1.5rem}
+    .auth-switch{text-align:center;margin-top:1.2rem;font-size:0.82rem;color:var(--grey)}
+    .auth-switch a{color:var(--gold);cursor:pointer}
+    .auth-skip{text-align:center;margin-top:0.8rem;font-size:0.75rem;color:var(--grey);cursor:pointer;padding:0.5rem}
+    .auth-skip:hover{color:var(--white)}
+    .auth-back{text-align:center;margin-top:0.5rem;font-size:0.75rem;color:var(--grey);cursor:pointer}
+    .auth-back:hover{color:var(--gold)}
+
+    /* LIST */
+    #view-list{padding-top:62px}
+    .loc-bar{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border);flex-wrap:wrap}
+    .loc-name{font-size:0.82rem;color:var(--gold);flex:1;min-width:80px}
+    .loc-radius{background:var(--card);border:1px solid var(--border);color:var(--grey);padding:0.3rem 0.5rem;font-size:0.72rem;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+    .loc-refresh{font-size:0.72rem;color:var(--grey);cursor:pointer;white-space:nowrap}
+    .loc-refresh:hover{color:var(--gold)}
+    .search-bar{padding:1rem 1.5rem;background:var(--black);border-bottom:1px solid var(--border)}
+    .search-row{display:flex;gap:0}
+    .search-row input{flex:1;border-right:none}
+    .search-row button{background:var(--gold);color:var(--black);border:none;padding:0 1.2rem;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;white-space:nowrap}
+    .search-row button:hover{background:var(--gold-light)}
+    .search-hint{font-size:0.68rem;color:var(--grey);margin-top:0.4rem}
+    .filters{display:flex;gap:0.4rem;padding:0.8rem 1.5rem;overflow-x:auto;border-bottom:1px solid var(--border)}
+    .filter-btn{background:transparent;color:var(--grey);border:1px solid var(--border);padding:0.3rem 0.8rem;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:all 0.2s}
+    .filter-btn.active,.filter-btn:hover{background:var(--gold);color:var(--black);border-color:var(--gold);font-weight:500}
+    .results-bar{display:flex;justify-content:space-between;align-items:center;padding:0.8rem 1.5rem}
+    .results-count{font-size:0.78rem;color:var(--grey)}
+    .results-count strong{color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:1.1rem}
+    .sort-sel{background:var(--card);border:1px solid var(--border);color:var(--grey);padding:0.3rem 0.6rem;font-size:0.72rem;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+    .shops-list{padding:0 1.5rem 2rem}
+    .shop-card{border:1px solid var(--border);margin-bottom:0.8rem;cursor:pointer;transition:border-color 0.2s;position:relative;overflow:hidden}
+    .shop-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);transform:scaleY(0);transition:transform 0.25s}
+    .shop-card:hover{border-color:rgba(201,168,76,0.4)}
+    .shop-card:hover::before{transform:scaleY(1)}
+    .shop-card-inner{padding:1.2rem 1.5rem;background:var(--dark)}
+    .shop-card:hover .shop-card-inner{background:var(--card)}
+    .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.8rem}
+    .shop-name{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600}
+    .shop-addr{font-size:0.72rem;color:var(--grey);margin-top:2px}
+    .card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);margin-bottom:0.8rem}
+    .stat-box{padding:0.6rem;text-align:center;border-right:1px solid var(--border)}
+    .stat-box:last-child{border-right:none}
+    .stat-val{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--gold);line-height:1}
+    .stat-lbl{font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--grey);margin-top:2px}
+    .card-bottom{display:flex;justify-content:space-between;align-items:center}
+    .shop-badge{font-size:0.72rem}
+    .card-arrow{font-size:0.75rem;color:var(--gold)}
+    .loading-state{text-align:center;padding:4rem 2rem;color:var(--grey)}
+    .empty-state{text-align:center;padding:4rem 2rem;color:var(--grey)}
+    .empty-state h3{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--white);margin-bottom:0.5rem}
+
+    /* DETAIL */
+    #view-detail{padding-top:62px}
+    .back-bar{padding:1rem 1.5rem;border-bottom:1px solid var(--border);font-size:0.78rem;color:var(--grey);cursor:pointer;background:var(--dark)}
+    .back-bar:hover{color:var(--gold)}
+    .detail-hero{padding:1.5rem;background:var(--dark);border-bottom:1px solid var(--border)}
+    .detail-name{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700}
+    .detail-addr{font-size:0.78rem;color:var(--grey);margin:0.3rem 0}
+    .detail-meta{display:flex;gap:0.8rem;align-items:center;margin-top:0.5rem;flex-wrap:wrap}
+    .detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-bottom:1px solid var(--border)}
+    .detail-stat{padding:1rem;text-align:center;border-right:1px solid var(--border)}
+    .detail-stat:last-child{border-right:none}
+    .detail-stat .val{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;color:var(--gold);line-height:1}
+    .detail-stat .lbl{font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-top:3px}
+    .detail-sec{padding:1.5rem;border-bottom:1px solid var(--border)}
+    .q-row{display:flex;align-items:center;gap:0.8rem;padding:0.75rem;border:1px solid var(--border);margin-bottom:0.4rem}
+    .q-row.seated{border-color:var(--gold);background:rgba(201,168,76,0.04)}
+    .q-tok{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:600;color:var(--grey);min-width:1.8rem}
+    .q-row.seated .q-tok{color:var(--gold)}
+    .q-info{flex:1}
+    .q-name{font-size:0.85rem;font-weight:500}
+    .q-svc{font-size:0.7rem;color:var(--grey);margin-top:1px}
+    .q-wait{font-size:0.72rem;color:var(--grey)}
+    .q-empty{text-align:center;padding:1.5rem;color:var(--grey);font-size:0.85rem;border:1px dashed var(--border)}
+    .token-box{background:var(--black);border:1px solid var(--gold);padding:2rem;text-align:center;margin:1.5rem}
+    .token-lbl{font-size:0.7rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--grey);margin-bottom:0.5rem}
+    .token-num{font-family:'Cormorant Garamond',serif;font-size:5rem;font-weight:700;color:var(--gold);line-height:1}
+    .token-info{font-size:0.82rem;color:var(--grey);margin-top:0.5rem}
+    .token-info strong{color:var(--white)}
+    .join-card{margin:1.5rem;background:var(--card);border:1px solid var(--border);padding:1.5rem}
+    .join-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem}
+    .join-head h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600}
+    .quick-label{font-size:0.75rem;color:var(--gold)}
+    .services{display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;margin-bottom:1rem}
+    .svc-btn{background:var(--dark);border:1px solid var(--border);color:var(--white);padding:0.7rem 0.4rem;font-size:0.75rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;text-align:center;line-height:1.4}
+    .svc-btn:hover{border-color:var(--gold)}
+    .svc-btn.picked{background:rgba(201,168,76,0.08);border-color:var(--gold);color:var(--gold)}
+    .shop-closed-msg{text-align:center;padding:1.5rem;color:var(--red);font-size:0.88rem;border:1px solid rgba(224,85,85,0.2);margin:1.5rem;background:rgba(224,85,85,0.05)}
+    .review-card{background:var(--dark);border:1px solid var(--border);padding:1rem;margin-bottom:0.5rem}
+    .review-top{display:flex;justify-content:space-between;margin-bottom:0.4rem}
+    .review-name{font-size:0.82rem;font-weight:500}
+    .review-stars{color:var(--gold);font-size:0.9rem;letter-spacing:2px}
+    .review-comment{font-size:0.78rem;color:var(--grey);line-height:1.5}
+    .star-row{display:flex;gap:0.4rem;margin-bottom:1rem}
+    .star{font-size:1.6rem;cursor:pointer;opacity:0.25;transition:opacity 0.15s;color:var(--gold)}
+    .star.on{opacity:1}
+  .float-chat{
+    position:fixed;bottom:1.5rem;right:1.5rem;z-index:150;
+    background:var(--gold);color:var(--black);
+    width:52px;height:52px;border-radius:50%;border:none;
+    font-size:1.3rem;cursor:pointer;display:none;
+    align-items:center;justify-content:center;
+    box-shadow:0 4px 16px rgba(201,168,76,0.4);
+    transition:transform 0.2s;
+  }
+  .float-chat:hover{transform:scale(1.08)}
+  .float-chat.show{display:flex}
+  .chat-badge{
+    position:absolute;top:-4px;right:-4px;
+    background:var(--red);color:white;
+    font-size:0.6rem;font-weight:700;
+    min-width:18px;height:18px;border-radius:9px;
+    display:none;align-items:center;justify-content:center;
+    padding:0 4px;
+  }
+  .chat-badge.show{display:flex}
+  .chat-modal-overlay{
+    display:none;position:fixed;inset:0;z-index:200;
+    background:rgba(0,0,0,0.8);backdrop-filter:blur(4px);
+    align-items:flex-end;justify-content:center;padding:0;
+  }
+  .chat-modal-overlay.show{display:flex;animation:fadeIn 0.2s ease}
+  .chat-modal{
+    background:var(--dark);border:1px solid var(--border);
+    width:100%;max-width:500px;
+    animation:slideUp 0.3s ease;
+  }
+  .chat-modal-head{
+    padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--dark);
+  }
+  .chat-modal-head h3{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600}
+  .chat-close{background:transparent;border:none;color:var(--grey);font-size:1.6rem;cursor:pointer}
+  .chat-modal-body{padding:1.2rem 1.5rem}
+  .chat-messages{min-height:180px;max-height:280px;overflow-y:auto;margin-bottom:1rem;display:flex;flex-direction:column;gap:0.5rem}
+  .msg-bubble{padding:0.6rem 0.9rem;max-width:78%;font-size:0.83rem;line-height:1.5}
+  .msg-bubble.barber{background:rgba(201,168,76,0.1);border:1px solid var(--border);align-self:flex-start;border-radius:0 8px 8px 8px}
+  .msg-bubble.customer{background:var(--card);border:1px solid var(--border);align-self:flex-end;border-radius:8px 0 8px 8px}
+  .msg-who{font-size:0.62rem;color:var(--grey);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em}
+  .msg-input-row{display:flex;gap:0.4rem}
+  .msg-input-row input{flex:1}
+  .msg-input-row button{background:var(--gold);color:var(--black);border:none;padding:0 1rem;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+    textarea{height:80px;resize:none}
+  #view-chat.active{display:flex!important;flex-direction:column;height:100vh}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(74,144,226,0.6)}70%{box-shadow:0 0 0 10px rgba(74,144,226,0)}100%{box-shadow:0 0 0 0 rgba(74,144,226,0)}}
+  #shopMapContainer{height:220px;position:relative;border:1px solid var(--border)}
+  #navView{position:fixed;inset:0;z-index:500;background:var(--black);display:none;flex-direction:column}
+  #navView.show{display:flex}
+  #navMap{flex:1}
+  .nav-panel{background:var(--dark);border-top:1px solid var(--border);padding:1rem 1.5rem;flex-shrink:0}
+  .nav-stats{display:flex;gap:1rem;margin-bottom:0.8rem}
+  .nav-stat{flex:1;text-align:center}
+  .nav-stat-val{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--gold)}
+  .nav-stat-lbl{font-size:0.65rem;color:var(--grey);text-transform:uppercase;letter-spacing:0.1em}
+  .nav-instruction{font-size:0.85rem;color:var(--white);margin-bottom:0.8rem;text-align:center;min-height:1.2rem}
+  .nav-btns{display:flex;gap:0.5rem}
+  .nav-btn{flex:1;padding:0.7rem;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--grey);letter-spacing:0.06em;text-transform:uppercase;transition:all 0.2s}
+  .nav-btn.primary{background:var(--gold);color:var(--black);border-color:var(--gold)}
+  .nav-btn:hover{border-color:var(--gold);color:var(--gold)}
+  #shopMapContainer .leaflet-container{background:var(--dark)!important}
+  .map-style-btns{display:flex;gap:0.4rem;margin-top:0.5rem;flex-wrap:wrap}
+  .map-style-btn{background:var(--card);border:1px solid var(--border);color:var(--grey);padding:0.3rem 0.7rem;font-size:0.68rem;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+  .map-style-btn.active{background:var(--gold);color:var(--black);border-color:var(--gold)}
+  .chat-box{background:var(--card);border:1px solid var(--border);margin:1.5rem;padding:1.2rem}
+  .chat-msgs{max-height:200px;overflow-y:auto;margin-bottom:0.8rem;display:flex;flex-direction:column;gap:0.4rem}
+  .chat-msg{padding:0.5rem 0.8rem;font-size:0.82rem;line-height:1.4;max-width:80%}
+  .chat-msg.barber{background:rgba(201,168,76,0.1);border:1px solid var(--border);align-self:flex-start}
+  .chat-msg.customer{background:var(--dark);border:1px solid var(--border);align-self:flex-end}
+  .chat-sender{font-size:0.62rem;color:var(--grey);margin-bottom:2px;text-transform:uppercase;letter-spacing:0.06em}
+  .chat-row{display:flex;gap:0.4rem}
+  .chat-row input{flex:1}
+  .chat-row button{background:var(--gold);color:var(--black);border:none;padding:0 1rem;font-size:0.78rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+  </style>
+  <!-- Leaflet Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  /* ── REAL-TIME NAVIGATION ── */
+  let _navMap = null;
+  let _navUserMarker = null;
+  let _navShopMarker = null;
+  let _navRouteLine = null;
+  let _navWatchId = null;
+  let _navDest = null;
+  let _navMode = 'walking'; // walking or driving
+  let _navSteps = [];
+  let _navCurrentStep = 0;
+
+  const OSRM = {
+    walking: 'https://router.project-osrm.org/route/v1/foot',
+    driving: 'https://router.project-osrm.org/route/v1/driving'
+  };
+
+  async function startNavigation(toLat, toLon, shopName) {
+    _navDest = { lat: toLat, lon: toLon, name: shopName };
+
+    // Show nav view
+    document.getElementById('navView').classList.add('show');
+    document.getElementById('navInstruction').textContent = '📡 Getting your location...';
+
+    // Init map
+    if (_navMap) { _navMap.remove(); _navMap = null; }
+    _navMap = L.map('navMap', { zoomControl: false }).setView([toLat, toLon], 15);
+
+    // Street tiles for navigation
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(_navMap);
+
+    // Shop marker
+    _navShopMarker = L.marker([toLat, toLon], {
+      icon: L.divIcon({
+        html: '<div style="background:var(--gold,#C9A84C);width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
+        iconSize: [16, 16], iconAnchor: [8, 8], className: ''
+      })
+    }).addTo(_navMap).bindPopup(`✂️ ${shopName}`).openPopup();
+
+    // Start watching user position
+    if (_navWatchId) navigator.geolocation.clearWatch(_navWatchId);
+    _navWatchId = navigator.geolocation.watchPosition(
+      pos => updateNavPosition(pos),
+      err => {
+        document.getElementById('navInstruction').textContent = '❌ GPS unavailable — enable location access';
+      },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+    );
+  }
+
+  async function updateNavPosition(pos) {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const speed = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0;
+
+    document.getElementById('navSpeed').textContent = speed || '—';
+
+    // Update user marker
+    if (!_navUserMarker) {
+      _navUserMarker = L.marker([lat, lon], {
+        icon: L.divIcon({
+          html: '<div style="background:#4A90E2;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 2px 12px rgba(74,144,226,0.6);animation:pulse 1.5s infinite"></div>',
+          iconSize: [18, 18], iconAnchor: [9, 9], className: ''
+        })
+      }).addTo(_navMap);
+    } else {
+      _navUserMarker.setLatLng([lat, lon]);
+    }
+
+    // Center map on user
+    _navMap.setView([lat, lon], 17);
+
+    // Calculate route
+    await calcRoute(lat, lon);
+  }
+
+  async function calcRoute(fromLat, fromLon) {
+    if (!_navDest) return;
+    try {
+      const url = `${OSRM[_navMode]}/${fromLon},${fromLat};${_navDest.lon},${_navDest.lat}?steps=true&geometries=geojson&overview=full`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.code !== 'Ok' || !data.routes.length) {
+        document.getElementById('navInstruction').textContent = '❌ Route not found';
+        return;
+      }
+
+      const route = data.routes[0];
+      const dist = route.distance;
+      const dur = route.duration;
+      _navSteps = route.legs[0].steps;
+
+      // Update stats
+      document.getElementById('navDist').textContent =
+        dist < 1000 ? `${Math.round(dist)}m` : `${(dist/1000).toFixed(1)}km`;
+      document.getElementById('navEta').textContent =
+        dur < 60 ? `${Math.round(dur)}s` : dur < 3600 ? `${Math.round(dur/60)}min` : `${(dur/3600).toFixed(1)}h`;
+
+      // Draw route
+      if (_navRouteLine) _navMap.removeLayer(_navRouteLine);
+      _navRouteLine = L.geoJSON(route.geometry, {
+        style: { color: '#4A90E2', weight: 5, opacity: 0.8 }
+      }).addTo(_navMap);
+
+      // Show next instruction
+      if (_navSteps.length > 0) {
+        const step = _navSteps[0];
+        const maneuver = step.maneuver;
+        const icons = {
+          'turn-left': '↰', 'turn-right': '↱',
+          'straight': '↑', 'arrive': '🎯',
+          'depart': '🚶', 'roundabout': '🔄'
+        };
+        const icon = icons[maneuver.type] || icons[`${maneuver.type}-${maneuver.modifier}`] || '↑';
+        const stepDist = step.distance < 1000
+          ? `${Math.round(step.distance)}m`
+          : `${(step.distance/1000).toFixed(1)}km`;
+        document.getElementById('navInstruction').textContent =
+          `${icon} In ${stepDist} — ${step.name || 'Continue'}`;
+      }
+
+      if (dist < 30) {
+        document.getElementById('navInstruction').textContent = '🎯 You have arrived at ' + _navDest.name;
+      }
+
+    } catch(e) {
+      document.getElementById('navInstruction').textContent = '↑ Head towards destination';
+    }
+  }
+
+  function toggleNavMode() {
+    _navMode = _navMode === 'walking' ? 'driving' : 'walking';
+    document.getElementById('navModeBtn').textContent =
+      _navMode === 'walking' ? '🚶 Walking' : '🚗 Driving';
+  }
+
+  async function recalcRoute() {
+    document.getElementById('navInstruction').textContent = '↻ Recalculating...';
+    if (_navUserMarker) {
+      const pos = _navUserMarker.getLatLng();
+      await calcRoute(pos.lat, pos.lng);
+    }
+  }
+
+  function stopNavigation() {
+    if (_navWatchId) { navigator.geolocation.clearWatch(_navWatchId); _navWatchId = null; }
+    if (_navMap) { _navMap.remove(); _navMap = null; }
+    _navUserMarker = null;
+    _navShopMarker = null;
+    _navRouteLine = null;
+    document.getElementById('navView').classList.remove('show');
+  }
+</script>
+</head>
+<body>
+
+<nav>
+  <button class="hamburger" onclick="openDrawer()">☰</button>
+  <div style="display:flex;align-items:center;gap:0.8rem">
+    <span onclick="showView('messages');loadConvList()" style="cursor:pointer;position:relative;font-size:1.1rem" id="msgNavIcon">
+      💬
+      <span id="msgNavBadge" style="display:none;position:absolute;top:-6px;right:-6px;background:#e05555;color:white;font-size:0.55rem;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px">0</span>
+    </span>
+    <div class="nav-brand">
+      <div class="logo" onclick="window.location.href='/web'">Haven<span>Hair</span></div>
+      <div class="nav-user" id="navUser"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-logo">Haven<span>Hair</span></div>
+    <div class="drawer-user" id="drawerUser">Customer</div>
+  </div>
+  <div class="drawer-menu">
+
+    <!-- Profile -->
+    <button class="drawer-item" onclick="toggleSub('subProfile')">
+      <span class="di-icon">👤</span> Profile
+    </button>
+    <div class="sub-panel" id="subProfile">
+      <div id="profileAlert"></div>
+      <input class="sub-input" id="editName" placeholder="Your name"/>
+      <input class="sub-input" id="editPhone" placeholder="Phone number" type="tel"/>
+      <button class="sub-btn" onclick="saveProfile()" style="width:100%">Save Changes</button>
+    </div>
+
+    <!-- Change Password -->
+    <button class="drawer-item" onclick="toggleSub('subChangePass')">
+      <span class="di-icon">🔑</span> Change Password
+    </button>
+    <div class="sub-panel" id="subChangePass">
+      <div id="changePassAlert" class="sub-alert-sm"></div>
+      <input class="sub-input" id="newPassC" placeholder="New password" type="password"/>
+      <input class="sub-input" id="confirmPassC" placeholder="Confirm password" type="password"/>
+      <button class="sub-btn-sm" onclick="customerChangePass()" style="width:100%;margin-bottom:0.4rem">Set Password</button>
+      <button class="sub-btn-sm outline" onclick="forgotPassword()" style="width:100%;background:transparent;color:var(--grey);border:1px solid var(--border)">Forgot Password?</button>
+    </div>
+
+    <div class="drawer-sep"></div>
+
+    <!-- Switch Role -->
+    <button class="drawer-item" onclick="switchRole()">
+      <span class="di-icon">↔️</span> Switch Role
+    </button>
+
+    <div class="drawer-sep"></div>
+
+    <!-- Delete Account -->
+    <button class="drawer-item danger" onclick="toggleSub('subDelete')">
+      <span class="di-icon">🗑️</span> Delete Account
+    </button>
+    <div class="sub-panel" id="subDelete">
+      <p style="font-size:0.78rem;color:var(--grey);margin-bottom:0.8rem">This will permanently delete your account and remove you from all queues.</p>
+      <button class="sub-btn danger-btn" onclick="deleteAccount()" style="width:100%">Confirm Delete</button>
+    </div>
+
+    <div class="drawer-sep"></div>
+
+    <!-- Sign Out -->
+    <button class="drawer-item danger" onclick="confirmSignOut()">
+      <span class="di-icon">🚪</span> Sign Out
+    </button>
+
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="view" id="view-auth">
+  <div class="auth-wrap">
+    <div class="auth-logo">Haven<span>Hair</span></div>
+    <div class="auth-sub">✂️ Customer Portal</div>
+    <div id="loginBox" class="auth-box">
+      <h2>Welcome back</h2>
+      <p>Sign in to join queues with one tap</p>
+      <div id="loginAlert"></div>
+      <div class="form-group"><label>Your Name</label><input type="text" id="loginName" placeholder="Mohammed"/></div>
+      <div class="form-group"><label>Phone Number</label><input type="tel" id="loginPhone" placeholder="05xxxxxxxx" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="submit-btn" onclick="doLogin()">Sign In →</button>
+      <div class="auth-switch">New here? <a onclick="showRegister()">Create account</a></div>
+      <div class="auth-skip" onclick="skipAuth()">Browse as guest →</div>
+      <div class="auth-back" onclick="window.location.href='/web'">← Back to home</div>
+    </div>
+    <div id="registerBox" class="auth-box" style="display:none">
+      <h2>Create account</h2>
+      <p>Join queues with one tap next time</p>
+      <div id="registerAlert"></div>
+      <div class="form-group"><label>Your Name</label><input type="text" id="regName" placeholder="Mohammed"/></div>
+      <div class="form-group"><label>Phone Number</label><input type="tel" id="regPhone" placeholder="05xxxxxxxx"/></div>
+      <button class="submit-btn" onclick="doRegister()">Create Account →</button>
+      <div class="auth-switch">Have account? <a onclick="showLogin()">Sign in</a></div>
+      <div class="auth-skip" onclick="skipAuth()">Browse as guest →</div>
+      <div class="auth-back" onclick="window.location.href='/web'">← Back to home</div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST -->
+<div class="view" id="view-list">
+  <div class="loc-bar">
+    <span>📍</span>
+    <span class="loc-name" id="locName">Detecting location...</span>
+    <select class="loc-radius" id="radiusSel" onchange="loadShops()">
+      <option value="5">5 km</option>
+      <option value="10" selected>10 km</option>
+      <option value="20">20 km</option>
+      <option value="50">50 km</option>
+      <option value="999">All areas</option>
+    </select>
+    <span class="loc-refresh" onclick="getLocation()">📡 My location</span>
+    <span onclick="showView('messages');loadConvList()" style="cursor:pointer;position:relative;font-size:1.2rem;margin-left:0.5rem" title="Messages">
+      💬
+      <span id="msgNavBadge" style="display:none;position:absolute;top:-6px;right:-6px;background:#e05555;color:white;font-size:0.55rem;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px">0</span>
+    </span>
+  </div>
+  <div class="search-bar">
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Shop name or area (e.g. Riyadh, Main Street)..." oninput="onSearchInput(this.value)"/>
+      <button onclick="searchArea()">Search</button>
+    </div>
+    <div class="search-hint">Type shop name to filter instantly · Type area name + tap Search to find nearby shops</div>
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('open',this)">🟢 Open Now</button>
+    <button class="filter-btn" onclick="setFilter('top',this)">🏅 Top Rated</button>
+    <button class="filter-btn" onclick="setFilter('trusted',this)">✓ Trusted</button>
+  </div>
+  <div class="results-bar">
+    <div class="results-count" id="resultsCount"></div>
+    <select class="sort-sel" id="sortSel" onchange="applyFilters()">
+      <option value="distance">Nearest first</option>
+      <option value="rating">Top rated first</option>
+      <option value="queue">Shortest queue</option>
+    </select>
+  </div>
+  <div class="shops-list" id="shopsList">
+    <div class="loading-state"><div class="spinner"></div><p>Finding barbershops...</p></div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="view" id="view-detail">
+  <div class="back-bar" onclick="showList()">← All Shops</div>
+  <div class="detail-hero">
+    <div class="detail-name" id="detailName">—</div>
+    <div class="detail-addr" id="detailAddr">—</div>
+    <div class="detail-meta">
+      <span class="status-pill" id="detailStatus"></span>
+      <span id="detailBadge" style="font-size:0.75rem"></span>
+      <span id="detailDist" style="font-size:0.75rem;color:var(--grey)"></span>
+    </div>
+  </div>
+  <div class="detail-stats">
+    <div class="detail-stat"><div class="val" id="dWaiting">0</div><div class="lbl">Waiting</div></div>
+    <div class="detail-stat"><div class="val" id="dScore">—</div><div class="lbl">Score</div></div>
+    <div class="detail-stat"><div class="val" id="dSeated">0</div><div class="lbl">In Chair</div></div>
+  </div>
+
+  <div class="join-card" id="joinCard">
+    <div class="join-head">
+      <h3>Join Queue</h3>
+      <span class="quick-label" id="quickLabel"></span>
+    </div>
+    <div>
+      <div id="joinAlert"></div>
+
+      <!-- Step 1: Pick barber -->
+      <div id="chairStep">
+        <span class="slabel">Choose Your Barber</span>
+        <div id="chairOptions" style="margin-bottom:1rem"></div>
+      </div>
+
+      <!-- Step 2: Fill details + service (shown after picking barber) -->
+      <div id="serviceStep" style="display:none">
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;padding:0.7rem;background:rgba(201,168,76,0.06);border:1px solid var(--border)">
+          <span style="font-size:1rem">✂️</span>
+          <div>
+            <div style="font-size:0.82rem;font-weight:500" id="selectedBarberName">—</div>
+            <div style="font-size:0.68rem;color:var(--grey)" id="selectedBarberWait">—</div>
+          </div>
+          <button onclick="resetChairPick()" style="margin-left:auto;background:transparent;border:none;color:var(--grey);cursor:pointer;font-size:0.75rem">Change</button>
+        </div>
+
+        <div id="joinFields">
+          <div class="form-group"><label>Your Name</label><input type="text" id="joinName" placeholder="Mohammed"/></div>
+          <div class="form-group"><label>Phone <span style="color:var(--grey);font-size:0.65rem">(optional)</span></label><input type="tel" id="joinPhone" placeholder="05xxxxxxxx"/></div>
+        </div>
+
+        <span class="slabel">Select Service</span>
+        <div class="services">
+          <button class="svc-btn" onclick="pickSvc('haircut',this)">✂️<br/>Haircut</button>
+          <button class="svc-btn" onclick="pickSvc('beard',this)">🪒<br/>Beard</button>
+          <button class="svc-btn" onclick="pickSvc('both',this)">✨<br/>Both</button>
+          <button class="svc-btn" onclick="pickSvc('facial',this)">💆<br/>Facial</button>
+          <button class="svc-btn" onclick="pickSvc('kids',this)">👦<br/>Kids</button>
+          <button class="svc-btn" onclick="pickSvc('color',this)">🎨<br/>Color</button>
+        </div>
+        <button class="submit-btn" id="joinBtn" onclick="joinQueue()">Join Queue →</button>
+      </div>
+    </div>
+  </div>
+  <div class="detail-sec">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+      <span class="slabel" style="margin:0">Live Queue</span>
+      <span style="font-size:0.7rem;color:var(--grey);cursor:pointer" onclick="loadQueueDetail()">↻ Refresh</span>
+    </div>
+    <div id="detailQueue"><div class="q-empty">Loading...</div></div>
+  </div>
+  <div id="tokenSection" style="display:none">
+    <div class="token-box">
+      <div class="token-lbl">Your Token Number</div>
+      <div class="token-num" id="myToken">—</div>
+      <div class="token-info" id="myTokenInfo"></div>
+      <div style="margin-top:1rem;text-align:center">
+        <div id="cancelCountdown" style="font-size:0.75rem;color:var(--grey);margin-bottom:0.5rem"></div>
+        <button id="cancelBtn" onclick="cancelQueue()" disabled
+          style="background:transparent;border:1px solid rgba(224,85,85,0.2);color:var(--grey);padding:0.5rem 1.2rem;font-size:0.75rem;cursor:not-allowed;font-family:'DM Sans',sans-serif;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.3s">
+          ✕ Leave Queue
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="shop-closed-msg"  id="closedMsg" style="display:none">🔴 This shop is currently closed</div>
+  <!-- Map — below stats -->
+  <div class="detail-sec" id="mapSection">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+      <span class="slabel" style="margin:0">Location</span>
+    </div>
+    <div id="directionsBtn" style="margin-bottom:0.6rem"></div>
+    <div id="shopMapContainer"></div>
+  </div>
+
+  <!-- My Score Section (shown if logged in) -->
+  <div id="myScoreSection" style="padding:0 1.5rem;margin-top:1rem"></div>
+
+  <div class="detail-sec">
+    <span class="slabel">Customer Reviews</span>
+    <div id="reviewsList"></div>
+    <div style="margin-top:1.5rem">
+      <span class="slabel">Leave a Review</span>
+      <div id="reviewAlert"></div>
+      <div class="star-row">
+        <span class="star" onclick="setStar(1)">★</span>
+        <span class="star" onclick="setStar(2)">★</span>
+        <span class="star" onclick="setStar(3)">★</span>
+        <span class="star" onclick="setStar(4)">★</span>
+        <span class="star" onclick="setStar(5)">★</span>
+      </div>
+      <div class="form-group"><textarea id="reviewComment" placeholder="Share your experience..."></textarea></div>
+      <button class="submit-btn" onclick="submitReview()">Submit Review →</button>
+    </div>
+  </div>
+  <div style="height:2rem"></div>
+</div>
+
+<script>
+  const cleanPhone = p => p ? p.toString().trim().replace(/['"]/g,'') : '';
+  const API = 'https://haven-hair-2-0.onrender.com';
+  let userLat=null,userLon=null,allShops=[],activeFilter='all';
+  let selectedChairId=null,shopChairs=[];
+  let currentShop=null,selectedSvc=null,selectedStar=0;
+  let customer=null,queueTimer=null,searchTimer=null;
+
+  window.addEventListener('load',()=>{
+    localStorage.setItem('hh_role','customer');
+    customer=JSON.parse(localStorage.getItem('hh_customer')||'null');
+    updateNav();
+    if(!customer&&!localStorage.getItem('hh_seen')) showView('auth');
+    else getLocation();
+  });
+
+  function updateNav(){
+    const lbl=document.getElementById('navUser');
+    if(customer){ lbl.textContent=customer.name; }
+    else { lbl.textContent=''; }
+  }
+  function switchRole(){localStorage.removeItem('hh_role');window.location.href='/web';}
+  function signOut(){customer=null;localStorage.removeItem('hh_customer');updateNav();}
+
+  function showView(name){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+name).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function showList(){
+    if(queueTimer){clearInterval(queueTimer);queueTimer=null;}
+    if(chatRefreshTimer){clearInterval(chatRefreshTimer);chatRefreshTimer=null;}
+    myQueueEntryId=null;
+    myQueueEntryToken=null;
+    localStorage.removeItem('hh_active_entry');
+    if(cancelTimer){clearInterval(cancelTimer);cancelTimer=null;}
+    document.getElementById('floatChatBtn').classList.remove('show');
+    document.getElementById('chatBadge').classList.remove('show');
+    showView('list');
+  }
+
+  function showLogin(){document.getElementById('loginBox').style.display='block';document.getElementById('registerBox').style.display='none';}
+  function showRegister(){document.getElementById('loginBox').style.display='none';document.getElementById('registerBox').style.display='block';}
+  function skipAuth(){localStorage.setItem('hh_seen','1');getLocation();}
+
+  async function doLogin(){
+    const name=document.getElementById('loginName').value.trim();
+    const phone=document.getElementById('loginPhone').value.trim();
+    const el=document.getElementById('loginAlert');
+    if(!name||!phone){el.innerHTML='<div class="alert err">Enter name and phone</div>';return;}
+    try{
+      const res=await fetch(`${API}/auth/customer/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone})});
+      const data=await res.json();
+      if(res.ok){customer={name,phone,token:data.token};localStorage.setItem('hh_customer',JSON.stringify(customer));localStorage.setItem('hh_seen','1');updateNav();getLocation();}
+      else el.innerHTML=`<div class="alert err">${data.error}</div>`;
+    }catch(e){el.innerHTML='<div class="alert err">Cannot connect to server</div>';}
+  }
+
+  async function doRegister(){
+    const name=document.getElementById('regName').value.trim();
+    const phone=document.getElementById('regPhone').value.trim();
+    const el=document.getElementById('registerAlert');
+    if(!name||!phone){el.innerHTML='<div class="alert err">Fill all fields</div>';return;}
+    try{
+      const res=await fetch(`${API}/auth/customer/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone})});
+      const data=await res.json();
+      if(res.ok){customer={name,phone,token:data.token};localStorage.setItem('hh_customer',JSON.stringify(customer));localStorage.setItem('hh_seen','1');updateNav();getLocation();}
+      else el.innerHTML=`<div class="alert err">${data.error}</div>`;
+    }catch(e){el.innerHTML='<div class="alert err">Cannot connect to server</div>';}
+  }
+
+  function getLocation(){
+    showView('list');
+    document.getElementById('locName').textContent='Detecting location...';
+    document.getElementById('shopsList').innerHTML='<div class="loading-state"><div class="spinner"></div><p>Getting your location...</p></div>';
+    if(!navigator.geolocation){document.getElementById('locName').textContent='All areas';loadShops();return;}
+    navigator.geolocation.getCurrentPosition(
+      async(pos)=>{
+        userLat=pos.coords.latitude;userLon=pos.coords.longitude;
+        try{
+          const res=await fetch(`${API}/maps/reverse?lat=${userLat}&lon=${userLon}`);
+          const data=await res.json();
+          const area=data.city||data.address?.split(',')[0]||'Near you';
+          document.getElementById('locName').textContent='📍 '+area;
+        }catch{document.getElementById('locName').textContent='📍 Near you';}
+        loadShops();
+      },
+      ()=>{document.getElementById('locName').textContent='All areas';loadShops();},
+      {timeout:8000}
+    );
+  }
+
+  function onSearchInput(val){
+    if(searchTimer)clearTimeout(searchTimer);
+    // Instant name filter
+    searchTimer=setTimeout(()=>applyFilters(),200);
+  }
+
+  async function searchArea(){
+    const q=document.getElementById('searchInput').value.trim();
+    if(!q){loadShops();return;}
+    // Check if any shops match by name/address
+    const nameMatch=allShops.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||s.address.toLowerCase().includes(q.toLowerCase()));
+    if(nameMatch.length>0){applyFilters();return;}
+    // No match — geocode as area
+    document.getElementById('shopsList').innerHTML='<div class="loading-state"><div class="spinner"></div><p>Searching in '+q+'...</p></div>';
+    document.getElementById('locName').textContent='📍 '+q;
+    try{
+      const res=await fetch(`${API}/maps/geocode?address=${encodeURIComponent(q)}`);
+      const data=await res.json();
+      if(data.lat){userLat=parseFloat(data.lat);userLon=parseFloat(data.lon);document.getElementById('searchInput').value='';loadShops();}
+      else applyFilters();
+    }catch{applyFilters();}
+  }
+
+  async function loadShops(){
+    const radius=document.getElementById('radiusSel').value;
+    try{
+      let url=`${API}/maps/shops`;
+      if(userLat&&userLon)url+=`?lat=${userLat}&lon=${userLon}`;
+      const res=await fetch(url);
+      if(!res.ok)throw new Error();
+      let shops=await res.json();
+      // Filter by radius
+      if(userLat&&userLon&&radius!=='999')shops=shops.filter(s=>!s.distance_km||s.distance_km<=parseFloat(radius));
+      // Load queue counts
+      await Promise.all(shops.map(async s=>{
+        try{const q=await fetch(`${API}/queue/${s.id}`);const qd=await q.json();s.waiting=qd.total_waiting||0;s.hasSeated=!!qd.currently_seated;}
+        catch{s.waiting=0;s.hasSeated=false;}
+      }));
+      allShops=shops;
+      applyFilters();
+    }catch(e){
+      document.getElementById('shopsList').innerHTML='<div class="empty-state"><h3>Can\'t connect</h3><p>Make sure Flask server is running on port 5000</p></div>';
+    }
+  }
+
+  function setFilter(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyFilters();}
+
+  function applyFilters(){
+    const search=document.getElementById('searchInput').value.toLowerCase().trim();
+    const sort=document.getElementById('sortSel').value;
+    let list=allShops.filter(s=>{
+      const ms=!search||s.name.toLowerCase().includes(search)||s.address.toLowerCase().includes(search);
+      const mf=activeFilter==='all'?true:activeFilter==='open'?s.status==='open':activeFilter==='top'?s.reputation_score>=90:activeFilter==='trusted'?s.reputation_score>=70:true;
+      return ms&&mf;
+    });
+    list.sort((a,b)=>sort==='rating'?b.reputation_score-a.reputation_score:sort==='queue'?a.waiting-b.waiting:(a.distance_km||999)-(b.distance_km||999));
+    renderShops(list);
+  }
+
+  function getBadge(s){if(s>=90)return'🏅 Top Rated';if(s>=70)return'✓ Trusted';if(s<50&&s>0)return'⚠️ Warning';return'';}
+
+  function renderShops(list){
+    document.getElementById('resultsCount').innerHTML=`<strong>${list.length}</strong> shop${list.length!==1?'s':''} found`;
+    if(!list.length){document.getElementById('shopsList').innerHTML='<div class="empty-state"><h3>No shops found</h3><p>Try wider radius or different search</p></div>';return;}
+    document.getElementById('shopsList').innerHTML=list.map(s=>`
+      <div class="shop-card" onclick="openShop(${s.id})">
+        <div class="shop-card-inner">
+          <div class="card-top">
+            <div><div class="shop-name">${s.name}</div><div class="shop-addr">📍 ${s.address}</div></div>
+            <span class="status-pill status-${s.status}">${s.status}</span>
+          </div>
+          <div class="card-stats">
+            <div class="stat-box"><div class="stat-val">${s.waiting}</div><div class="stat-lbl">Waiting</div></div>
+            <div class="stat-box"><div class="stat-val">${s.reputation_score}</div><div class="stat-lbl">Score</div></div>
+            <div class="stat-box"><div class="stat-val">${s.distance_km!==undefined?s.distance_km+'km':'—'}</div><div class="stat-lbl">Distance</div></div>
+          </div>
+          <div class="card-bottom">
+            <span class="shop-badge">${getBadge(s.reputation_score)}</span>
+            <span class="card-arrow">View Shop →</span>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  async function openShop(shopId){
+    currentShop=allShops.find(s=>s.id===shopId);
+    if(!currentShop)return;
+    selectedSvc=null;selectedStar=0;
+    document.querySelectorAll('.svc-btn').forEach(b=>b.classList.remove('picked'));
+    document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+    document.getElementById('tokenSection').style.display='none';
+    document.getElementById('joinCard').style.display='block';
+    document.getElementById('closedMsg').style.display='none';
+    document.getElementById('joinAlert').innerHTML='';
+    document.getElementById('reviewAlert').innerHTML='';
+    document.getElementById('reviewComment').value='';
+    document.getElementById('joinBtn').disabled=false;
+    document.getElementById('joinBtn').textContent='Join Queue →';
+    document.getElementById('detailName').textContent=currentShop.name;
+    document.getElementById('detailAddr').textContent='📍 '+currentShop.address;
+    document.getElementById('detailStatus').textContent=currentShop.status;
+    document.getElementById('detailStatus').className='status-pill status-'+currentShop.status;
+    document.getElementById('detailBadge').textContent=getBadge(currentShop.reputation_score);
+    document.getElementById('dScore').textContent=currentShop.reputation_score;
+    document.getElementById('detailDist').textContent=currentShop.distance_km?`📍 ${currentShop.distance_km} km away`:'';
+    if(customer){
+      document.getElementById('joinFields').style.display='none';
+      document.getElementById('quickLabel').textContent=`Booking as ${customer.name}`;
+      document.getElementById('joinName').value=customer.name;
+      document.getElementById('joinPhone').value=customer.phone;
+    }else{
+      document.getElementById('joinFields').style.display='block';
+      document.getElementById('quickLabel').textContent='';
+      document.getElementById('joinName').value='';
+      document.getElementById('joinPhone').value='';
+    }
+    if(currentShop.status==='closed'){document.getElementById('joinCard').style.display='none';document.getElementById('closedMsg').style.display='block';}
+    showView('detail');
+    loadChairs(currentShop.id);
+    if(customer?.phone) loadMyScore(); // load barber chairs
+    // Show map placeholder
+    MapEngine.showMap('shopMapContainer', currentShop.latitude, currentShop.longitude, currentShop.name);
+    document.getElementById('directionsBtn').innerHTML = MapEngine.getDirections(currentShop.latitude, currentShop.longitude, currentShop.name);
+    await loadQueueDetail();
+    await loadReviews();
+restoreActiveQueue();
+    if(queueTimer)clearInterval(queueTimer);
+    queueTimer=setInterval(loadQueueDetail,15000);
+  }
+
+  async function loadQueueDetail(){
+    if(!currentShop) return;
+    try{
+      const res=await fetch(`${API}/queue/branch/${currentShop.id}`);
+      const chairs=await res.json();
+
+      // If a chair is selected — show only that chair's queue
+      if(selectedChairId){
+        const chair=chairs.find(c=>c.chair_id===selectedChairId);
+        if(!chair){return;}
+        document.getElementById('dWaiting').textContent=chair.total_waiting||0;
+        document.getElementById('dSeated').textContent=chair.seated?'1':'0';
+        let html='';
+        if(chair.seated){
+          const seatedIsMe = chair.seated.token === myQueueEntryToken;
+          html+=`<div class="q-row seated">
+            <div class="q-tok" style="color:var(--gold)">${chair.seated.token}</div>
+            <div class="q-info">
+              <div class="q-name">${seatedIsMe ? chair.seated.name + ' ✂️ (You)' : '**** ✂️'}</div>
+              <div class="q-svc">In chair · ${seatedIsMe ? chair.seated.service : '••••'}</div>
+            </div>
+          </div>`;
+        }
+        chair.waiting.forEach(q=>{
+          const isMe = q.token === myQueueEntryToken;
+          html+=`<div class="q-row" style="${isMe?'border-color:var(--gold);background:rgba(201,168,76,0.04)':''}">
+            <div class="q-tok" style="${isMe?'color:var(--gold)':''}">${q.token}</div>
+            <div class="q-info">
+              <div class="q-name">${isMe ? q.name + ' 👤 (You)' : '****'}</div>
+              <div class="q-svc">${isMe ? q.service : '••••'}</div>
+            </div>
+            <div class="q-wait" style="${isMe?'color:var(--gold);font-weight:500':''}">${fmtWait(q.estimated_wait)}</div>
+          </div>`;
+        });
+        if(!chair.seated&&!chair.waiting.length)
+          html='<div class="q-empty">Queue empty — walk right in! 🎉</div>';
+        document.getElementById('detailQueue').innerHTML=html;
+        return;
+      }
+
+      // No chair selected — show all chairs summary
+      let totalWaiting=0,totalSeated=0,html='';
+      chairs.forEach(c=>{
+        totalWaiting+=c.total_waiting||0;
+        if(c.seated)totalSeated++;
+        html+=`<div style="padding:0.5rem 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.85rem;font-weight:500">${c.barber_name}</span>
+            <span style="font-size:0.72rem;color:${c.status==='absent'?'var(--red)':'var(--grey)'}">
+              ${c.status==='absent'?'Absent':c.total_waiting+' waiting'}
+            </span>
+          </div>
+        </div>`;
+      });
+      document.getElementById('dWaiting').textContent=totalWaiting;
+      document.getElementById('dSeated').textContent=totalSeated;
+      document.getElementById('detailQueue').innerHTML=html||'<div class="q-empty">No chairs available</div>';
+    }catch(e){}
+  }
+
+  function pickSvc(svc,btn){selectedSvc=svc;document.querySelectorAll('.svc-btn').forEach(b=>b.classList.remove('picked'));btn.classList.add('picked');}
+
+  
+
+async function restoreActiveQueue(){
+  const saved = localStorage.getItem('hh_active_entry');
+
+  if(!saved) return;
+
+  try{
+    const entry = JSON.parse(saved);
+
+    const res = await fetch(`${API}/queue/status/${entry.entryId}`);
+
+    if(!res.ok){
+      localStorage.removeItem('hh_active_entry');
+      return;
+    }
+
+    const data = await res.json();
+
+    if(data.status !== 'waiting' && data.status !== 'active'){
+      localStorage.removeItem('hh_active_entry');
+      return;
+    }
+
+    myQueueEntryId = entry.entryId;
+    myQueueEntryToken = entry.token;
+
+    document.getElementById('tokenSection').style.display='block';
+
+    document.getElementById('myToken').textContent =
+      String(entry.token).padStart(2,'0');
+
+    document.getElementById('myTokenInfo').innerHTML =
+      `You are <strong>#${data.position}</strong> in queue · ~${data.estimated_wait_mins || 0} min wait · <strong>${entry.barber}</strong>`;
+
+    document.getElementById('joinCard').style.display='none';
+
+    document.getElementById('floatChatBtn').classList.add('show');
+
+  }catch(err){
+    console.error(err);
+  }
+}
+
+
+async function joinQueue(){
+    const name=document.getElementById('joinName').value.trim();
+    const phone=document.getElementById('joinPhone').value.trim()||'N/A';
+    const el=document.getElementById('joinAlert');
+
+    if(!selectedChairId){
+      el.innerHTML='<div class="alert err">Please select a barber first</div>';
+      return;
+    }
+
+    // Check behaviour score before joining
+    if(customer?.phone){
+      const scoreData = await checkCustomerScore(customer.phone, customer.name);
+      if(scoreData.blocked){
+        el.innerHTML=`<div class="alert err">🚫 Your account is blocked. Reason: ${scoreData.block_reason}. Submit an appeal from your score section.</div>`;
+        return;
+      }
+      if(scoreData.score < 50){
+        el.innerHTML=`<div class="alert warn">⚠️ Your behaviour score is low (${scoreData.score}/100). Please be punctual to avoid being blocked.</div>`;
+        // Still allow joining but show warning
+      }
+    }
+    if(!name){
+      el.innerHTML='<div class="alert err">Enter your name</div>';
+      return;
+    }
+    if(!selectedSvc){
+      el.innerHTML='<div class="alert err">Select a service first</div>';
+      return;
+    }
+
+    document.getElementById('joinBtn').disabled=true;
+    document.getElementById('joinBtn').textContent='Joining...';
+
+    try{
+      const res=await fetch(`${API}/queue/join`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          branch_id: currentShop.id,
+          chair_id: selectedChairId,
+          customer_name: name,
+          customer_phone: phone,
+          service: selectedSvc
+        })
+      });
+      const data=await res.json();
+      // Already in queue — show existing token
+      if(res.status === 200 && data.already_in_queue){
+        myQueueEntryId = data.id;
+        myQueueEntryToken = data.token;
+        // Save to localStorage so it survives navigation
+        localStorage.setItem('hh_active_entry', JSON.stringify({
+          entryId: data.id,
+          token: data.token,
+          branchId: currentShop.id,
+          barber: data.barber
+        }));
+        document.getElementById('tokenSection').style.display='block';
+        document.getElementById('myToken').textContent=String(data.token).padStart(2,'0');
+        document.getElementById('myTokenInfo').innerHTML=
+          `You are already <strong>#${data.position}</strong> in queue · ~<strong>${data.estimated_wait_mins} min</strong> wait · <strong>${data.barber}</strong>`;
+        document.getElementById('joinCard').style.display='none';
+        document.getElementById('floatChatBtn').classList.add('show');
+        addEntry(data.id, currentShop.name, data.barber);
+        el.innerHTML='<div class="alert ok">✅ You are already in this queue!</div>';
+        await loadQueueDetail();
+        return;
+      }
+      if(res.ok){
+        document.getElementById('tokenSection').style.display='block';
+        document.getElementById('myToken').textContent=String(data.token).padStart(2,'0');
+        document.getElementById('myTokenInfo').innerHTML=
+          `You are <strong>#${data.position}</strong> in queue · ~<strong>${data.estimated_wait_mins} min</strong> wait · <strong>${data.barber}</strong>`;
+        myQueueEntryId = data.id;
+        myQueueEntryToken = data.token;
+        // Save to localStorage so it survives navigation
+        localStorage.setItem('hh_active_entry', JSON.stringify({
+          entryId: data.id,
+          token: data.token,
+          branchId: currentShop.id,
+          barber: data.barber
+        }));
+        lastSeenCount = 0;
+        document.getElementById('joinCard').style.display='none';
+        document.getElementById('floatChatBtn').classList.add('show');
+        el.innerHTML='';
+        await loadQueueDetail();
+        // Auto refresh messages every 10 seconds
+        if(chatRefreshTimer) clearInterval(chatRefreshTimer);
+        chatRefreshTimer = setInterval(loadChatMessages, 10000);
+        startCancelCountdown();
+        addEntry(data.id, currentShop.name, document.getElementById('selectedBarberName')?.textContent || 'Barber');
+      } else {
+        el.innerHTML=`<div class="alert err">${data.error||'Something went wrong'}</div>`;
+        document.getElementById('joinBtn').disabled=false;
+        document.getElementById('joinBtn').textContent='Join Queue →';
+      }
+    } catch(e) {
+      el.innerHTML='<div class="alert err">Cannot connect — is server running on port 5000?</div>';
+      document.getElementById('joinBtn').disabled=false;
+      document.getElementById('joinBtn').textContent='Join Queue →';
+    }
+  }
+
+  async function loadReviews(){
+    if(!currentShop)return;
+    try{
+      const res=await fetch(`${API}/reviews/${currentShop.id}`);
+      const data=await res.json();
+      if(!data.reviews?.length){document.getElementById('reviewsList').innerHTML='<div style="color:var(--grey);font-size:0.82rem;margin-bottom:0.5rem">No reviews yet — be the first!</div>';return;}
+      document.getElementById('reviewsList').innerHTML=data.reviews.slice(0,5).map(r=>`<div class="review-card"><div class="review-top"><span class="review-name">${r.customer}</span><span class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span></div>${r.comment?`<div class="review-comment">${r.comment}</div>`:''}</div>`).join('');
+    }catch(e){}
+  }
+
+  function setStar(n){selectedStar=n;document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));}
+
+  async function submitReview(){
+    const name = customer?.name || document.getElementById('joinName').value.trim();
+    const phone = customer?.phone || document.getElementById('joinPhone').value.trim();
+    const comment = document.getElementById('reviewComment').value.trim();
+    const el = document.getElementById('reviewAlert');
+
+    if(!selectedStar){ el.innerHTML='<div class="alert err">Select a star rating</div>'; return; }
+    if(!name || !phone){ el.innerHTML='<div class="alert err">Please sign in to leave a verified review</div>'; return; }
+
+    // Check eligibility first
+    try {
+      const check = await fetch(`${API}/reviews/can-review/${currentShop.id}/${phone}`);
+      const cd = await check.json();
+      if(!cd.can_review){
+        el.innerHTML=`<div class="alert err">${cd.reviews_remaining === 0 ? 'You have already reviewed all your visits. Complete another service to review again.' : 'You can only review after completing a service at this shop.'}</div>`;
+        return;
+      }
+    } catch(e) {}
+
+    try{
+      const res = await fetch(`${API}/reviews`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          branch_id: currentShop.id,
+          customer_name: name,
+          customer_phone: phone,
+          rating: selectedStar,
+          comment
+        })
+      });
+      const data = await res.json();
+      if(res.ok){
+        el.innerHTML='<div class="alert ok">✅ Review submitted! Thank you.</div>';
+        document.getElementById('reviewComment').value='';
+        selectedStar=0;
+        document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
+        await loadReviews();
+      } else {
+        el.innerHTML=`<div class="alert err">${data.error}</div>`;
+      }
+    } catch(e) {
+      el.innerHTML='<div class="alert err">Connection error</div>';
+    }
+  }
+
+  /* ── MAP ENGINE — Leaflet + OpenStreetMap ── */
+  let _leafletMap = null;
+  let _currentTileLayer = null;
+
+  const MAP_STYLES = {
+    dark: {
+      name: '🌙 Dark',
+      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      attribution: '© CartoDB © OpenStreetMap'
+    },
+    street: {
+      name: '🗺️ Street',
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      attribution: '© OpenStreetMap contributors'
+    },
+    satellite: {
+      name: '🛰️ Satellite',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      attribution: '© Esri'
+    },
+    topo: {
+      name: '⛰️ Topo',
+      url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+      attribution: '© OpenTopoMap'
+    }
+  };
+
+  let _activeStyle = 'street';
+
+  const MapEngine = {
+    available: true,
+
+    showMap(containerId, lat, lon, label) {
+      const el = document.getElementById(containerId);
+      if (!el || !lat || !lon) return;
+
+      // Destroy previous map instance
+      if (_leafletMap) {
+        _leafletMap.remove();
+        _leafletMap = null;
+      }
+
+      // Create map
+      _leafletMap = L.map(containerId, {
+        zoomControl: true,
+        attributionControl: true
+      }).setView([lat, lon], 16);
+
+      // Add tile layer
+      const style = MAP_STYLES[_activeStyle];
+      _currentTileLayer = L.tileLayer(style.url, {
+        attribution: style.attribution,
+        maxZoom: 19
+      }).addTo(_leafletMap);
+
+      // Custom marker
+      const icon = L.divIcon({
+        html: '<div style="background:var(--gold,#C9A84C);width:14px;height:14px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+        className: ''
+      });
+
+      L.marker([lat, lon], {icon})
+        .addTo(_leafletMap)
+        .bindPopup(`<strong>${label}</strong>`)
+        .openPopup();
+
+      // Add style switcher buttons after map
+      const btnWrap = document.createElement('div');
+      btnWrap.className = 'map-style-btns';
+      btnWrap.id = 'mapStyleBtns';
+      btnWrap.innerHTML = Object.entries(MAP_STYLES).map(([key, s]) =>
+        `<button class="map-style-btn ${key === _activeStyle ? 'active' : ''}"
+          onclick="switchMapStyle('${key}','${lat}','${lon}','${label}')">${s.name}</button>`
+      ).join('');
+
+      // Remove old buttons if exist
+      const old = document.getElementById('mapStyleBtns');
+      if (old) old.remove();
+      el.parentNode.insertBefore(btnWrap, el.nextSibling);
+    },
+
+    getDirections(toLat, toLon, label) {
+      const osmUrl = `https://www.openstreetmap.org/directions?to=${toLat},${toLon}`;
+      const gmapsUrl = `https://maps.google.com/?daddr=${toLat},${toLon}`;
+      return `<div style="display:flex;gap:0.3rem;width:100%">
+        <button onclick="startNavigation(${toLat},${toLon},'${label}')"
+          style="flex:1;background:var(--gold);color:var(--black);border:none;padding:0.6rem 0.3rem;font-size:0.68rem;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.05em;text-transform:uppercase;font-weight:500">
+          🧭 Navigate
+        </button>
+        <a href="${osmUrl}" target="_blank"
+          style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--grey);padding:0.6rem 0.3rem;font-size:0.68rem;text-decoration:none;font-family:'DM Sans',sans-serif;letter-spacing:0.05em;text-transform:uppercase;text-align:center">
+          🗺️ OSM
+        </a>
+        <a href="${gmapsUrl}" target="_blank"
+          style="flex:1;background:var(--card);border:1px solid var(--border);color:var(--grey);padding:0.6rem 0.3rem;font-size:0.68rem;text-decoration:none;font-family:'DM Sans',sans-serif;letter-spacing:0.05em;text-transform:uppercase;text-align:center">
+          📍 Google
+        </a>
+      </div>`;
+    }
+  };
+
+  function switchMapStyle(style, lat, lon, label) {
+    _activeStyle = style;
+    MapEngine.showMap('shopMapContainer', parseFloat(lat), parseFloat(lon), label);
+  }
+
+  /* ── CHAIR SELECTION ── */
+  async function loadChairs(branchId) {
+    try {
+      const res = await fetch(`${API}/queue/branch/${branchId}`);
+      shopChairs = await res.json();
+      renderChairOptions();
+    } catch(e) {
+      document.getElementById('chairOptions').innerHTML =
+        '<div style="color:var(--grey);font-size:0.82rem">Could not load barbers</div>';
+    }
+  }
+
+  function renderChairOptions() {
+    if (!shopChairs.length) {
+      document.getElementById('chairOptions').innerHTML =
+        '<div style="color:var(--grey);font-size:0.82rem">No barbers available</div>';
+      return;
+    }
+
+    document.getElementById('chairOptions').innerHTML = shopChairs.map((c, i) => {
+      const isAbsent = c.status === 'absent';
+      const waitMins = c.waiting.length * 20;
+      return `
+        <div onclick="${isAbsent ? '' : `pickChair(${c.chair_id},'${c.barber_name}',${c.total_waiting},${waitMins})`}"
+          style="display:flex;align-items:center;gap:0.8rem;padding:0.8rem;border:1px solid ${isAbsent ? 'rgba(224,85,85,0.2)' : 'var(--border)'};margin-bottom:0.4rem;cursor:${isAbsent ? 'not-allowed' : 'pointer'};opacity:${isAbsent ? '0.5' : '1'};transition:border-color 0.2s"
+          onmouseover="if(!${isAbsent})this.style.borderColor='var(--gold)'"
+          onmouseout="this.style.borderColor='${isAbsent ? 'rgba(224,85,85,0.2)' : 'var(--border)'}'">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:${isAbsent ? 'var(--red)' : 'var(--gold)'};min-width:1.5rem">${i + 1}</div>
+          <div style="flex:1">
+            <div style="font-size:0.88rem;font-weight:500">${c.barber_name}</div>
+            <div style="font-size:0.7rem;color:var(--grey);margin-top:2px">
+              ${isAbsent ? (c.absent_note || 'Absent today') : `${c.total_waiting} waiting · ~${waitMins || 'No'} min wait`}
+            </div>
+          </div>
+          ${!isAbsent ? '<span style="color:var(--gold);font-size:0.8rem">→</span>' : '<span style="color:var(--red);font-size:0.7rem">Absent</span>'}
+        </div>`;
+    }).join('');
+  }
+
+  function pickChair(chairId, barberName, waiting, waitMins) {
+    selectedChairId = chairId;
+    document.getElementById('chairStep').style.display = 'none';
+    document.getElementById('serviceStep').style.display = 'block';
+    document.getElementById('selectedBarberName').textContent = barberName;
+    document.getElementById('selectedBarberWait').textContent =
+      waiting === 0 ? 'No one waiting — walk right in!' : `${waiting} waiting · ~${waitMins} min`;
+    if (customer) {
+      document.getElementById('joinFields').style.display = 'none';
+      document.getElementById('quickLabel').textContent = `Booking as ${customer.name}`;
+      document.getElementById('joinName').value = customer.name;
+      document.getElementById('joinPhone').value = customer.phone || '';
+    }
+  }
+
+  function resetChairPick() {
+    selectedChairId = null;
+    selectedSvc = null;
+    document.querySelectorAll('.svc-btn').forEach(b => b.classList.remove('picked'));
+    document.getElementById('chairStep').style.display = 'block';
+    document.getElementById('serviceStep').style.display = 'none';
+    selectedChairId = null;
+    document.getElementById('serviceStep').style.display = 'none';
+    document.getElementById('joinAlert').innerHTML = '';
+  }
+
+  /* ── FLOATING CUSTOMER CHAT ── */
+  let myQueueEntryId = null;
+  let myQueueEntryToken = null;
+  let chatRefreshTimer = null;
+  let lastSeenCount = 0;
+
+  function openCustomerChat() {
+    document.getElementById('chatModalOverlay').classList.add('show');
+    document.getElementById('chatModalTitle').textContent =
+      currentShop ? `Chat — ${currentShop.name}` : 'Chat';
+    // Clear badge
+    lastSeenCount = 999;
+    document.getElementById('chatBadge').classList.remove('show');
+    loadChatMessages();
+  }
+
+  function closeChatModal() {
+    document.getElementById('chatModalOverlay').classList.remove('show');
+  }
+
+  async function loadChatMessages() {
+    if(!myQueueEntryId) return;
+    try {
+      const res = await fetch(`${API}/queue/${myQueueEntryId}/messages`);
+      const msgs = await res.json();
+      const container = document.getElementById('chatMessages');
+      if(!msgs.length){
+        container.innerHTML = '<div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:1rem">No messages yet — barber will message you here</div>';
+        return;
+      }
+      container.innerHTML = msgs.map(m=>`
+        <div class="msg-bubble ${m.sender}">
+          <div class="msg-who">${m.sender === 'barber' ? '✂️ Barber' : '👤 You'} · ${m.time}</div>
+          ${m.text}
+        </div>`).join('');
+      container.scrollTop = container.scrollHeight;
+
+      // Update badge for new barber messages
+      const barberMsgs = msgs.filter(m => m.sender === 'barber').length;
+      if(barberMsgs > lastSeenCount && !document.getElementById('chatModalOverlay').classList.contains('show')){
+        const unread = barberMsgs - lastSeenCount;
+        const badge = document.getElementById('chatBadge');
+        badge.textContent = unread > 9 ? '9+' : unread;
+        badge.classList.add('show');
+      }
+    } catch(e) {}
+  }
+
+  async function sendCustMsg() {
+    if(!myQueueEntryId) return;
+    const input = document.getElementById('chatMsgInput');
+    const text = input.value.trim();
+    if(!text) return;
+    try {
+      await fetch(`${API}/queue/${myQueueEntryId}/message`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({sender:'customer', text})
+      });
+      input.value = '';
+      await loadChatMessages();
+    } catch(e) {}
+  }
+
+  /* ── CONVERSATIONS ── */
+  let myJoinedEntries = JSON.parse(localStorage.getItem('hh_entries') || '[]');
+  // Format: [{entryId, shopName, barberName, joinedAt}]
+  let activeConvEntryId = null;
+  let activeConvTimer = null;
+
+  function saveEntries() {
+    localStorage.setItem('hh_entries', JSON.stringify(myJoinedEntries.slice(0, 20)));
+  }
+
+  function addEntry(entryId, shopName, barberName) {
+    myJoinedEntries = myJoinedEntries.filter(e => e.entryId !== entryId);
+    myJoinedEntries.unshift({
+      entryId,
+      shopName,
+      barberName,
+      joinedAt: new Date().toLocaleString()
+    });
+    saveEntries();
+  }
+
+  function loadConvList() {
+    const el = document.getElementById('convList');
+    if (!myJoinedEntries.length) {
+      el.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--grey)">
+        <div style="font-size:2rem;margin-bottom:0.5rem">💬</div>
+        <p>No conversations yet</p>
+        <p style="font-size:0.75rem;margin-top:0.3rem">Join a queue to chat with barbers</p>
+      </div>`;
+      return;
+    }
+
+    // Group by shop — keep only latest entry per shop
+    const grouped = {};
+    myJoinedEntries.forEach(e => {
+      if (!grouped[e.shopName]) {
+        grouped[e.shopName] = e; // first = most recent
+      }
+    });
+    const shops = Object.values(grouped);
+
+    el.innerHTML = shops.map(e => `
+      <div onclick="openConv(${e.entryId},'${e.shopName}','${e.barberName}')"
+        style="display:flex;align-items:center;gap:1rem;padding:1.2rem 1rem;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s"
+        onmouseover="this.style.background='var(--dark)'" onmouseout="this.style.background='transparent'">
+        <div style="width:50px;height:50px;border-radius:50%;background:rgba(201,168,76,0.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0">💈</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:0.95rem;font-weight:500">${e.shopName}</div>
+          <div style="font-size:0.75rem;color:var(--grey);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">✂️ ${e.barberName} · Latest visit</div>
+          <div style="font-size:0.65rem;color:var(--grey);margin-top:2px">${e.joinedAt}</div>
+        </div>
+        <span style="color:var(--gold);font-size:1rem;flex-shrink:0">›</span>
+      </div>`).join('');
+  }
+
+  function openConv(entryId, shopName, barberName) {
+    activeConvEntryId = entryId;
+    document.getElementById('chatViewTitle').textContent = shopName;
+    document.getElementById('chatViewSub').textContent = '✂️ ' + barberName;
+    showView('chat');
+    loadActiveChatMsgs();
+    if (activeConvTimer) clearInterval(activeConvTimer);
+    activeConvTimer = setInterval(loadActiveChatMsgs, 8000);
+  }
+
+  async function loadActiveChatMsgs() {
+    if (!activeConvEntryId) return;
+    try {
+      const res = await fetch(`${API}/messages/${activeConvEntryId}`);
+      const data = await res.json();
+      const msgs = data.messages || [];
+
+      // Show limit bar
+      const limitEl = document.getElementById('chatLimitInfo');
+      if (limitEl) {
+        limitEl.textContent = `${data.used}/${data.limit} messages · auto-deletes in 24h`;
+      }
+
+      const container = document.getElementById('activeChatMsgs');
+      if (!msgs.length) {
+        container.innerHTML = '<div style="text-align:center;color:var(--grey);font-size:0.8rem;padding:2rem">No messages yet</div>';
+        return;
+      }
+      container.innerHTML = msgs.map(m => `
+        <div style="display:flex;flex-direction:column;align-items:${m.sender==='customer'?'flex-end':'flex-start'}">
+          <div style="background:${m.sender==='customer'?'var(--card)':'rgba(201,168,76,0.1)'};border:1px solid var(--border);padding:0.6rem 0.9rem;max-width:78%;font-size:0.83rem;line-height:1.5;border-radius:${m.sender==='customer'?'8px 0 8px 8px':'0 8px 8px 8px'}">
+            <div style="font-size:0.62rem;color:var(--grey);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em">${m.sender==='barber'?'✂️ Barber':'👤 You'} · ${m.time}</div>
+            ${m.text}
+          </div>
+        </div>`).join('');
+      container.scrollTop = container.scrollHeight;
+    } catch(e) {}
+  }
+
+  async function sendActiveMsg() {
+    if (!activeConvEntryId) return;
+    const input = document.getElementById('activeChatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    try {
+      const res = await fetch(`${API}/messages/${activeConvEntryId}`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({sender:'customer', text})
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Message limit reached');
+        return;
+      }
+      input.value = '';
+      await loadActiveChatMsgs();
+    } catch(e) {}
+  }
+
+  // Init on page load
+  window.addEventListener('load', () => {
+    myJoinedEntries = JSON.parse(localStorage.getItem('hh_entries') || '[]');
+  }, {once: false});
+
+  /* ── BEHAVIOUR SCORE ── */
+  async function checkCustomerScore(phone, name) {
+    try {
+      const res = await fetch(`${API}/behaviour/check/${phone}`);
+      const data = await res.json();
+      return data;
+    } catch(e) { return { blocked: false, score: 100 }; }
+  }
+
+  async function submitAppeal() {
+    const msg = document.getElementById('appealMsg').value.trim();
+    if (!msg) return;
+    if (!customer) { alert('Please sign in first'); return; }
+    try {
+      const res = await fetch(`${API}/behaviour/appeal`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          phone: customer.phone,
+          name: customer.name,
+          message: msg
+        })
+      });
+      const data = await res.json();
+      document.getElementById('appealResult').innerHTML =
+        `<div class="alert ok">✅ ${data.message}</div>`;
+    } catch(e) {}
+  }
+
+  async function loadMyScore() {
+    if (!customer?.phone) return;
+    try {
+      const res = await fetch(`${API}/behaviour/${customer.phone}`);
+      const data = await res.json();
+      const el = document.getElementById('myScoreSection');
+      if (!el) return;
+      el.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);padding:1.2rem;margin-bottom:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+            <span style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold)">Your Behaviour Score</span>
+            <span style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--gold)">${data.score}</span>
+          </div>
+          <div style="font-size:0.82rem;margin-bottom:0.8rem">${data.badge}</div>
+          <div style="height:3px;background:rgba(255,255,255,0.05);margin-bottom:1rem">
+            <div style="height:100%;width:${data.score}%;background:${data.score>=70?'var(--gold)':data.score>=50?'orange':'var(--red)'};transition:width 0.8s"></div>
+          </div>
+          ${data.logs.length ? `
+          <div style="font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey);margin-bottom:0.5rem">Recent Activity</div>
+          ${data.logs.slice(0,5).map(l=>`
+            <div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.78rem">
+              <span style="color:${l.change>0?'var(--green)':'var(--red)'}">${l.change>0?'+':''}${l.change} · ${l.reason}</span>
+              <span style="color:var(--grey)">${l.time}</span>
+            </div>`).join('')}` : ''}
+          ${data.is_blocked ? `
+          <div style="margin-top:1rem;padding:1rem;background:rgba(224,85,85,0.08);border:1px solid rgba(224,85,85,0.3)">
+            <div style="color:var(--red);font-size:0.85rem;margin-bottom:0.8rem">🚫 Your account is blocked: ${data.block_reason}</div>
+            <textarea id="appealMsg" placeholder="Explain your situation to the owner..." style="margin-bottom:0.5rem;height:80px"></textarea>
+            <button class="submit-btn" onclick="submitAppeal()">Submit Appeal →</button>
+            <div id="appealResult"></div>
+          </div>` : ''}
+        </div>`;
+    } catch(e) {}
+  }
+
+  /* ── CANCEL QUEUE ── */
+  let cancelTimer = null;
+
+  function startCancelCountdown() {
+    let secs = 30;
+    const btn = document.getElementById('cancelBtn');
+    const countdown = document.getElementById('cancelCountdown');
+    if (!btn || !countdown) return;
+
+    countdown.textContent = `Cancel freely within ${secs}s — after that points may be deducted`;
+
+    cancelTimer = setInterval(() => {
+      secs--;
+      if (secs <= 0) {
+        clearInterval(cancelTimer);
+        countdown.textContent = 'Leaving now will affect your behaviour score';
+        countdown.style.color = 'var(--orange)';
+      } else {
+        countdown.textContent = `Cancel freely within ${secs}s — after that points may be deducted`;
+      }
+      // Enable button after 1 second always
+      btn.disabled = false;
+      btn.style.borderColor = 'rgba(224,85,85,0.4)';
+      btn.style.color = 'var(--red)';
+      btn.style.cursor = 'pointer';
+    }, 1000);
+
+    // Enable immediately
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.style.borderColor = 'rgba(224,85,85,0.4)';
+      btn.style.color = 'var(--red)';
+      btn.style.cursor = 'pointer';
+    }, 100);
+  }
+
+  async function cancelQueue() {
+    if (!myQueueEntryId) return;
+    if (!confirm('Are you sure you want to leave the queue?')) return;
+    try {
+      const res = await fetch(`${API}/queue/${myQueueEntryId}/skip`, {
+        method: 'PATCH'
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // Reset UI
+        document.getElementById('tokenSection').style.display = 'none';
+        document.getElementById('joinCard').style.display = 'block';
+        document.getElementById('chairStep').style.display = 'block';
+        document.getElementById('serviceStep').style.display = 'none';
+        document.getElementById('floatChatBtn').classList.remove('show');
+        selectedChairId = null;
+        selectedSvc = null;
+        myQueueEntryId = null;
+        document.querySelectorAll('.svc-btn').forEach(b => b.classList.remove('picked'));
+        await loadQueueDetail();
+      }
+    } catch(e) {}
+  }
+
+  function fmtWait(mins) {
+    if (!mins || mins <= 0) return '~0 min';
+    if (mins < 60) return `~${mins} min`;
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return m > 0 ? `~${h}h ${m}min` : `~${h}h`;
+  }
+
+  
+  /* ── DRAWER ── */
+  function openDrawer() {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('show');
+    if (customer) {
+      document.getElementById('editName').value = customer.name || '';
+      document.getElementById('editPhone').value = customer.phone || '';
+      document.getElementById('drawerUser').textContent = customer.name || 'Customer';
+    }
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('show');
+  }
+
+  function toggleSub(id) {
+    const el = document.getElementById(id);
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.sub-panel').forEach(p => p.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  }
+
+  async function saveProfile() {
+    const name = document.getElementById('editName').value.trim();
+    const phone = document.getElementById('editPhone').value.trim();
+    const el = document.getElementById('profileAlert');
+    if (!name || !phone) { el.innerHTML = '<div class="sub-alert err">Fill all fields</div>'; return; }
+    if (!customer) { el.innerHTML = '<div class="sub-alert err">Please sign in first</div>'; return; }
+    try {
+      const res = await fetch(`${API}/auth/customer/profile`, {
+        method: 'PATCH',
+        headers: {'Content-Type':'application/json','Authorization':`Bearer ${customer.token}`},
+        body: JSON.stringify({ name, phone, current_phone: customer?.phone })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        customer.name = name;
+        customer.phone = phone;
+        localStorage.setItem('hh_customer', JSON.stringify(customer));
+        updateNav();
+        document.getElementById('drawerUser').textContent = name;
+        el.innerHTML = '<div class="sub-alert ok">✅ Profile updated</div>';
+      } else {
+        el.innerHTML = `<div class="sub-alert err">${data.error}</div>`;
+      }
+    } catch(e) { el.innerHTML = '<div class="sub-alert err">Connection error</div>'; }
+  }
+
+  async function deleteAccount() {
+    if (!confirm('Delete your account permanently? This cannot be undone.')) return;
+    if (!customer?.token) return;
+    try {
+      await fetch(`${API}/auth/customer/account`, {
+        method: 'DELETE',
+        headers: {'Authorization':`Bearer ${customer.token}`}
+      });
+      customer = null;
+      localStorage.removeItem('hh_customer');
+      localStorage.removeItem('hh_entries');
+      localStorage.removeItem('hh_active_entry');
+      localStorage.removeItem('hh_seen');
+      closeDrawer();
+      updateNav();
+      showView('auth');
+    } catch(e) {}
+  }
+
+  /* ── SIGN OUT + PASSWORD ── */
+  function confirmSignOut() {
+    if (confirm('Are you sure you want to sign out?')) {
+      signOut();
+      closeDrawer();
+      showView('auth');
+    }
+  }
+
+  async function customerChangePass() {
+    const newp = document.getElementById('newPassC').value.trim();
+    const conf = document.getElementById('confirmPassC').value.trim();
+    const el = document.getElementById('changePassAlert');
+    if (!newp || newp.length < 4) { el.innerHTML = 'Password must be at least 4 characters'; el.style.color='var(--red)'; return; }
+    if (newp !== conf) { el.innerHTML = 'Passwords do not match'; el.style.color='var(--red)'; return; }
+    // Save password locally for now (until backend adds customer passwords)
+    const saved = JSON.parse(localStorage.getItem('hh_customer') || '{}');
+    saved.password = newp;
+    localStorage.setItem('hh_customer', JSON.stringify(saved));
+    el.innerHTML = '✅ Password set successfully';
+    el.style.color = 'var(--gold)';
+  }
+
+  function forgotPassword() {
+    // Will be implemented with SMS/email verification
+    alert('Forgot password feature coming soon. Please contact support.');
+  }
+
+  /* ── REAL-TIME NAVIGATION ── */
+  let _navMap = null;
+  let _navUserMarker = null;
+  let _navShopMarker = null;
+  let _navRouteLine = null;
+  let _navWatchId = null;
+  let _navDest = null;
+  let _navMode = 'walking'; // walking or driving
+  let _navSteps = [];
+  let _navCurrentStep = 0;
+
+  const OSRM = {
+    walking: 'https://router.project-osrm.org/route/v1/foot',
+    driving: 'https://router.project-osrm.org/route/v1/driving'
+  };
+
+  async function startNavigation(toLat, toLon, shopName) {
+    _navDest = { lat: toLat, lon: toLon, name: shopName };
+
+    // Show nav view
+    document.getElementById('navView').classList.add('show');
+    document.getElementById('navInstruction').textContent = '📡 Getting your location...';
+
+    // Init map
+    if (_navMap) { _navMap.remove(); _navMap = null; }
+    _navMap = L.map('navMap', { zoomControl: false }).setView([toLat, toLon], 15);
+
+    // Street tiles for navigation
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(_navMap);
+
+    // Shop marker
+    _navShopMarker = L.marker([toLat, toLon], {
+      icon: L.divIcon({
+        html: '<div style="background:var(--gold,#C9A84C);width:16px;height:16px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
+        iconSize: [16, 16], iconAnchor: [8, 8], className: ''
+      })
+    }).addTo(_navMap).bindPopup(`✂️ ${shopName}`).openPopup();
+
+    // Start watching user position
+    if (_navWatchId) navigator.geolocation.clearWatch(_navWatchId);
+    _navWatchId = navigator.geolocation.watchPosition(
+      pos => updateNavPosition(pos),
+      err => {
+        document.getElementById('navInstruction').textContent = '❌ GPS unavailable — enable location access';
+      },
+      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+    );
+  }
+
+  async function updateNavPosition(pos) {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
+    const speed = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0;
+
+    document.getElementById('navSpeed').textContent = speed || '—';
+
+    // Update user marker
+    if (!_navUserMarker) {
+      _navUserMarker = L.marker([lat, lon], {
+        icon: L.divIcon({
+          html: '<div style="background:#4A90E2;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 2px 12px rgba(74,144,226,0.6);animation:pulse 1.5s infinite"></div>',
+          iconSize: [18, 18], iconAnchor: [9, 9], className: ''
+        })
+      }).addTo(_navMap);
+    } else {
+      _navUserMarker.setLatLng([lat, lon]);
+    }
+
+    // Center map on user
+    _navMap.setView([lat, lon], 17);
+
+    // Calculate route
+    await calcRoute(lat, lon);
+  }
+
+  async function calcRoute(fromLat, fromLon) {
+    if (!_navDest) return;
+    try {
+      const url = `${OSRM[_navMode]}/${fromLon},${fromLat};${_navDest.lon},${_navDest.lat}?steps=true&geometries=geojson&overview=full`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.code !== 'Ok' || !data.routes.length) {
+        document.getElementById('navInstruction').textContent = '❌ Route not found';
+        return;
+      }
+
+      const route = data.routes[0];
+      const dist = route.distance;
+      const dur = route.duration;
+      _navSteps = route.legs[0].steps;
+
+      // Update stats
+      document.getElementById('navDist').textContent =
+        dist < 1000 ? `${Math.round(dist)}m` : `${(dist/1000).toFixed(1)}km`;
+      document.getElementById('navEta').textContent =
+        dur < 60 ? `${Math.round(dur)}s` : dur < 3600 ? `${Math.round(dur/60)}min` : `${(dur/3600).toFixed(1)}h`;
+
+      // Draw route
+      if (_navRouteLine) _navMap.removeLayer(_navRouteLine);
+      _navRouteLine = L.geoJSON(route.geometry, {
+        style: { color: '#4A90E2', weight: 5, opacity: 0.8 }
+      }).addTo(_navMap);
+
+      // Show next instruction
+      if (_navSteps.length > 0) {
+        const step = _navSteps[0];
+        const maneuver = step.maneuver;
+        const icons = {
+          'turn-left': '↰', 'turn-right': '↱',
+          'straight': '↑', 'arrive': '🎯',
+          'depart': '🚶', 'roundabout': '🔄'
+        };
+        const icon = icons[maneuver.type] || icons[`${maneuver.type}-${maneuver.modifier}`] || '↑';
+        const stepDist = step.distance < 1000
+          ? `${Math.round(step.distance)}m`
+          : `${(step.distance/1000).toFixed(1)}km`;
+        document.getElementById('navInstruction').textContent =
+          `${icon} In ${stepDist} — ${step.name || 'Continue'}`;
+      }
+
+      if (dist < 30) {
+        document.getElementById('navInstruction').textContent = '🎯 You have arrived at ' + _navDest.name;
+      }
+
+    } catch(e) {
+      document.getElementById('navInstruction').textContent = '↑ Head towards destination';
+    }
+  }
+
+  function toggleNavMode() {
+    _navMode = _navMode === 'walking' ? 'driving' : 'walking';
+    document.getElementById('navModeBtn').textContent =
+      _navMode === 'walking' ? '🚶 Walking' : '🚗 Driving';
+  }
+
+  async function recalcRoute() {
+    document.getElementById('navInstruction').textContent = '↻ Recalculating...';
+    if (_navUserMarker) {
+      const pos = _navUserMarker.getLatLng();
+      await calcRoute(pos.lat, pos.lng);
+    }
+  }
+
+  function stopNavigation() {
+    if (_navWatchId) { navigator.geolocation.clearWatch(_navWatchId); _navWatchId = null; }
+    if (_navMap) { _navMap.remove(); _navMap = null; }
+    _navUserMarker = null;
+    _navShopMarker = null;
+    _navRouteLine = null;
+    document.getElementById('navView').classList.remove('show');
+  }
+</script>
+
+<!-- Floating Chat Button -->
+<button class="float-chat" id="floatChatBtn" onclick="openCustomerChat()">
+  💬
+  <span class="chat-badge" id="chatBadge"></span>
+</button>
+
+<!-- Chat Modal -->
+<div class="chat-modal-overlay" id="chatModalOverlay" onclick="if(event.target===this)closeChatModal()">
+  <div class="chat-modal">
+    <div class="chat-modal-head">
+      <h3 id="chatModalTitle">Chat</h3>
+      <button class="chat-close" onclick="closeChatModal()">×</button>
+    </div>
+    <div class="chat-modal-body">
+      <div class="chat-messages" id="chatMessages">
+        <div style="text-align:center;color:var(--grey);font-size:0.8rem">No messages yet</div>
+      </div>
+      <div class="msg-input-row">
+        <input type="text" id="chatMsgInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendCustMsg()"/>
+        <button onclick="sendCustMsg()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGES VIEW -->
+<div class="view" id="view-messages" style="padding-top:62px">
+  <div style="padding:1rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem">
+    <span style="cursor:pointer;color:var(--grey);font-size:0.8rem" onclick="showView('list')">← Back</span>
+    <span style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700">Messages</span>
+  </div>
+  <div id="convList" style="padding:0"></div>
+</div>
+
+<!-- CHAT VIEW -->
+<div class="view" id="view-chat" style="padding-top:62px">
+  <div style="padding:1rem 1.5rem;background:var(--dark);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;flex-shrink:0">
+    <span style="cursor:pointer;color:var(--grey);font-size:0.8rem" onclick="showView('messages');loadConvList()">← Messages</span>
+    <div style="flex:1">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700" id="chatViewTitle">Chat</div>
+      <div style="font-size:0.7rem;color:var(--grey)" id="chatViewSub"></div>
+    </div>
+    <span style="font-size:0.7rem;color:var(--grey);cursor:pointer" onclick="loadActiveChatMsgs()">↻</span>
+  </div>
+  <div style="font-size:0.68rem;color:var(--grey);text-align:center;padding:0.4rem" id="chatLimitInfo"></div>
+  <div id="activeChatMsgs" style="flex:1;overflow-y:auto;padding:1rem 1.5rem;display:flex;flex-direction:column;gap:0.6rem">
+    <div style="text-align:center;color:var(--grey);font-size:0.8rem">Loading...</div>
+  </div>
+  <div style="padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:0.4rem;flex-shrink:0">
+    <input type="text" id="activeChatInput" placeholder="Type a message..." onkeydown="if(event.key==='Enter')sendActiveMsg()" style="flex:1"/>
+    <button onclick="sendActiveMsg()" style="background:var(--gold);color:var(--black);border:none;padding:0 1.2rem;font-size:0.82rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap">Send</button>
+  </div>
+</div>
+
+
+<!-- NAVIGATION VIEW -->
+<div id="navView">
+  <div id="navMap"></div>
+  <div class="nav-panel">
+    <div class="nav-instruction" id="navInstruction">Calculating route...</div>
+    <div class="nav-stats">
+      <div class="nav-stat">
+        <div class="nav-stat-val" id="navDist">—</div>
+        <div class="nav-stat-lbl">Distance</div>
+      </div>
+      <div class="nav-stat">
+        <div class="nav-stat-val" id="navEta">—</div>
+        <div class="nav-stat-lbl">ETA</div>
+      </div>
+      <div class="nav-stat">
+        <div class="nav-stat-val" id="navSpeed">—</div>
+        <div class="nav-stat-lbl">km/h</div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn" onclick="recalcRoute()">↻ Recalculate</button>
+      <button class="nav-btn" onclick="toggleNavMode()" id="navModeBtn">🚶 Walking</button>
+      <button class="nav-btn primary" onclick="stopNavigation()">✕ Exit</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

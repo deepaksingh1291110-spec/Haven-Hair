@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Haven Hair — Owner Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --black:#0a0a0a; --dark:#111; --card:#171717;
+      --gold:#C9A84C; --gold-light:#e4c97e;
+      --white:#f5f0e8; --grey:#888;
+      --border:rgba(201,168,76,0.15);
+      --green:#4caf7d; --red:#e05555;
+    }
+    html { scroll-behavior:smooth; }
+    body { background:var(--black); color:var(--white); font-family:'DM Sans',sans-serif; font-weight:300; overflow-x:hidden; min-height:100vh; }
+
+    /* ── SCREENS ── */
+    .screen { display:none; }
+    .screen.active { display:block; }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1.1rem 4rem;
+      background:rgba(10,10,10,0.92); backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--border);
+    }
+    .logo { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:var(--gold); cursor:pointer; }
+    .logo span { color:var(--white); font-style:italic; font-weight:400; }
+    .nav-center { font-size:0.75rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--grey); }
+    .nav-right { display:flex; gap:0.8rem; align-items:center; }
+    .nav-btn { padding:0.5rem 1.1rem; font-size:0.78rem; font-family:'DM Sans',sans-serif; font-weight:500; letter-spacing:0.06em; text-transform:uppercase; border:none; cursor:pointer; transition:all 0.2s; }
+    .btn-ghost { background:transparent; color:var(--grey); border:1px solid var(--border) !important; }
+    .btn-ghost:hover { color:var(--gold); border-color:var(--gold) !important; }
+    .btn-red { background:transparent; color:var(--red); border:1px solid rgba(224,85,85,0.3) !important; }
+    .btn-red:hover { background:rgba(224,85,85,0.08); }
+    .nav-owner-name { font-size:0.8rem; color:var(--grey); }
+
+    /* ── SHARED ── */
+    .section-tag { font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); display:block; margin-bottom:0.5rem; }
+    .alert { padding:0.75rem 1rem; font-size:0.83rem; margin-bottom:1rem; }
+    .alert.err { background:rgba(224,85,85,0.08); border:1px solid rgba(224,85,85,0.3); color:var(--red); }
+    .alert.ok { background:rgba(201,168,76,0.08); border:1px solid var(--border); color:var(--gold); }
+    .alert.warn { background:rgba(255,165,0,0.08); border:1px solid rgba(255,165,0,0.3); color:orange; }
+    label { font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); display:block; margin-bottom:0.35rem; }
+    input, select {
+      width:100%; background:var(--card); border:1px solid var(--border);
+      color:var(--white); padding:0.8rem 1rem; font-family:'DM Sans',sans-serif;
+      font-size:0.88rem; outline:none; transition:border-color 0.2s;
+    }
+    input:focus, select:focus { border-color:var(--gold); }
+    input::placeholder { color:var(--grey); }
+    select option { background:var(--dark); }
+    .form-group { margin-bottom:1.1rem; }
+    .spinner { width:28px; height:28px; border:2px solid var(--border); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 1rem; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ════════════════════
+       AUTH SCREEN
+    ════════════════════ */
+    #screen-auth {
+      min-height:100vh; display:none;
+      align-items:center; justify-content:center; padding:6rem 1.5rem;
+    }
+    #screen-auth.active { display:flex; animation:fadeUp 0.4s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+
+    .auth-wrap { width:100%; max-width:420px; }
+    .auth-logo { font-family:'Cormorant Garamond',serif; font-size:1.6rem; font-weight:700; color:var(--gold); text-align:center; margin-bottom:0.3rem; }
+    .auth-logo span { color:var(--white); font-style:italic; font-weight:400; }
+    .auth-subtitle { text-align:center; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--grey); margin-bottom:2.5rem; }
+
+    .auth-box { background:var(--dark); border:1px solid var(--border); padding:2.5rem; }
+    .auth-box h2 { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:600; margin-bottom:0.3rem; }
+    .auth-box p { color:var(--grey); font-size:0.83rem; margin-bottom:1.8rem; }
+
+    .auth-submit {
+      width:100%; background:var(--gold); color:var(--black); border:none;
+      padding:1rem; font-size:0.85rem; font-weight:500; letter-spacing:0.08em;
+      text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif;
+      transition:background 0.2s; margin-top:0.3rem;
+    }
+    .auth-submit:hover { background:var(--gold-light); }
+    .auth-submit:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .auth-switch { text-align:center; margin-top:1.5rem; font-size:0.82rem; color:var(--grey); }
+    .auth-switch a { color:var(--gold); cursor:pointer; text-decoration:underline; }
+    .auth-back { display:flex; align-items:center; gap:0.4rem; color:var(--grey); font-size:0.78rem; cursor:pointer; margin-bottom:1.5rem; text-align:center; justify-content:center; }
+    .auth-back:hover { color:var(--gold); }
+
+    /* ════════════════════
+       DASHBOARD SCREEN
+    ════════════════════ */
+    #screen-dashboard { padding-top:62px; animation:fadeUp 0.4s ease; }
+
+    /* Hero strip */
+    .dash-hero {
+      padding:2.5rem 4rem; background:var(--dark); border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem;
+      position:relative; overflow:hidden;
+    }
+    .dash-hero::before {
+      content:''; position:absolute; right:-5%; top:-50%;
+      width:400px; height:400px;
+      background:radial-gradient(circle, rgba(201,168,76,0.04) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .dash-shop-name { font-family:'Cormorant Garamond',serif; font-size:clamp(1.6rem,3vw,2.2rem); font-weight:700; }
+    .dash-shop-name em { font-style:italic; color:var(--gold); font-weight:400; }
+    .dash-owner { font-size:0.8rem; color:var(--grey); margin-top:3px; }
+
+    /* Status toggle */
+    .status-toggle { display:flex; gap:0; }
+    .st-btn {
+      background:transparent; color:var(--grey); border:1px solid var(--border);
+      padding:0.6rem 1.3rem; font-size:0.75rem; letter-spacing:0.08em;
+      text-transform:uppercase; cursor:pointer; font-family:'DM Sans',sans-serif;
+      transition:all 0.2s; margin-right:-1px;
+    }
+    .st-btn:hover { color:var(--white); }
+    .st-btn.on-open { background:rgba(76,175,125,0.1); color:var(--green); border-color:rgba(76,175,125,0.4) !important; z-index:1; }
+    .st-btn.on-busy { background:rgba(255,165,0,0.1); color:orange; border-color:rgba(255,165,0,0.4) !important; z-index:1; }
+    .st-btn.on-closed { background:rgba(224,85,85,0.1); color:var(--red); border-color:rgba(224,85,85,0.4) !important; z-index:1; }
+
+    /* Dashboard layout */
+    .dash-body { display:grid; grid-template-columns:1fr 340px; min-height:calc(100vh - 140px); }
+    .dash-main { padding:2.5rem 3rem; border-right:1px solid var(--border); }
+    .dash-side { padding:2rem; }
+
+    /* ── 2-BUTTON SYSTEM ── */
+    .two-btn-title { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:600; margin-bottom:1.2rem; }
+
+    .current-slot {
+      border:1px solid var(--gold); background:rgba(201,168,76,0.03);
+      padding:1.5rem 1.8rem; margin-bottom:1rem;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .slot-info .slot-name { font-size:1.1rem; font-weight:500; }
+    .slot-info .slot-service { font-size:0.78rem; color:var(--grey); margin-top:3px; }
+    .slot-info .slot-time { font-size:0.72rem; color:var(--gold); margin-top:3px; }
+    .slot-token { font-family:'Cormorant Garamond',serif; font-size:3rem; font-weight:700; color:var(--gold); line-height:1; }
+
+    .next-slot {
+      border:1px dashed var(--border); padding:1rem 1.5rem;
+      margin-bottom:1rem; display:flex; justify-content:space-between; align-items:center;
+    }
+    .next-slot .next-label { font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--grey); margin-bottom:3px; }
+    .next-slot .next-name { font-size:0.9rem; }
+
+    .empty-slot {
+      border:1px dashed var(--border); padding:1.8rem;
+      text-align:center; color:var(--grey); font-size:0.85rem; margin-bottom:1rem;
+    }
+
+    /* Action buttons */
+    .action-grid { display:grid; grid-template-columns:1fr 1fr; gap:0.6rem; margin-bottom:2rem; }
+    .act-btn {
+      padding:1.1rem; border:none; font-size:0.88rem; font-weight:500;
+      cursor:pointer; font-family:'DM Sans',sans-serif; letter-spacing:0.04em;
+      transition:all 0.15s;
+    }
+    .act-btn:active { transform:scale(0.98); }
+    .act-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .act-sit { background:var(--gold); color:var(--black); }
+    .act-sit:hover:not(:disabled) { background:var(--gold-light); }
+    .act-done { background:rgba(76,175,125,0.1); color:var(--green); border:1px solid rgba(76,175,125,0.25); }
+    .act-done:hover:not(:disabled) { background:rgba(76,175,125,0.18); }
+    .act-skip { background:rgba(224,85,85,0.07); color:var(--red); border:1px solid rgba(224,85,85,0.2); grid-column:1/-1; }
+    .act-skip:hover:not(:disabled) { background:rgba(224,85,85,0.13); }
+
+    /* Queue list */
+    .queue-title { font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); margin-bottom:0.8rem; display:flex; justify-content:space-between; align-items:center; }
+    .queue-title span:last-child { font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--white); }
+
+    .q-item { display:flex; align-items:center; gap:1rem; padding:0.9rem 1rem; border:1px solid var(--border); margin-bottom:0.4rem; background:var(--dark); transition:background 0.15s; }
+    .q-item:hover { background:var(--card); }
+    .q-tok { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--grey); min-width:2.2rem; }
+    .q-details { flex:1; }
+    .q-name { font-size:0.88rem; font-weight:500; }
+    .q-svc { font-size:0.72rem; color:var(--grey); margin-top:2px; }
+    .q-wait { font-size:0.72rem; color:var(--grey); text-align:right; }
+    .q-empty-msg { padding:1.5rem; text-align:center; color:var(--grey); font-size:0.85rem; border:1px dashed var(--border); }
+
+    /* Add customer */
+    .add-title { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:600; margin:2rem 0 1rem; }
+    .add-form { background:var(--card); border:1px solid var(--border); padding:1.5rem; }
+    .add-row { display:grid; grid-template-columns:1fr 1fr; gap:0.8rem; }
+    .add-submit {
+      background:var(--gold); color:var(--black); border:none;
+      padding:0.85rem 1.5rem; font-size:0.82rem; font-weight:500;
+      letter-spacing:0.06em; text-transform:uppercase; cursor:pointer;
+      font-family:'DM Sans',sans-serif; transition:background 0.2s; margin-top:0.8rem;
+    }
+    .add-submit:hover { background:var(--gold-light); }
+
+    /* ── SIDEBAR ── */
+    .side-block { margin-bottom:2rem; }
+    .side-title { font-size:0.7rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem; display:block; }
+
+    /* Reputation */
+    .rep-box { background:var(--card); border:1px solid var(--border); padding:1.5rem; text-align:center; margin-bottom:0.8rem; }
+    .rep-num { font-family:'Cormorant Garamond',serif; font-size:4rem; font-weight:700; color:var(--gold); line-height:1; }
+    .rep-badge { font-size:0.85rem; margin-top:0.3rem; color:var(--grey); }
+    .rep-bar { height:3px; background:rgba(255,255,255,0.05); margin-top:1rem; }
+    .rep-fill { height:100%; background:linear-gradient(to right,var(--gold),var(--gold-light)); transition:width 1s ease; }
+
+    /* Stats */
+    .stat-row { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+    .stat-row:last-child { border:none; }
+    .stat-val { font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--gold); }
+
+    /* Report */
+    .report-box { background:var(--card); border:1px solid var(--border); padding:1.2rem; }
+    .report-row { display:flex; justify-content:space-between; font-size:0.82rem; padding:0.4rem 0; border-bottom:1px solid var(--border); }
+    .report-row:last-child { border:none; }
+    .insight-box { background:rgba(201,168,76,0.05); border:1px solid var(--border); padding:1rem; margin-top:0.8rem; font-size:0.82rem; color:var(--grey); line-height:1.6; }
+
+    /* Side actions */
+    .side-actions { display:flex; flex-direction:column; gap:0.6rem; }
+    .side-btn {
+      background:transparent; color:var(--grey); border:1px solid var(--border);
+      padding:0.7rem 1rem; font-size:0.78rem; font-family:'DM Sans',sans-serif;
+      letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; text-align:left;
+    }
+    .side-btn:hover { color:var(--gold); border-color:var(--gold); }
+    .side-btn.danger { color:var(--red); border-color:rgba(224,85,85,0.3); }
+    .side-btn.danger:hover { background:rgba(224,85,85,0.08); }
+
+    /* ── FOOTER ── */
+    .page-footer { padding:2rem 4rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; flex-wrap:wrap; gap:1rem; }
+    .footer-logo { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:700; color:var(--gold); }
+    .footer-logo span { color:var(--white); font-style:italic; font-weight:400; }
+    .footer-note { font-size:0.75rem; color:var(--grey); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px) {
+      nav { padding:1rem 1.5rem; }
+      .nav-center { display:none; }
+      .dash-hero { padding:2rem 1.5rem; }
+      .dash-body { grid-template-columns:1fr; }
+      .dash-main { padding:1.5rem; border-right:none; }
+      .dash-side { padding:1.5rem; border-top:1px solid var(--border); }
+      .add-row { grid-template-columns:1fr; }
+      .page-footer { padding:2rem 1.5rem; flex-direction:column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="window.location.href='/web'">Haven<span>Hair</span></div>
+  <div class="nav-center" id="navCenter">💈 Owner</div>
+  <div class="nav-right" id="navRight">
+    <span class="nav-owner-name" id="navOwnerName"></span>
+    <button class="nav-btn btn-ghost" onclick="switchRole()">Switch Role</button>
+    <button class="nav-btn btn-red" id="logoutBtn" style="display:none" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ════════ AUTH SCREEN ════════ -->
+<div class="screen" id="screen-auth">
+  <div class="auth-wrap">
+    <div class="auth-logo">Haven<span>Hair</span></div>
+    <div class="auth-subtitle">Owner Portal</div>
+
+    <!-- LOGIN -->
+    <div id="loginBox" class="auth-box">
+      <h2>Welcome back</h2>
+      <p>Sign in to manage your shop</p>
+      <div id="loginAlert"></div>
+      <div class="form-group"><label>Phone Number</label><input type="tel" id="loginPhone" placeholder="05xxxxxxxx"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="auth-submit" id="loginBtn" onclick="doLogin()">Sign In →</button>
+      <div class="auth-switch">No account? <a onclick="showRegister()">Register your shop</a></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerBox" class="auth-box" style="display:none">
+      <h2>Create account</h2>
+      <p>Register and start managing your queue</p>
+      <div id="registerAlert"></div>
+      <div class="form-group"><label>Your Name</label><input type="text" id="regName" placeholder="Ahmed"/></div>
+      <div class="form-group"><label>Phone Number</label><input type="tel" id="regPhone" placeholder="05xxxxxxxx"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="Choose a password"/></div>
+      <button class="auth-submit" id="registerBtn" onclick="doRegister()">Create Account →</button>
+      <div class="auth-switch">Have an account? <a onclick="showLogin()">Sign in</a></div>
+    </div>
+
+    <div class="auth-back" onclick="window.location.href='/web'">← Back to home</div>
+  </div>
+</div>
+
+<!-- ════════ DASHBOARD SCREEN ════════ -->
+<div class="screen" id="screen-dashboard">
+
+  <!-- Hero -->
+  <div class="dash-hero">
+    <div>
+      <span class="section-tag">Owner Dashboard</span>
+      <div class="dash-shop-name" id="shopNameDisplay">Loading <em>shop...</em></div>
+      <div class="dash-owner" id="ownerNameDisplay"></div>
+    </div>
+    <div class="status-toggle" id="statusToggle">
+      <button class="st-btn" onclick="setStatus('open')">🟢 Open</button>
+      <button class="st-btn" onclick="setStatus('busy')">🟡 Busy</button>
+      <button class="st-btn" onclick="setStatus('closed')">🔴 Closed</button>
+    </div>
+  </div>
+
+  <div class="dash-body">
+
+    <!-- MAIN -->
+    <div class="dash-main">
+
+      <!-- 2-Button System -->
+      <div class="two-btn-title">2-Button System</div>
+      <div id="dashAlert"></div>
+
+      <!-- Create shop form — shown only if no shop linked -->
+      <div id="createShopSection" style="display:none">
+        <div class="add-form" style="margin-bottom:2rem;border-color:var(--gold)">
+          <div id="createShopAlert"></div>
+          <p style="color:var(--grey);font-size:0.85rem;margin-bottom:1.2rem">You don't have a shop yet. Create one to start managing your queue.</p>
+          <div class="add-row">
+            <div class="form-group"><label>Shop Name</label><input type="text" id="csName" placeholder="Royal Cuts"/></div>
+            <div class="form-group"><label>Owner Name</label><input type="text" id="csOwner" placeholder="Ahmed"/></div>
+          </div>
+          <div class="add-row">
+            <div class="form-group"><label>Phone</label><input type="tel" id="csPhone" placeholder="05xxxxxxxx"/></div>
+            <div class="form-group"><label>Address</label><input type="text" id="csAddress" placeholder="Main Street, Riyadh"/></div>
+          </div>
+          <button class="add-submit" onclick="createShop()">Create My Shop →</button>
+        </div>
+      </div>
+
+      <div id="currentSlotArea"></div>
+
+      <div class="action-grid">
+        <button class="act-btn act-sit" id="btnSit" onclick="seatNext()">✓ Customer Sits</button>
+        <button class="act-btn act-done" id="btnDone" onclick="markDone()">Done ✅</button>
+        <button class="act-btn act-skip" id="btnSkip" onclick="skipCurrent()">Skip No-Show</button>
+      </div>
+
+      <!-- Queue list -->
+      <div class="queue-title">
+        <span>Waiting Queue</span>
+        <span id="waitingCount">0</span>
+      </div>
+      <div id="queueListArea"><div class="q-empty-msg">Loading queue...</div></div>
+
+      <!-- Add customer -->
+      <div class="add-title">Add Walk-in Customer</div>
+      <div class="add-form">
+        <div id="addAlert"></div>
+        <div class="add-row">
+          <div class="form-group"><label>Name</label><input type="text" id="addName" placeholder="Mohammed"/></div>
+          <div class="form-group"><label>Phone</label><input type="tel" id="addPhone" placeholder="05xxxxxxxx"/></div>
+        </div>
+        <div class="form-group">
+          <label>Service</label>
+          <select id="addService">
+            <option value="haircut">✂️ Haircut</option>
+            <option value="beard">🪒 Beard Trim</option>
+            <option value="both">✨ Haircut + Beard</option>
+            <option value="facial">💆 Facial</option>
+            <option value="kids">👦 Kids Cut</option>
+            <option value="color">🎨 Color</option>
+          </select>
+        </div>
+        <button class="add-submit" onclick="addCustomer()">Add to Queue →</button>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="dash-side">
+
+      <!-- Reputation -->
+      <div class="side-block">
+        <span class="side-title">Reputation</span>
+        <div class="rep-box">
+          <div class="rep-num" id="repNum">—</div>
+          <div class="rep-badge" id="repBadge">Loading...</div>
+          <div class="rep-bar"><div class="rep-fill" id="repFill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <!-- Today's Stats -->
+      <div class="side-block">
+        <span class="side-title">Today's Stats</span>
+        <div class="stat-row"><span>Served</span><span class="stat-val" id="statServed">0</span></div>
+        <div class="stat-row"><span>Waiting</span><span class="stat-val" id="statWaiting">0</span></div>
+        <div class="stat-row"><span>Reviews</span><span class="stat-val" id="statReviews">0</span></div>
+      </div>
+
+      <!-- Weekly Report -->
+      <div class="side-block">
+        <span class="side-title">Weekly Report</span>
+        <div class="report-box" id="reportBox">
+          <div class="spinner"></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="side-block">
+        <span class="side-title">Quick Actions</span>
+        <div class="side-actions">
+          <button class="side-btn" onclick="window.location.href='/web'">← Back to Home</button>
+          <button class="side-btn" onclick="window.location.href='/customer'">View as Customer</button>
+          <button class="side-btn danger" onclick="logout()">Sign Out</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="footer-logo">Haven<span>Hair</span></div>
+    <div class="footer-note">© 2026 Haven Hair</div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://127.0.0.1:5000';
+  let ownerToken = null;
+  let ownerShopId = null;
+  let ownerName = '';
+  let seatedQueueId = null;
+  let dashTimer = null;
+  let servedToday = 0;
+
+  /* ── INIT ── */
+  window.addEventListener('load', () => {
+    localStorage.setItem('hh_role', 'owner');
+    ownerToken = localStorage.getItem('hh_owner_token');
+    ownerShopId = localStorage.getItem('hh_owner_shop');
+    if (ownerToken && ownerShopId) {
+      showDashboard();
+    } else {
+      showAuth();
+    }
+  });
+
+  function showAuth() {
+    document.getElementById('screen-auth').classList.add('active');
+    document.getElementById('screen-dashboard').classList.remove('active');
+    document.getElementById('logoutBtn').style.display = 'none';
+    document.getElementById('navOwnerName').textContent = '';
+  }
+
+  function showDashboard() {
+    document.getElementById('screen-auth').classList.remove('active');
+    document.getElementById('screen-dashboard').classList.add('active');
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    loadProfile();
+    if (!ownerShopId) {
+      document.getElementById('createShopSection').style.display = 'block';
+    } else {
+      loadQueue();
+      loadReputation();
+      loadReport();
+    }
+    if (dashTimer) clearInterval(dashTimer);
+    dashTimer = setInterval(() => { if(ownerShopId) loadQueue(); }, 12000);
+  }
+
+  /* ── AUTH ── */
+  function showRegister() {
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('registerBox').style.display = 'block';
+  }
+  function showLogin() {
+    document.getElementById('registerBox').style.display = 'none';
+    document.getElementById('loginBox').style.display = 'block';
+  }
+
+  async function doLogin() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+    const alertEl = document.getElementById('loginAlert');
+    const btn = document.getElementById('loginBtn');
+
+    if (!phone || !pass) { alertEl.innerHTML = '<div class="alert err">Fill all fields</div>'; return; }
+    btn.disabled = true; btn.textContent = 'Signing in...';
+
+    try {
+      const res = await fetch(`${API}/auth/owner/login`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ phone, password: pass })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        ownerToken = data.token;
+        ownerShopId = data.shop_id;
+        localStorage.setItem('hh_owner_token', ownerToken);
+        localStorage.setItem('hh_owner_shop', ownerShopId);
+        showDashboard();
+      } else {
+        alertEl.innerHTML = `<div class="alert err">${data.error || 'Wrong phone or password'}</div>`;
+        btn.disabled = false; btn.textContent = 'Sign In →';
+      }
+    } catch(e) {
+      alertEl.innerHTML = '<div class="alert err">Cannot connect to server</div>';
+      btn.disabled = false; btn.textContent = 'Sign In →';
+    }
+  }
+
+  async function doRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const pass = document.getElementById('regPass').value.trim();
+    const alertEl = document.getElementById('registerAlert');
+    const btn = document.getElementById('registerBtn');
+
+    if (!name || !phone || !pass) { alertEl.innerHTML = '<div class="alert err">Fill all fields</div>'; return; }
+    btn.disabled = true; btn.textContent = 'Creating account...';
+
+    try {
+      const res = await fetch(`${API}/auth/owner/register`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, phone, password: pass })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        ownerToken = data.token;
+        localStorage.setItem('hh_owner_token', ownerToken);
+        alertEl.innerHTML = '<div class="alert ok">✅ Account created!</div>';
+        setTimeout(() => { showDashboard(); }, 1000);
+      } else {
+        alertEl.innerHTML = `<div class="alert err">${data.error}</div>`;
+        btn.disabled = false; btn.textContent = 'Create Account →';
+      }
+    } catch(e) {
+      alertEl.innerHTML = '<div class="alert err">Cannot connect to server</div>';
+      btn.disabled = false; btn.textContent = 'Create Account →';
+    }
+  }
+
+  function logout() {
+    ownerToken = null; ownerShopId = null; servedToday = 0;
+    localStorage.removeItem('hh_owner_token');
+    localStorage.removeItem('hh_owner_shop');
+    if (dashTimer) clearInterval(dashTimer);
+    showAuth();
+  }
+
+  function switchRole() {
+    localStorage.removeItem('hh_role');
+    if (dashTimer) clearInterval(dashTimer);
+    window.location.href = '/web';
+  }
+
+  /* ── PROFILE ── */
+  async function loadProfile() {
+    try {
+      const res = await fetch(`${API}/auth/owner/me`, {
+        headers: { 'Authorization': `Bearer ${ownerToken}` }
+      });
+      const data = await res.json();
+      if (!res.ok) { logout(); return; }
+      ownerName = data.name;
+      document.getElementById('shopNameDisplay').innerHTML = `${data.shop || 'No shop linked'} <em></em>`;
+      document.getElementById('ownerNameDisplay').textContent = `Welcome, ${data.name}`;
+      document.getElementById('navOwnerName').textContent = data.name;
+    } catch(e) {}
+  }
+
+  /* ── SHOP STATUS ── */
+  async function setStatus(status) {
+    if (!ownerShopId) return;
+    try {
+      await fetch(`${API}/shops/${ownerShopId}/status`, {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ status })
+      });
+      updateStatusToggle(status);
+    } catch(e) {}
+  }
+
+  function updateStatusToggle(status) {
+    document.querySelectorAll('.st-btn').forEach(b => b.className = 'st-btn');
+    const map = { open: 0, busy: 1, closed: 2 };
+    const cls = { open: 'on-open', busy: 'on-busy', closed: 'on-closed' };
+    const btns = document.querySelectorAll('.st-btn');
+    if (btns[map[status]]) btns[map[status]].classList.add(cls[status]);
+  }
+
+  /* ── QUEUE ── */
+  async function loadQueue() {
+    if (!ownerShopId) return;
+    try {
+      const res = await fetch(`${API}/queue/${ownerShopId}`);
+      const data = await res.json();
+      renderQueue(data);
+    } catch(e) {
+      document.getElementById('queueListArea').innerHTML = '<div class="q-empty-msg">Could not load queue</div>';
+    }
+  }
+
+  function renderQueue(data) {
+    const seated = data.currently_seated;
+    const waiting = data.waiting || [];
+    const slotArea = document.getElementById('currentSlotArea');
+    const btnSit = document.getElementById('btnSit');
+    const btnDone = document.getElementById('btnDone');
+    const btnSkip = document.getElementById('btnSkip');
+
+    document.getElementById('statWaiting').textContent = data.total_waiting || 0;
+    document.getElementById('waitingCount').textContent = data.total_waiting || 0;
+
+    if (seated) {
+      // Someone in chair
+      seatedQueueId = seated.token;
+      const since = seated.seated_at ? timeSince(seated.seated_at) : '';
+      slotArea.innerHTML = `
+        <div class="current-slot">
+          <div class="slot-info">
+            <div class="slot-name">${seated.name}</div>
+            <div class="slot-service">${seated.service}</div>
+            ${since ? `<div class="slot-time">In chair ${since}</div>` : ''}
+          </div>
+          <div class="slot-token">${String(seated.token).padStart(2,'0')}</div>
+        </div>`;
+      btnSit.disabled = true;
+      btnDone.disabled = false;
+      btnSkip.disabled = false;
+
+    } else if (waiting.length) {
+      // No one seated, show next
+      const next = waiting[0];
+      seatedQueueId = null;
+      slotArea.innerHTML = `
+        <div class="next-slot">
+          <div>
+            <div class="next-label">Next up</div>
+            <div class="next-name">${next.name} · ${next.service}</div>
+          </div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--grey)">${String(next.token).padStart(2,'0')}</div>
+        </div>`;
+      btnSit.disabled = false;
+      btnDone.disabled = true;
+      btnSkip.disabled = false;
+
+    } else {
+      seatedQueueId = null;
+      slotArea.innerHTML = '<div class="empty-slot">Queue is empty — no customers waiting</div>';
+      btnSit.disabled = true;
+      btnDone.disabled = true;
+      btnSkip.disabled = true;
+    }
+
+    // Waiting list (skip first if not seated)
+    const listItems = seated ? waiting : waiting.slice(1);
+    if (listItems.length) {
+      document.getElementById('queueListArea').innerHTML = listItems.map(q => `
+        <div class="q-item">
+          <div class="q-tok">${String(q.token).padStart(2,'0')}</div>
+          <div class="q-details">
+            <div class="q-name">${q.name}</div>
+            <div class="q-svc">${q.service}</div>
+          </div>
+          <div class="q-wait">~${q.estimated_wait_mins} min</div>
+        </div>`).join('');
+    } else {
+      document.getElementById('queueListArea').innerHTML = '<div class="q-empty-msg">No one else waiting</div>';
+    }
+  }
+
+  function timeSince(dateStr) {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 60000);
+    return diff < 1 ? 'just now' : `${diff} min ago`;
+  }
+
+  /* ── 2-BUTTON ACTIONS ── */
+  async function seatNext() {
+    if (!ownerShopId) return;
+    try {
+      const res = await fetch(`${API}/queue/${ownerShopId}`);
+      const data = await res.json();
+      if (!data.waiting.length) return;
+      const next = data.waiting[0];
+      await fetch(`${API}/queue/${next.token}/seat`, { method:'PATCH' });
+      flashAlert('dashAlert', `✓ ${next.name} seated`, 'ok');
+      await loadQueue();
+    } catch(e) { flashAlert('dashAlert', 'Connection error', 'err'); }
+  }
+
+  async function markDone() {
+    if (!ownerShopId) return;
+    try {
+      const res = await fetch(`${API}/queue/${ownerShopId}`);
+      const data = await res.json();
+      if (!data.currently_seated) return;
+      const seated = data.currently_seated;
+      await fetch(`${API}/queue/${seated.token}/done`, { method:'PATCH' });
+      servedToday++;
+      document.getElementById('statServed').textContent = servedToday;
+      flashAlert('dashAlert', `✅ ${seated.name} done`, 'ok');
+      await loadQueue();
+    } catch(e) { flashAlert('dashAlert', 'Connection error', 'err'); }
+  }
+
+  async function skipCurrent() {
+    if (!ownerShopId) return;
+    try {
+      const res = await fetch(`${API}/queue/${ownerShopId}`);
+      const data = await res.json();
+      const target = data.currently_seated || (data.waiting.length ? data.waiting[0] : null);
+      if (!target) return;
+      await fetch(`${API}/queue/${target.token}/skip`, { method:'PATCH' });
+      flashAlert('dashAlert', `Skipped token ${target.token}`, 'warn');
+      await loadQueue();
+    } catch(e) { flashAlert('dashAlert', 'Connection error', 'err'); }
+  }
+
+  /* ── ADD CUSTOMER ── */
+  async function addCustomer() {
+    const name = document.getElementById('addName').value.trim();
+    const phone = document.getElementById('addPhone').value.trim();
+    const service = document.getElementById('addService').value;
+
+    if (!name || !phone) { flashAlert('addAlert', 'Fill name and phone', 'err'); return; }
+    if (!ownerShopId) { flashAlert('addAlert', 'No shop linked', 'err'); return; }
+
+    try {
+      const res = await fetch(`${API}/queue/join`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ shop_id: parseInt(ownerShopId), customer_name: name, customer_phone: phone, service })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        flashAlert('addAlert', `✅ ${name} added — Token ${data.token}, ~${data.estimated_wait_mins} min`, 'ok');
+        document.getElementById('addName').value = '';
+        document.getElementById('addPhone').value = '';
+        await loadQueue();
+      } else {
+        flashAlert('addAlert', data.error || 'Something went wrong', 'err');
+      }
+    } catch(e) { flashAlert('addAlert', 'Connection error', 'err'); }
+  }
+
+  /* ── REPUTATION ── */
+  async function loadReputation() {
+    if (!ownerShopId) return;
+    try {
+      const res = await fetch(`${API}/reviews/${ownerShopId}`);
+      const data = await res.json();
+      const score = data.reputation_score || 0;
+      document.getElementById('repNum').textContent = score;
+      document.getElementById('repBadge').textContent = data.badge || '';
+      document.getElementById('statReviews').textContent = data.total_reviews || 0;
+      setTimeout(() => { document.getElementById('repFill').style.width = score + '%'; }, 400);
+    } catch(e) {}
+  }
+
+  /* ── REPORT ── */
+  async function loadReport() {
+    if (!ownerShopId) return;
+    try {
+      const res = await fetch(`${API}/shops/${ownerShopId}/report`);
+      const data = await res.json();
+      const s = data.summary || {};
+      const breakdown = s.complaint_breakdown || {};
+      const complaintList = Object.entries(breakdown).map(([k,v]) =>
+        `<div class="report-row"><span>${k.replace('_',' ')}</span><span style="color:var(--red)">${v}x</span></div>`
+      ).join('');
+
+      document.getElementById('reportBox').innerHTML = `
+        <div class="report-row"><span>✅ Happy customers</span><span style="color:var(--green)">${s.happy_customers||0}</span></div>
+        <div class="report-row"><span>⚠️ Complaints</span><span style="color:var(--red)">${s.complaints||0}</span></div>
+        <div class="report-row"><span>Total served</span><span>${s.total_served||0}</span></div>
+        ${complaintList}
+        <div class="insight-box">${data.ai_insight || ''}</div>`;
+    } catch(e) {
+      document.getElementById('reportBox').innerHTML = '<div style="color:var(--grey);font-size:0.82rem;text-align:center;padding:1rem">No report data yet</div>';
+    }
+  }
+
+  /* ── CREATE SHOP ── */
+  async function createShop() {
+    const name = document.getElementById('csName').value.trim();
+    const owner = document.getElementById('csOwner').value.trim();
+    const phone = document.getElementById('csPhone').value.trim();
+    const address = document.getElementById('csAddress').value.trim();
+    const alertEl = document.getElementById('createShopAlert');
+
+    if (!name || !owner || !phone || !address) {
+      alertEl.innerHTML = '<div class="alert err">Fill all fields</div>'; return;
+    }
+
+    try {
+      // Geocode address to get coordinates
+      const geoRes = await fetch(`${API}/maps/geocode?address=${encodeURIComponent(address)}`);
+      const geoData = await geoRes.json();
+      const lat = geoData.lat || 24.7136;
+      const lon = geoData.lon || 46.6753;
+
+      // Create shop
+      const res = await fetch(`${API}/shops`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ name, owner_name: owner, phone, address, latitude: lat, longitude: lon })
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        // Link shop to owner
+        await fetch(`${API}/auth/owner/shop`, {
+          method:'PATCH', headers:{'Content-Type':'application/json','Authorization':`Bearer ${ownerToken}`},
+          body: JSON.stringify({ shop_id: data.id })
+        });
+        ownerShopId = data.id;
+        localStorage.setItem('hh_owner_shop', ownerShopId);
+        document.getElementById('createShopSection').style.display = 'none';
+        alertEl.innerHTML = '';
+        flashAlert('dashAlert', '✅ Shop created! Welcome to Haven Hair.', 'ok');
+        loadProfile();
+        loadQueue();
+        loadReputation();
+        loadReport();
+      } else {
+        alertEl.innerHTML = `<div class="alert err">${data.error}</div>`;
+      }
+    } catch(e) {
+      alertEl.innerHTML = '<div class="alert err">Connection error</div>';
+    }
+  }
+
+  /* ── HELPERS ── */
+  function flashAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = `<div class="alert ${type}">${msg}</div>`;
+    setTimeout(() => { el.innerHTML = ''; }, 4000);
+  }
+</script>
+</body>
+</html>
