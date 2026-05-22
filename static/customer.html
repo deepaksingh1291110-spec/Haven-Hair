@@ -417,31 +417,6 @@
     document.getElementById('navView').classList.remove('show');
   }
 </script>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    // Auto request permission on load
-    window.addEventListener('load', () => {
-      setTimeout(requestPushPermission, 3000);
-    });
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "9afdf56a-54d7-467c-85b0-ab4930dbf0e1",
-        notifyButton: { enable: false },
-        allowLocalhostAsSecureOrigin: true
-      });
-    });
-    function setOneSignalUser(id) {
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.login(String(id));
-      });
-    }
-    function requestPushPermission() {
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.Notifications.requestPermission();
-      });
-    }
-  </script>
 </head>
 <body>
 
@@ -1138,7 +1113,7 @@ async function joinQueue(){
         document.getElementById('joinBtn').textContent='Join Queue →';
       }
     } catch(e) {
-      el.innerHTML=`<div class="alert err">Error: ${e.message || e}</div>`;
+      el.innerHTML='<div class="alert err">Cannot connect — is server running on port 5000?</div>';
       document.getElementById('joinBtn').disabled=false;
       document.getElementById('joinBtn').textContent='Join Queue →';
     }

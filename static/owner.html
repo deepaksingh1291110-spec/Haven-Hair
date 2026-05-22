@@ -631,27 +631,6 @@
     } catch(e) {}
   }
 </script>
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-  <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      await OneSignal.init({
-        appId: "9afdf56a-54d7-467c-85b0-ab4930dbf0e1",
-        notifyButton: { enable: false },
-        allowLocalhostAsSecureOrigin: true
-      });
-    });
-    function setOneSignalUser(id) {
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.login(String(id));
-      });
-    }
-    function requestPushPermission() {
-      OneSignalDeferred.push(async function(OneSignal) {
-        await OneSignal.Notifications.requestPermission();
-      });
-    }
-  </script>
 </head>
 <body>
 
@@ -1108,7 +1087,6 @@
       const data = await res.json();
       if (res.ok) {
         ownerToken = data.token; ownerId = data.owner_id; ownerName = name;
-        setOneSignalUser('owner_' + data.owner_id); requestPushPermission();
         localStorage.setItem('hh_owner_token', ownerToken);
         updateNav(true);
         loadBranches();

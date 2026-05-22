@@ -3,9 +3,6 @@ from database import db
 from models.queue import QueueEntry, Message
 from models.shop import Branch, Chair
 from datetime import datetime, timedelta
-try:
-    from routes.notifications import notify_customer_seated, notify_owner_new_customer
-except: pass
 import math
 import random
 from routes.behaviour import update_score
@@ -161,11 +158,6 @@ def join_queue():
            f'Token {token} · {data["service"]} · {booking_type}',
            data['customer_name'])
 
-    try:
-        from models.shop import Branch
-        b = Branch.query.get(branch_id)
-        if b: notify_owner_new_customer(b.owner_id, name, b.name)
-    except: pass
     return jsonify({
         'message': 'Joined queue',
         'id': entry.id,

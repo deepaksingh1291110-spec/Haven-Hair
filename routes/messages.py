@@ -42,13 +42,6 @@ def send_message(entry_id):
     )
     db.session.add(msg)
     db.session.commit()
-    if data['sender'] == 'barber' and entry.customer_phone not in ('N/A',''):
-        try:
-            from models.shop import Branch
-            from routes.notifications import notify_customer_message
-            b = Branch.query.get(entry.branch_id)
-            notify_customer_message(entry.customer_phone, b.name if b else 'barber')
-        except: pass
 
     remaining = MESSAGE_LIMIT - (count + 1)
     return jsonify({

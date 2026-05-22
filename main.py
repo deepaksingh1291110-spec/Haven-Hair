@@ -17,9 +17,14 @@ from routes.behaviour import behaviour_bp
 
 app = Flask(__name__, static_folder='static')
 
-# CORS — allow all origins
-CORS(app, resources={r"/*": {"origins": "*"}}, 
-     supports_credentials=False)
+# CORS — allow GitHub Pages and any frontend
+CORS(app, origins=[
+    'https://*.github.io',
+    'https://*.github.com', 
+    'http://localhost:*',
+    'http://127.0.0.1:*',
+    os.environ.get('FRONTEND_URL', '*')
+])
 
 init_db(app)
 init_jwt(app)
