@@ -9,3 +9,5 @@ werkzeug==3.0.1
 requests
 requests
 pywebpush
+requests
+pywebpush

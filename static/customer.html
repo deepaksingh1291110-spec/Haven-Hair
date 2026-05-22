@@ -420,6 +420,10 @@
   <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
     window.OneSignalDeferred = window.OneSignalDeferred || [];
+    // Auto request permission on load
+    window.addEventListener('load', () => {
+      setTimeout(requestPushPermission, 3000);
+    });
     OneSignalDeferred.push(async function(OneSignal) {
       await OneSignal.init({
         appId: "9afdf56a-54d7-467c-85b0-ab4930dbf0e1",
