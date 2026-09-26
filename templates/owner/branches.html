@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — My Shops</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+    <div class="header-logo">Haven<em>Hair</em></div>
+    <div class="header-right">
+        <button class="notif-btn" onclick="window.location.href='/owner/inbox'">
+            💬
+            <span class="notif-dot" id="msg-dot"></span>
+        </button>
+    </div>
+</header>
+
+<!-- ======= DRAWER ======= -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer">
+    <div class="drawer-head">
+        <div class="drawer-logo">Haven<em>Hair</em></div>
+        <div class="drawer-user" id="drawer-name">—</div>
+        <span class="drawer-role">Owner</span>
+    </div>
+    <div class="drawer-nav">
+        <button class="drawer-item active" onclick="closeDrawer()">
+            <span class="d-icon">🏪</span> My Shops
+        </button>
+        <button class="drawer-item" onclick="openManageBranchSheet()">
+            <span class="d-icon">⚙️</span> Manage My Branch
+        </button>
+        <button class="drawer-item" onclick="go('/owner/inbox')">
+            <span class="d-icon">💬</span> Inbox
+        </button>
+        <button class="drawer-item" onclick="go('/owner/reports')">
+            <span class="d-icon">📊</span> Reports
+        </button>
+        <div class="drawer-sep"></div>
+        <button class="drawer-item danger" onclick="signOut()">
+            <span class="d-icon">🚪</span> Sign Out
+        </button>
+    </div>
+</nav>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Page hero -->
+    <div class="page-hero">
+        <h1>My <em>Shops</em></h1>
+        <p>Select a shop to manage its queue and settings</p>
+    </div>
+
+    <!-- Loading state -->
+    <div id="branches-loader" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your shops...</p>
+    </div>
+
+    <!-- Branch list -->
+    <div class="branches-list" id="branches-list" style="display:none">
+
+        <!-- Shops rendered by JS -->
+        <div id="branch-cards"></div>
+
+        <!-- Add new shop is now inside Manage My Branch (≡ menu) -->
+
+    </div>
+
+    <!-- Empty state (no shops yet) -->
+    <div id="branches-empty" class="empty-state" style="display:none">
+        <h3>No shops yet</h3>
+        <p>Add your first shop to get started</p>
+        <button class="btn btn-primary" style="width:auto;margin-top:16px" onclick="openAddSheet()">
+            ＋ Add Your First Shop
+        </button>
+    </div>
+
+</main>
+
+<!-- ======= MANAGE MY BRANCH SHEET ======= -->
+<div class="bottom-sheet" id="manage-branch-sheet">
+    <div class="sheet-body" style="max-height:85vh;overflow-y:auto">
+        <div class="sheet-head">
+            <h3>Manage My Branch</h3>
+            <button class="sheet-close" onclick="closeManageBranchSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <p class="text-xs text-muted" style="margin-bottom:14px">
+                Delete shops or add a new one from here.
+            </p>
+            <div id="manage-branches-list">
+                <div class="loading-state"><div class="spinner"></div></div>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+                <button class="add-branch-btn" style="margin:0"
+                        onclick="closeManageBranchSheet(); openAddSheet()">
+                    ＋ Add New Shop
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= ADD SHOP BOTTOM SHEET ======= -->
+<div class="bottom-sheet" id="add-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>Add New Shop</h3>
+            <button class="sheet-close" onclick="closeAddSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="add-alert"></div>
+            <div class="form-group">
+                <label>Shop Name</label>
+                <input type="text" id="add-name" placeholder="Royal Cuts Studio">
+            </div>
+            <div class="form-group">
+                <label>Address</label>
+                <input type="text" id="add-addr" placeholder="King Fahad Road, Riyadh">
+            </div>
+            <div class="form-group">
+                <label>Phone <span class="text-xs text-muted">(optional)</span></label>
+                <input type="tel" id="add-phone" placeholder="05xxxxxxxx">
+            </div>
+            <button class="btn btn-primary" id="add-btn" onclick="addShop()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Create Shop →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ---- Auth check -----------------------------------------
+const owner = JSON.parse(localStorage.getItem('hh_owner') || 'null');
+if (!owner) { window.location.href = '/owner/auth'; throw new Error('no session'); }
+
+// ---- Init -----------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('drawer-name').textContent = owner.name || '—';
+    loadBranches();
+    checkUnread();
+});
+
+// ---- Load branches --------------------------------------
+async function loadBranches() {
+    try {
+        const res  = await fetch(`/hh/owner/branches?owner_id=${owner.id}`);
+        const data = await res.json();
+
+        if (!res.ok || !Array.isArray(data) || !data.length) {
+            document.getElementById('branches-empty').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('branches-list').style.display = 'block';
+        document.getElementById('branch-cards').innerHTML = data.map(b => `
+            <div class="branch-card">
+                <div class="bc-body">
+                    <div class="bc-top">
+                        <div>
+                            <div class="bc-name">${escHtml(b.name)}</div>
+                            <div class="bc-addr">📍 ${escHtml(b.address || '—')}</div>
+                        </div>
+                        <span class="pill pill-${b.status || 'closed'}">${cap(b.status || 'closed')}</span>
+                    </div>
+                    <div class="bc-stats">
+                        <div class="bc-stat">
+                            <span class="v">${b.waiting || 0}</span>
+                            <span class="l">Waiting</span>
+                        </div>
+                        <div class="bc-stat">
+                            <span class="v">${b.reputation_score || '—'}</span>
+                            <span class="l">Score</span>
+                        </div>
+                        <div class="bc-stat">
+                            <span class="v">${b.chair_count || 0}</span>
+                            <span class="l">Chairs</span>
+                        </div>
+                    </div>
+                    <div class="bc-foot">
+                        <span class="text-xs text-muted">${badge(b.reputation_score)}</span>
+                        <button class="btn btn-sm" style="padding:5px 12px;font-size:0.76rem"
+                                onclick="openShop(${b.id})">Dashboard →</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch(e) {
+        console.error('loadBranches error:', e);
+        document.getElementById('branches-empty').style.display = 'block';
+    } finally {
+        // Always hide the loader — no matter what happened above
+        document.getElementById('branches-loader').style.display = 'none';
+    }
+}
+
+// ---- Manage My Branch sheet -----------------------------
+function openManageBranchSheet() {
+    closeDrawer();
+    renderManageBranchList();
+    document.getElementById('manage-branch-sheet').classList.add('show');
+}
+function closeManageBranchSheet() {
+    document.getElementById('manage-branch-sheet').classList.remove('show');
+}
+
+async function renderManageBranchList() {
+    const listEl = document.getElementById('manage-branches-list');
+    listEl.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+    try {
+        const res  = await fetch(`/hh/owner/branches?owner_id=${owner.id}`);
+        const data = await res.json();
+        const branches = data || [];
+        if (!branches.length) {
+            listEl.innerHTML = '<p class="text-sm text-muted text-center" style="padding:16px 0">No shops yet.</p>';
+            return;
+        }
+        listEl.innerHTML = branches.map(b => `
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:12px 0;border-bottom:1px solid var(--border)">
+                <div style="flex:1;min-width:0;margin-right:12px">
+                    <div style="font-weight:600;font-size:0.9rem">${escHtml(b.name)}</div>
+                    <div style="font-size:0.73rem;color:var(--text-muted);margin-top:2px">
+                        📍 ${escHtml(b.address || '—')}
+                    </div>
+                </div>
+                <button onclick="deleteBranchFromManage(${b.id})"
+                        style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);
+                               border-radius:8px;padding:6px 14px;font-size:0.78rem;cursor:pointer;flex-shrink:0">
+                    🗑 Delete
+                </button>
+            </div>`
+        ).join('');
+    } catch {
+        listEl.innerHTML = '<p class="text-sm text-muted">Could not load shops.</p>';
+    }
+}
+
+async function deleteBranchFromManage(shopId) {
+    if (!confirm('Delete this shop and all its data? This cannot be undone.')) return;
+    try {
+        const res  = await fetch(`/hh/owner/branches/${shopId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok) {
+            toast('Branch deleted.', 'ok');
+            renderManageBranchList();
+            loadBranches();
+        } else {
+            toast(data.error || 'Could not delete.', 'err');
+        }
+    } catch { toast('Connection error.', 'err'); }
+}
+
+// ---- Navigate to dashboard / chair ----------------------
+function openShop(shopId) {
+    localStorage.setItem('hh_active_shop', shopId);
+    window.location.href = '/owner/dashboard';
+}
+// ---- HTML escape helper ---------------------------------
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ---- Add new shop ---------------------------------------
+function openAddSheet()  { document.getElementById('add-sheet').classList.add('show'); }
+function closeAddSheet() {
+    document.getElementById('add-sheet').classList.remove('show');
+    document.getElementById('add-alert').innerHTML = '';
+}
+
+async function addShop() {
+    const name  = document.getElementById('add-name').value.trim();
+    const addr  = document.getElementById('add-addr').value.trim();
+    const phone = document.getElementById('add-phone').value.trim();
+
+    if (!name) {
+        document.getElementById('add-alert').innerHTML =
+            '<div class="alert alert-err">Shop name is required.</div>';
+        return;
+    }
+
+    const btn = document.getElementById('add-btn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    try {
+        const res  = await fetch('/hh/owner/branches', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner_id: owner.id, name, address: addr, phone }),
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeAddSheet();
+            document.getElementById('add-name').value  = '';
+            document.getElementById('add-addr').value  = '';
+            document.getElementById('add-phone').value = '';
+            toast('Shop created!', 'ok');
+            loadBranches();
+        } else {
+            document.getElementById('add-alert').innerHTML =
+                `<div class="alert alert-err">${data.error || 'Could not create shop.'}</div>`;
+        }
+    } catch(e) {
+        document.getElementById('add-alert').innerHTML =
+            '<div class="alert alert-err">Connection error — please try again.</div>';
+    } finally {
+        btn.classList.remove('loading'); btn.disabled = false;
+    }
+}
+
+// ---- Drawer ---------------------------------------------
+function openDrawer()  {
+    document.getElementById('drawer').classList.add('open');
+    document.getElementById('drawer-overlay').classList.add('show');
+}
+function closeDrawer() {
+    document.getElementById('drawer').classList.remove('open');
+    document.getElementById('drawer-overlay').classList.remove('show');
+}
+function go(url) { closeDrawer(); window.location.href = url; }
+
+// ---- Sign out -------------------------------------------
+function signOut() {
+    localStorage.removeItem('hh_owner');
+    window.location.href = '/owner/auth';
+}
+
+// ---- Unread message dot ---------------------------------
+async function checkUnread() {
+    const res  = await fetch(`/owner/unread-count?owner_id=${owner.id}`);
+    const data = await res.json();
+    if (data.count > 0) document.getElementById('msg-dot').classList.add('show');
+}
+
+// ---- Helpers --------------------------------------------
+function cap(s)    { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function badge(s)  {
+    if (s >= 90) return '🏅 Top Rated';
+    if (s >= 70) return '✓ Trusted';
+    if (s < 50 && s > 0) return '⚠️ Warning';
+    return '';
+}
+function toast(msg, type='default') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 280); }, 2800);
+}
+</script>
+</body>
+</html>

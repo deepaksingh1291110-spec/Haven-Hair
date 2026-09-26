@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haven Hair — History</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">← Back</button>
+    <span class="header-title">History</span>
+    <span></span>
+</header>
+
+<main class="app-content page-enter" style="padding-bottom:24px">
+
+    <!-- Tab switcher -->
+    <div style="display:flex;border-bottom:1px solid var(--border);
+                background:var(--surface)">
+        <button id="tab-visits" onclick="switchTab('visits')"
+                style="flex:1;padding:14px;background:none;border:none;
+                       border-bottom:2px solid var(--amber);
+                       color:var(--amber);font-family:var(--font-body);
+                       font-size:0.85rem;font-weight:500;cursor:pointer">
+            ✂️ Visits
+        </button>
+        <button id="tab-homeservice" onclick="switchTab('homeservice')"
+                style="flex:1;padding:14px;background:none;border:none;
+                       border-bottom:2px solid transparent;
+                       color:var(--text-muted);font-family:var(--font-body);
+                       font-size:0.85rem;font-weight:500;cursor:pointer">
+            🏠 Home Service
+        </button>
+    </div>
+
+    <!-- Visit history -->
+    <div id="panel-visits" style="padding:14px">
+        <div class="loading-state"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Home service history -->
+    <div id="panel-homeservice" style="display:none;padding:14px">
+        <div class="loading-state"><div class="spinner"></div></div>
+    </div>
+
+</main>
+
+<nav class="bottom-nav">
+    <a class="nav-item" href="/customer/shops">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Explore</span>
+    </a>
+    <a class="nav-item" id="nav-queue" href="/customer/queue">
+        <span class="nav-icon">🪙</span>
+        <span class="nav-label">My Queue</span>
+    </a>
+    <a class="nav-item" href="/customer/messages">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Messages</span>
+    </a>
+    <a class="nav-item active" href="/customer/profile">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+    </a>
+</nav>
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script>
+const customer = Auth.get();
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (!customer) {
+        window.location.href = '/customer/auth';
+        return;
+    }
+    loadVisits();
+});
+
+// Tab switching
+function switchTab(tab) {
+    const isVisits = tab === 'visits';
+
+    document.getElementById('panel-visits').style.display      = isVisits ? 'block' : 'none';
+    document.getElementById('panel-homeservice').style.display = isVisits ? 'none'  : 'block';
+
+    document.getElementById('tab-visits').style.borderBottomColor      = isVisits ? 'var(--amber)' : 'transparent';
+    document.getElementById('tab-visits').style.color                  = isVisits ? 'var(--amber)' : 'var(--text-muted)';
+    document.getElementById('tab-homeservice').style.borderBottomColor = isVisits ? 'transparent' : 'var(--amber)';
+    document.getElementById('tab-homeservice').style.color             = isVisits ? 'var(--text-muted)' : 'var(--amber)';
+
+    if (!isVisits) loadHomeService();
+}
+
+async function loadVisits() {
+    const panel = document.getElementById('panel-visits');
+    const { ok, data } = await API.get(
+        `/hh/customer/history?phone=${encodeURIComponent(customer.phone)}`
+    );
+
+    if (!ok || !data.length) {
+        panel.innerHTML = `
+            <div class="empty-state">
+                <h3>No visits yet</h3>
+                <p>Your completed haircuts will appear here</p>
+            </div>`;
+        return;
+    }
+
+    panel.innerHTML = data.map(v => `
+        <div style="background:var(--surface);border:1px solid var(--border);
+                    border-radius:var(--radius-sm);padding:14px;margin-bottom:8px;
+                    display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <div style="font-size:0.88rem;font-weight:500;margin-bottom:3px">
+                    ${v.shop_name}
+                </div>
+                <div style="font-size:0.72rem;color:var(--text-muted)">
+                    ${v.service || '—'} · ${Format.timeAgo(v.created_at)}
+                </div>
+            </div>
+            ${v.price ? `
+            <div style="font-family:var(--font-display);font-size:1rem;
+                        font-weight:700;color:var(--amber)">
+                SAR ${v.price}
+            </div>` : ''}
+        </div>
+    `).join('');
+}
+
+async function loadHomeService() {
+    const panel = document.getElementById('panel-homeservice');
+    if (panel.dataset.loaded) return;
+
+    const { ok, data } = await API.get(
+        `/home-service/my-requests?phone=${encodeURIComponent(customer.phone)}`
+    );
+
+    // ✅ Network error — do NOT set loaded flag
+    // User can retry by switching tabs and coming back
+    if (!ok) {
+        panel.innerHTML = `
+            <div class="empty-state">
+                <h3>Could not load</h3>
+                <p>Switch tabs to retry</p>
+            </div>`;
+        return;  // ← dataset.loaded NOT set
+    }
+
+    // ✅ Only mark as loaded after a confirmed successful response
+    panel.dataset.loaded = '1';
+
+    if (!data.length) {
+        panel.innerHTML = `
+            <div class="empty-state">
+                <h3>No home service requests</h3>
+                <p>Your home service history will appear here</p>
+            </div>`;
+        return;
+    }
+
+    panel.innerHTML = data.map(r => `
+        <div style="background:var(--surface);border:1px solid var(--border);
+                    border-radius:var(--radius-sm);padding:14px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;
+                        align-items:center;margin-bottom:6px">
+                <strong>✂️ ${r.service || '—'}</strong>
+                <span style="font-size:0.72rem;text-transform:uppercase;
+                             letter-spacing:1px;
+                             color:${r.status === 'accepted' ? 'var(--green)' :
+                                    r.status === 'pending'  ? 'var(--amber)' :
+                                    'var(--text-muted)'}">
+                    ${r.status}
+                </span>
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:4px">
+                📍 ${r.address || '—'}
+            </div>
+            ${r.arrival_time ? `
+            <div style="font-size:0.78rem;color:var(--amber)">
+                🕐 Barber ETA: ${r.arrival_time}
+            </div>` : ''}
+            <div style="font-size:0.72rem;color:var(--text-dim);margin-top:6px">
+                ${Format.timeAgo(r.created_at)}
+            </div>
+        </div>
+    `).join('');
+}
+</script>
+</body>
+</html>

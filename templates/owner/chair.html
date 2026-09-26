@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Chair</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <button class="hamburger" onclick="goBack()">‹</button>
+    <span class="header-title" id="header-chair-name">Chair</span>
+    <div class="header-right" style="width:40px"></div>
+</header>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Loading state -->
+    <div id="chair-loader" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading chair...</p>
+    </div>
+
+    <!-- Chair content (hidden until loaded) -->
+    <div id="chair-wrap" style="display:none">
+
+        <!-- Chair header -->
+        <div class="dash-head">
+            <div class="dash-shop-name" id="ch-barber">—</div>
+            <div class="dash-shop-addr" id="ch-shop">—</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+                <!-- Chair status toggle -->
+                <div class="chair-status-toggle">
+                    <button class="cs-btn" id="cs-open"  onclick="setChairStatus('open')">Open</button>
+                    <button class="cs-btn" id="cs-brk"   onclick="setChairStatus('break')">Break</button>
+                    <button class="cs-btn" id="cs-off"   onclick="setChairStatus('closed')">Closed</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seated customer -->
+        <div style="padding:12px 14px 0">
+            <div id="seated-area"></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="tap-actions" style="padding:10px 14px 0">
+            <button class="tap-btn tap-sit" id="btn-sit" onclick="sitAction()">
+                💺 Customer<br>Sits
+            </button>
+            <button class="tap-btn tap-done" id="btn-done" onclick="doneAction()">
+                ✅ Haircut<br>Done
+            </button>
+        </div>
+        <div style="padding:0 14px 10px">
+            <button class="tap-btn tap-skip" id="btn-skip" onclick="skipAction()">
+                ⏭ Skip Next
+            </button>
+        </div>
+
+        <!-- Waiting queue -->
+        <div style="padding:0 14px 8px">
+            <div class="section-label" style="padding-bottom:4px">Queue</div>
+            <div id="q-list"></div>
+
+            <!-- Add walk-in -->
+            <div class="add-cust-bar">
+                <button class="btn btn-outline" style="width:100%" onclick="openAddSheet()">
+                    ＋ Add Walk-in
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</main>
+
+<!-- ======= ADD WALK-IN SHEET ======= -->
+<div class="bottom-sheet" id="add-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>Add Walk-in</h3>
+            <button class="sheet-close" onclick="closeAddSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="add-alert"></div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="add-name" placeholder="Customer name">
+            </div>
+            <div class="form-group">
+                <label>Service <span class="text-xs text-muted">(optional)</span></label>
+                <div class="svc-grid" id="add-svc-grid"></div>
+                <input type="hidden" id="add-svc-val">
+            </div>
+            <button class="btn btn-primary" id="add-btn" onclick="addWalkin()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Add to Queue →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SIT SERVICE SHEET ======= -->
+<div class="bottom-sheet" id="sit-service-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>Pick Service</h3>
+            <button class="sheet-close" onclick="closeSitSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <p class="text-sm text-muted" style="margin-bottom:14px">
+                Choose the service for this customer
+            </p>
+            <div class="svc-grid" id="sit-svc-grid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ============================================================
+//  HAVEN HAIR — owner/chair.html
+//  Dedicated chair page — shows one chair's queue + actions
+// ============================================================
+
+const CHAIR_ID  = {{ chair_id }};
+const owner     = JSON.parse(localStorage.getItem('hh_owner') || 'null');
+if (!owner) window.location.href = '/owner/auth';
+
+let chairData   = null;   // chair row from /chairs/:id
+let shopId      = null;
+let activeEntry = null;
+let waitingList = [];
+let services    = [];
+let refreshTimer = null;
+
+
+// ---- Init -----------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    loadChair();
+});
+
+// ---- Back navigation ------------------------------------
+function goBack() {
+    window.location.href = '/owner/branches';
+}
+
+// ---- Load chair info + queue ----------------------------
+async function loadChair() {
+    try {
+        const chairRes = await fetch(`/chairs/${CHAIR_ID}`);
+        if (!chairRes.ok) { showError('Chair not found.'); return; }
+        chairData = await chairRes.json();
+        shopId    = chairData.shop_id;
+
+        // Load shop info for subtitle
+        const shopRes  = await fetch(`/shops/${shopId}`);
+        const shopInfo = shopRes.ok ? await shopRes.json() : null;
+
+        // Load services for add sheet
+        const svcRes = await fetch(`/shops/${shopId}/services`);
+        services = svcRes.ok ? await svcRes.json() : [];
+
+        document.getElementById('chair-loader').style.display = 'none';
+        document.getElementById('chair-wrap').style.display   = 'block';
+
+        document.getElementById('header-chair-name').textContent =
+            chairData.barber_name || `Chair ${CHAIR_ID}`;
+        document.getElementById('ch-barber').textContent =
+            chairData.barber_name || `Chair ${CHAIR_ID}`;
+        document.getElementById('ch-shop').textContent =
+            shopInfo ? shopInfo.name : `Shop #${shopId}`;
+
+        updateChairStatusUI(chairData.status);
+        buildSvcGrid('add-svc-grid');
+        buildSvcGrid('sit-svc-grid', true);
+
+        await refreshQueue();
+    } catch(e) {
+        showError('Could not load chair data.');
+    }
+}
+
+// ---- Refresh queue data ---------------------------------
+async function refreshQueue() {
+    clearTimeout(refreshTimer);
+    if (!shopId) return;
+
+    const res  = await fetch(`/queue/branch/${shopId}`);
+    const data = await res.json();
+    const chair = (data.chairs || []).find(c => c.id === CHAIR_ID);
+
+    if (chair) {
+        activeEntry = chair.active_entry || null;
+        waitingList = (chair.queue || []).filter(e => e.status === 'waiting');
+        renderSeated();
+        renderQueue();
+        updateActionButtons();
+    }
+
+    refreshTimer = setTimeout(refreshQueue, 15000);
+}
+
+// ---- Render seated customer -----------------------------
+function renderSeated() {
+    const el = document.getElementById('seated-area');
+    if (activeEntry) {
+        const started = new Date(activeEntry.sat_at || activeEntry.created_at);
+        const mins    = Math.floor((Date.now() - started) / 60000);
+        el.innerHTML  = `
+            <div class="seated-box">
+                <div class="seated-info">
+                    <div class="seated-name">${escHtml(activeEntry.customer_name || 'Customer')}</div>
+                    <div class="seated-service">${escHtml(activeEntry.service || '—')}</div>
+                </div>
+                <div class="seated-token">${mins}m</div>
+            </div>`;
+    } else {
+        el.innerHTML = `<div class="no-seated">No customer seated</div>`;
+    }
+}
+
+// ---- Render waiting queue list --------------------------
+function renderQueue() {
+    const el = document.getElementById('q-list');
+    if (!waitingList.length) {
+        el.innerHTML = '<div class="q-empty">No one waiting</div>';
+        return;
+    }
+    el.innerHTML = waitingList.map((e, i) => `
+        <div class="q-entry${i === 0 ? '' : ''}">
+            <div class="q-pos">${i + 1}</div>
+            <div class="q-info">
+                <div class="q-name">${escHtml(e.customer_name || 'Customer')}</div>
+                <div class="q-svc">${escHtml(e.service || '—')}</div>
+            </div>
+            <span class="q-wait">${waitMins(e.created_at)}m</span>
+        </div>`
+    ).join('');
+}
+
+// ---- Update action button states ------------------------
+function updateActionButtons() {
+    const sitBtn  = document.getElementById('btn-sit');
+    const doneBtn = document.getElementById('btn-done');
+    const skipBtn = document.getElementById('btn-skip');
+
+    // Sit: only active when someone is waiting and no one seated
+    sitBtn.disabled  = !!activeEntry || !waitingList.length;
+    // Done: only active when someone is seated
+    doneBtn.disabled = !activeEntry;
+    // Skip: only active when someone waiting and no one seated
+    skipBtn.disabled = !!activeEntry || !waitingList.length;
+}
+
+// ---- Update chair status toggle -------------------------
+function updateChairStatusUI(status) {
+    document.getElementById('cs-open').classList.toggle('on',  status === 'open');
+    document.getElementById('cs-brk').classList.toggle('brk', status === 'break');
+    document.getElementById('cs-off').classList.toggle('off', status === 'closed');
+}
+
+// ---- Chair status setter --------------------------------
+async function setChairStatus(status) {
+    await fetch(`/chairs/${CHAIR_ID}/status`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ status }),
+    });
+    updateChairStatusUI(status);
+    toast(status === 'break' ? '☕ On break' : status === 'closed' ? '🔴 Closed' : '🟢 Open', 'ok');
+}
+
+// ---- Sit action -----------------------------------------
+function sitAction() {
+    if (!waitingList.length) { toast('No one waiting.', 'err'); return; }
+
+    // If customer already chose a service, skip the sheet
+    const first = waitingList[0];
+    if (first?.service) {
+        confirmSit(first.service);
+        return;
+    }
+    document.getElementById('sit-service-sheet').classList.add('show');
+}
+
+function closeSitSheet() {
+    document.getElementById('sit-service-sheet').classList.remove('show');
+}
+
+async function confirmSit(service) {
+    closeSitSheet();
+    const btn = document.getElementById('btn-sit');
+    btn.disabled = true; btn.innerHTML = '...';
+
+    const res = await fetch(`/queue/chair/${CHAIR_ID}/sit`, {
+        method:  'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ service }),
+    });
+
+    if (res.ok) {
+        toast(`Started — ${service}`, 'ok');
+        await refreshQueue();
+    } else {
+        const d = await res.json().catch(() => ({}));
+        toast(d.error || 'Could not seat customer.', 'err');
+        btn.disabled = false; btn.innerHTML = '💺 Customer<br>Sits';
+    }
+}
+
+// ---- Done action ----------------------------------------
+async function doneAction() {
+    if (!activeEntry) return;
+    const btn = document.getElementById('btn-done');
+    btn.disabled = true; btn.innerHTML = '...';
+
+    const res = await fetch(`/queue/chair/${CHAIR_ID}/done`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+    });
+
+    if (res.ok) {
+        toast('Haircut done! ✂️', 'ok');
+        await refreshQueue();
+    } else {
+        toast('Error marking done.', 'err');
+        btn.disabled = false; btn.innerHTML = '✅ Haircut<br>Done';
+    }
+}
+
+// ---- Skip action ----------------------------------------
+async function skipAction() {
+    if (!waitingList.length || activeEntry) return;
+
+    const res = await fetch(`/queue/chair/${CHAIR_ID}/skip`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+    });
+
+    if (res.ok) {
+        toast('Customer skipped.', 'ok');
+        await refreshQueue();
+    } else {
+        toast('Error skipping.', 'err');
+    }
+}
+
+// ---- Add walk-in sheet ----------------------------------
+function openAddSheet()  { document.getElementById('add-sheet').classList.add('show'); }
+function closeAddSheet() {
+    document.getElementById('add-sheet').classList.remove('show');
+    document.getElementById('add-alert').innerHTML = '';
+    document.getElementById('add-name').value = '';
+    document.getElementById('add-svc-val').value = '';
+    document.querySelectorAll('#add-svc-grid .svc-btn').forEach(b => b.classList.remove('picked'));
+}
+
+async function addWalkin() {
+    const name = document.getElementById('add-name').value.trim();
+    const svc  = document.getElementById('add-svc-val').value.trim();
+
+    if (!name) {
+        document.getElementById('add-alert').innerHTML =
+            '<div class="alert alert-err">Customer name is required.</div>';
+        return;
+    }
+
+    const btn = document.getElementById('add-btn');
+    btn.classList.add('loading'); btn.disabled = true;
+
+    const res = await fetch('/queue/join', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            shop_id:       shopId,
+            chair_id:      CHAIR_ID,
+            name:          name,
+            service:       svc || null,
+            source:        'walkin',  
+            owner_id:      owner.id,
+        }),
+    });
+    const data = await res.json();
+
+    btn.classList.remove('loading'); btn.disabled = false;
+
+    if (res.ok) {
+        toast(`${name} added to queue`, 'ok');
+        closeAddSheet();
+        await refreshQueue();
+    } else {
+        document.getElementById('add-alert').innerHTML =
+            `<div class="alert alert-err">${data.error || 'Could not add customer.'}</div>`;
+    }
+}
+
+// ---- Service grid builder -------------------------------
+function buildSvcGrid(gridId, forSit = false) {
+    const grid = document.getElementById(gridId);
+    const list = services.length ? services : [
+        {icon:'✂️', service:'Haircut'},    {icon:'🪒', service:'Beard Trim'},
+        {icon:'✨', service:'Both'},        {icon:'👦', service:'Kids Cut'},
+        {icon:'💆', service:'Facial'},      {icon:'🎨', service:'Color'},
+    ];
+
+    grid.innerHTML = list.map(s => `
+        <button class="svc-btn" onclick="${forSit ? `confirmSit('${escJs(s.service)}')` : `pickSvc('${escJs(s.service)}','${gridId}')`}">
+            <div style="font-size:1.4rem">${s.icon || '✂️'}</div>
+            <div style="font-size:0.75rem">${escHtml(s.service)}</div>
+            ${!forSit && s.price ? `<div style="font-size:0.62rem;color:var(--amber)">SAR ${s.price}</div>` : ''}
+        </button>`
+    ).join('');
+}
+
+function pickSvc(name, gridId) {
+    document.querySelectorAll(`#${gridId} .svc-btn`).forEach(b => b.classList.remove('picked'));
+    event.currentTarget.classList.add('picked');
+    document.getElementById('add-svc-val').value = name;
+}
+
+// ---- Helpers --------------------------------------------
+function waitMins(ts) {
+    try {
+        const d = new Date(ts.includes('T') ? ts : ts.replace(' ', 'T'));
+        return Math.floor((Date.now() - d) / 60000);
+    } catch { return 0; }
+}
+
+function showError(msg) {
+    document.getElementById('chair-loader').innerHTML =
+        `<p style="color:var(--red)">${msg}</p>`;
+}
+
+function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escJs(s) {
+    return String(s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+function toast(msg, type = 'default') {
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    document.getElementById('toast-container').appendChild(el);
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 280); }, 2800);
+}
+</script>
+</body>
+</html>

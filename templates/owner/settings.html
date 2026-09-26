@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <!-- Leaflet — free OpenStreetMap library -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <style>
+        /* ── Map section styles ── */
+        .map-mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .map-mode-btn {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color var(--ease), background var(--ease);
+        }
+        .map-mode-btn.active {
+            border-color: var(--amber);
+            background: var(--amber-glow);
+        }
+        .map-mode-btn .mm-icon  { font-size: 1.3rem; display: block; margin-bottom: 3px; }
+        .map-mode-btn .mm-label { font-size: 0.72rem; font-weight: 500; color: var(--text); display: block; }
+        .map-mode-btn .mm-sub   { font-size: 0.62rem; color: var(--amber); display: block; margin-top: 1px; }
+        .map-mode-btn:not(.active) .mm-sub { color: var(--text-muted); }
+
+        .map-status-row {
+            display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;
+        }
+        .map-status-row span { flex: 1; }
+
+        #map-search-row { display: none; gap: 8px; margin-bottom: 8px; }
+        #map-search-row input { flex: 1; }
+
+        #shop-map {
+            width: 100%; height: 240px; border-radius: var(--radius-sm);
+            border: 1px solid var(--border); margin-bottom: 10px; z-index: 1;
+        }
+
+        .map-tile-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+        .tile-btn {
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: 20px; padding: 4px 12px; font-size: 0.72rem;
+            cursor: pointer; color: var(--text); transition: border-color var(--ease);
+        }
+        .tile-btn.active { border-color: var(--amber); color: var(--amber); }
+
+        .map-coords-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+        .coord-box {
+            background: var(--surface-2); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.82rem;
+            font-family: monospace; color: var(--text); text-align: center;
+        }
+
+        /* ── Settings info rows ── */
+        .info-row {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem;
+        }
+        .info-label {
+            font-size: 0.68rem; font-weight: 500; letter-spacing: 1.2px;
+            text-transform: uppercase; color: var(--text-muted); flex-shrink: 0; padding-top: 2px;
+        }
+        .info-value { color: var(--text); text-align: right; line-height: 1.5; }
+
+        .rules-preview {
+            font-size: 0.84rem; color: var(--text-muted); line-height: 1.7;
+            white-space: pre-wrap; border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 12px 14px;
+            background: var(--bg); min-height: 60px;
+        }
+
+        /* ── Fix 2: Accordion ── */
+        .settings-section-head { cursor: pointer; user-select: none; }
+        .acc-arrow { font-size: 0.7rem; color: var(--text-muted); transition: transform 0.2s; }
+
+        /* ── Fix 2: Staff list ── */
+        .staff-row {
+            display: flex; align-items: center; gap: 10px; padding: 11px 0;
+            border-bottom: 1px solid var(--border); font-size: 0.88rem;
+        }
+        .staff-row:last-child { border-bottom: none; }
+        .staff-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: var(--surface-2); display: flex; align-items: center;
+            justify-content: center; font-size: 1rem; flex-shrink: 0;
+        }
+        .staff-info { flex: 1; }
+        .staff-name  { font-weight: 500; }
+        .staff-phone { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .staff-actions { display: flex; gap: 6px; }
+
+        .toggle-wrap  { cursor: pointer; }
+        .toggle-track {
+            width: 44px;
+            height: 24px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.25s ease;
+        }
+        .toggle-track.on {
+            background: var(--amber);
+            border-color: var(--amber);
+        }
+        .toggle-thumb {
+            width: 18px;
+            height: 18px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.25s ease, background 0.25s ease;
+        }
+        .toggle-track.on .toggle-thumb {
+            transform: translateX(20px);
+            background: #0a0806;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+    <span class="header-title">Settings</span>
+    <div class="header-right">
+        <button class="notif-btn" onclick="window.location.href='/owner/inbox'">
+            💬
+            <span class="notif-dot" id="msg-dot"></span>
+        </button>
+    </div>
+</header>
+
+<!-- ======= DRAWER ======= -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer">
+    <div class="drawer-head">
+        <div class="drawer-logo">Haven<em>Hair</em></div>
+        <div class="drawer-user" id="drawer-name">—</div>
+        <span class="drawer-role">Owner</span>
+    </div>
+    <div class="drawer-nav">
+        <button class="drawer-item" onclick="go('/owner/branches')">
+            <span class="d-icon">🏪</span> My Shops
+        </button>
+        <button class="drawer-item" onclick="go('/owner/dashboard')">
+            <span class="d-icon">📋</span> Dashboard
+        </button>
+        <button class="drawer-item active" onclick="closeDrawer()">
+            <span class="d-icon">⚙️</span> Settings
+        </button>
+        <button class="drawer-item" onclick="go('/owner/inbox')">
+            <span class="d-icon">💬</span> Inbox
+        </button>
+        <button class="drawer-item" onclick="go('/owner/reports')">
+            <span class="d-icon">📊</span> Reports
+        </button>
+        <div class="drawer-sep"></div>
+        <button class="drawer-item danger" onclick="signOut()">
+            <span class="d-icon">🚪</span> Sign Out
+        </button>
+    </div>
+</nav>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Page hero -->
+    <div class="page-hero">
+        <h1>Shop <em>Settings</em></h1>
+        <p id="settings-shop-name">Loading...</p>
+    </div>
+
+    <!-- Loading state -->
+    <div id="settings-loader" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading settings...</p>
+    </div>
+
+    <!-- Settings content -->
+    <div id="settings-content" style="display:none; padding-bottom: 40px;">
+
+        <!-- 1. Shop Info -->
+        <div class="settings-section" id="section-shop-info">
+            <div class="settings-section-head">
+                <h3>🏪 Shop Info</h3>
+                <button class="btn btn-outline btn-sm btn-auto" id="shop-info-edit-btn"
+                        onclick="toggleShopInfoEdit()">Edit</button>
+            </div>
+            <div class="settings-section-body">
+                <div id="shop-info-alert"></div>
+
+                <!-- View mode -->
+                <div id="shop-info-view">
+                    <div class="info-row">
+                        <span class="info-label">Name</span>
+                        <span class="info-value" id="si-name-view">—</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Address</span>
+                        <span class="info-value" id="si-addr-view">—</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value" id="si-phone-view">—</span>
+                    </div>
+                    <div class="info-row" style="border:none">
+                        <span class="info-label">Home Service</span>
+                        <span class="info-value" id="si-home-view">—</span>
+                    </div>
+                </div>
+
+                <!-- Edit mode -->
+                <div id="shop-info-edit" style="display:none">
+                    <div class="form-group">
+                        <label>Shop Name</label>
+                        <input type="text" id="si-name" placeholder="Royal Cuts Studio">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input type="text" id="si-addr" placeholder="King Fahad Road, Riyadh">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="tel" id="si-phone" placeholder="05xxxxxxxx">
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; justify-content:space-between">
+                        <label style="margin:0; text-transform:none; letter-spacing:0; font-size:0.88rem; color:var(--text)">
+                            Offers home service
+                        </label>
+                        <div class="toggle-wrap" onclick="document.getElementById('si-home').click()">
+                            <input type="checkbox" id="si-home" style="display:none">
+                            <div class="toggle-track" id="si-home-track">
+                                <div class="toggle-thumb"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:8px; margin-top:4px">
+                        <button class="btn btn-primary" id="shop-info-save-btn" onclick="saveShopInfo()">
+                            <div class="btn-spinner"></div>
+                            <span class="btn-text">Save Changes</span>
+                        </button>
+                        <button class="btn btn-outline btn-auto" onclick="cancelShopInfoEdit()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Shop Location -->
+        <div class="settings-section" id="section-location">
+            <div class="settings-section-head">
+                <h3>📍 Shop Location</h3>
+            </div>
+            <div class="settings-section-body">
+                <p class="text-xs text-muted mb-12">Update your exact shop location so customers can find you on the map.</p>
+                <div id="map-alert"></div>
+                <div class="map-mode-grid">
+                    <button class="map-mode-btn active" id="mode-gps" onclick="setMapMode('gps')">
+                        <span class="mm-icon">📡</span><span class="mm-label">GPS</span><span class="mm-sub">Most Accurate</span>
+                    </button>
+                    <button class="map-mode-btn" id="mode-pin" onclick="setMapMode('pin')">
+                        <span class="mm-icon">📌</span><span class="mm-label">Pin</span><span class="mm-sub">Drag to Set</span>
+                    </button>
+                    <button class="map-mode-btn" id="mode-search" onclick="setMapMode('search')">
+                        <span class="mm-icon">🔍</span><span class="mm-label">Search</span><span class="mm-sub">By Address</span>
+                    </button>
+                </div>
+                <div class="map-status-row"><span>📍</span><span id="map-status-text">Current saved location — update if wrong</span></div>
+                <div id="map-search-row" style="display:none; margin-bottom:8px">
+                    <div style="display:flex; gap:8px">
+                        <input type="text" id="map-search-input" placeholder="Search address..." onkeydown="if(event.key==='Enter') searchAddress()">
+                        <button class="btn btn-outline btn-auto" onclick="searchAddress()">Go</button>
+                    </div>
+                </div>
+                <div id="shop-map"></div>
+                <div class="map-tile-row">
+                    <button class="tile-btn active" id="tile-street"    onclick="setTile('street')">🗺 Street</button>
+                    <button class="tile-btn"        id="tile-dark"      onclick="setTile('dark')">🌙 Dark</button>
+                    <button class="tile-btn"        id="tile-satellite" onclick="setTile('satellite')">🛰 Satellite</button>
+                    <button class="tile-btn"        id="tile-topo"      onclick="setTile('topo')">🏔 Topo</button>
+                </div>
+                <div class="map-coords-row">
+                    <div class="coord-box" id="map-lat-display">—</div>
+                    <div class="coord-box" id="map-lon-display">—</div>
+                </div>
+                <button class="btn btn-primary" id="map-save-btn" onclick="saveLocation()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">UPDATE LOCATION →</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. Services -->
+        <div class="settings-section" id="section-services">
+            <div class="settings-section-head">
+                <h3>✂️ Services &amp; Prices</h3>
+                <button class="btn btn-outline btn-sm btn-auto" onclick="openAddServiceSheet()">
+                    ＋ Add
+                </button>
+            </div>
+            <div class="settings-section-body">
+                <div id="services-alert"></div>
+                <div id="services-list">
+                    <div class="loading-state" style="padding:20px 0">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fix 2: Manage Staff / Chairs section -->
+        <div class="settings-section" id="section-staff">
+            <div class="settings-section-head">
+                <h3>👥 Manage Staff / Chairs</h3>
+                <button class="btn btn-outline btn-sm btn-auto" onclick="openAddStaffSheet()">
+                    ＋ Add
+                </button>
+            </div>
+            <div class="settings-section-body">
+                <p class="text-xs text-muted mb-12">
+                    Add or remove barbers and update their login credentials.
+                </p>
+                <div id="staff-list">
+                    <div class="loading-state" style="padding:16px">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Shop Rules -->
+        <div class="settings-section" id="section-rules">
+            <div class="settings-section-head">
+                <h3>📋 Shop Rules</h3>
+                <button class="btn btn-outline btn-sm btn-auto" id="rules-edit-btn"
+                        onclick="toggleRulesEdit()">Edit</button>
+            </div>
+            <div class="settings-section-body">
+                <div id="rules-alert"></div>
+
+                <!-- View mode -->
+                <div id="rules-view">
+                    <div id="rules-text-view" class="rules-preview">—</div>
+                </div>
+
+                <!-- Edit mode -->
+                <div id="rules-edit" style="display:none">
+                    <div class="form-group" style="margin-bottom:8px">
+                        <label>Rules shown to customers before booking</label>
+                        <textarea id="rules-textarea" rows="7"
+                                  placeholder="Welcome!&#10;• Be on time&#10;• No-shows skipped after 5 min"></textarea>
+                    </div>
+                    <div style="display:flex; gap:8px">
+                        <button class="btn btn-primary" id="rules-save-btn" onclick="saveRules()">
+                            <div class="btn-spinner"></div>
+                            <span class="btn-text">Save Rules</span>
+                        </button>
+                        <button class="btn btn-outline btn-auto" onclick="cancelRulesEdit()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fix 2: Home Service Rules section -->
+        <div class="settings-section" id="section-hs-rules">
+            <div class="settings-section-head">
+                <h3>🏠 Home Service Rules</h3>
+                <button class="btn btn-outline btn-sm btn-auto" id="hs-rules-edit-btn"
+                        onclick="toggleHsRulesEdit()">Edit</button>
+            </div>
+            <div class="settings-section-body">
+                <p class="text-xs text-muted mb-12">
+                    These rules are shown to customers before they submit a home service request.
+                </p>
+                <div id="hs-rules-view-wrap">
+                    <div id="hs-rules-view" class="rules-preview">—</div>
+                </div>
+                <div id="hs-rules-edit-wrap" style="display:none">
+                    <div class="form-group" style="margin-bottom:8px">
+                        <label>Rules shown before home service request</label>
+                        <textarea id="hs-rules-textarea" rows="6"
+                                  placeholder="• Minimum 30 min travel notice required&#10;• Service available within 10 km&#10;• Customer must be available to receive barber"></textarea>
+                    </div>
+                    <div style="display:flex; gap:8px">
+                        <button class="btn btn-primary" id="hs-rules-save-btn" onclick="saveHsRules()">
+                            <div class="btn-spinner"></div>
+                            <span class="btn-text">Save HS Rules</span>
+                        </button>
+                        <button class="btn btn-outline btn-auto" onclick="cancelHsRulesEdit()">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Shop Status -->
+        <div class="settings-section" id="section-status">
+            <div class="settings-section-head">
+                <h3>🔘 Shop Status</h3>
+            </div>
+            <div class="settings-section-body">
+                <p class="text-xs text-muted mb-12">
+                    Controls whether customers can join the queue or book slots.
+                </p>
+                <div class="status-toggle" style="width:100%">
+                    <button class="st-btn" id="st-open"   onclick="setShopStatus('open')"   style="flex:1">🟢 Open</button>
+                    <button class="st-btn" id="st-busy"   onclick="setShopStatus('busy')"   style="flex:1">🟡 Busy</button>
+                    <button class="st-btn" id="st-closed" onclick="setShopStatus('closed')" style="flex:1">🔴 Closed</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Danger Zone -->
+        <div class="settings-section danger-zone" id="section-danger">
+            <div class="settings-section-head">
+                <h3>⚠️ Danger Zone</h3>
+            </div>
+            <div class="settings-section-body">
+                <p class="text-xs text-muted mb-12">
+                    These actions are permanent and cannot be undone.
+                </p>
+                <button class="btn btn-danger btn-auto" onclick="openClearQueueModal()">
+                    🗑 Clear Today's Queue
+                </button>
+            </div>
+        </div>
+
+    </div><!-- /settings-content -->
+
+</main>
+
+<!-- ======= ADD / EDIT SERVICE SHEET ======= -->
+<div class="bottom-sheet" id="service-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3 id="service-sheet-title">Add Service</h3>
+            <button class="sheet-close" onclick="closeServiceSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="service-sheet-alert"></div>
+            <input type="hidden" id="svc-editing-id">
+            <div class="form-group">
+                <label>Service Name</label>
+                <input type="text" id="svc-name" placeholder="Haircut">
+            </div>
+            <div class="form-group">
+                <label>Icon (emoji)</label>
+                <input type="text" id="svc-icon" placeholder="✂️" maxlength="4">
+            </div>
+            <div class="form-group">
+                <label>Price (SAR)</label>
+                <input type="number" id="svc-price" placeholder="25" min="0" step="0.5">
+            </div>
+            <div class="form-group">
+                <label>Duration (minutes)</label>
+                <input type="number" id="svc-duration" placeholder="20" min="5" step="5">
+            </div>
+            <button class="btn btn-primary" id="svc-save-btn" onclick="saveService()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Save Service →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= Fix 2: ADD / EDIT STAFF SHEET ======= -->
+<div class="bottom-sheet" id="staff-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3 id="staff-sheet-title">Add Barber</h3>
+            <button class="sheet-close" onclick="closeStaffSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="staff-alert"></div>
+            <div class="form-group">
+                <label>Barber Name</label>
+                <input type="text" id="staff-chr-name" placeholder="Ahmed">
+            </div>
+            <div class="form-group">
+                <label>Phone (for staff login)</label>
+                <input type="tel" id="staff-chr-phone" placeholder="05xxxxxxxx">
+            </div>
+            <div class="form-group" id="staff-pass-group">
+                <label>Password <span class="text-xs text-muted">(leave blank to keep current)</span></label>
+                <input type="password" id="staff-chr-pass" placeholder="Min 6 characters">
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:10px">
+                <input type="checkbox" id="staff-chr-home" style="width:auto">
+                <label style="margin:0;text-transform:none;letter-spacing:0;font-size:0.88rem;color:var(--text)">
+                    Offers home service
+                </label>
+            </div>
+            <button class="btn btn-primary" id="staff-save-btn" onclick="submitStaff()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Save Barber →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= CLEAR QUEUE CONFIRM MODAL ======= -->
+<div class="modal-overlay" id="clear-queue-modal">
+    <div class="modal">
+        <div class="modal-head">
+            <h3>Clear Today's Queue</h3>
+            <button class="modal-close" onclick="closeClearQueueModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="text-muted text-sm mb-12">
+                This will remove all <strong>waiting</strong> customers from today's queue.
+                Customers already seated will not be affected.
+            </p>
+            <div style="display:flex; gap:8px">
+                <button class="btn btn-danger btn-auto" id="clear-queue-btn"
+                        onclick="clearQueue()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Yes, Clear Queue</span>
+                </button>
+                <button class="btn btn-outline btn-auto" onclick="closeClearQueueModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{{ url_for('static', filename='owner/js/settings_core.js') }}"></script>
+<script src="{{ url_for('static', filename='owner/js/settings_map.js') }}"></script>
+<script src="{{ url_for('static', filename='owner/js/settings_services.js') }}"></script>
+</body>
+</html>

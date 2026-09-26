@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Owner Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+<div class="auth-page">
+
+    <div class="auth-wrap">
+
+        <!-- Brand -->
+        <div class="auth-brand">
+            <div class="auth-logo">Haven<em>Hair</em></div>
+            <div class="auth-tagline">💈 Owner Portal</div>
+        </div>
+
+        <!-- Role tabs: Owner / Staff -->
+        <div class="auth-role-tabs">
+            <button class="role-tab active" id="tab-owner" onclick="switchRole('owner')">
+                👑 Owner
+            </button>
+            <button class="role-tab" id="tab-staff" onclick="switchRole('staff')">
+                ✂️ Staff
+            </button>
+        </div>
+
+        <!-- ======= OWNER SECTION ======= -->
+        <div class="auth-box" id="owner-section">
+
+            <!-- Owner Login form -->
+            <div class="auth-form active" id="owner-login">
+                <h2>Welcome back</h2>
+                <p>Sign in to manage your shops</p>
+                <div id="owner-login-alert"></div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="ol-phone" placeholder="05xxxxxxxx" autocomplete="tel">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="ol-pass" placeholder="Your password"
+                           onkeydown="if(event.key==='Enter') ownerLogin()">
+                </div>
+                <button class="btn btn-primary" id="ol-btn" onclick="ownerLogin()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Sign In →</span>
+                </button>
+                <div class="auth-switch">
+                    No account? <a onclick="showOwnerRegister()">Register</a>
+                </div>
+            </div>
+
+            <!-- Owner Register form -->
+            <div class="auth-form" id="owner-register">
+                <h2>Create account</h2>
+                <p>Register as a shop owner</p>
+                <div id="owner-reg-alert"></div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="or-name" placeholder="Mohammed" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="or-phone" placeholder="05xxxxxxxx" autocomplete="tel">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="or-pass" placeholder="Choose a password">
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="or-pass2" placeholder="Repeat password"
+                           onkeydown="if(event.key==='Enter') ownerRegister()">
+                </div>
+                <button class="btn btn-primary" id="or-btn" onclick="ownerRegister()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Create Account →</span>
+                </button>
+                <div class="auth-switch">
+                    Already have one? <a onclick="showOwnerLogin()">Sign in</a>
+                </div>
+            </div>
+
+        </div><!-- /owner-section -->
+
+        <!-- ======= STAFF SECTION ======= -->
+        <div class="auth-box" id="staff-section" style="display:none">
+
+            <div class="auth-form active" id="staff-login">
+                <h2>Staff sign in</h2>
+                <p>Your account is created by your shop owner</p>
+                <div id="staff-login-alert"></div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="sl-phone" placeholder="05xxxxxxxx" autocomplete="tel">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="sl-pass" placeholder="Your password"
+                           onkeydown="if(event.key==='Enter') staffLogin()">
+                </div>
+                <button class="btn btn-primary" id="sl-btn" onclick="staffLogin()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Sign In →</span>
+                </button>
+                <!-- No register link for staff — owner creates their account -->
+            </div>
+
+        </div><!-- /staff-section -->
+
+        <div class="auth-back" onclick="window.location.href='/'">← Back to home</div>
+
+    </div><!-- /auth-wrap -->
+</div>
+
+<script>
+// ---- Check if already logged in -------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    const owner = localStorage.getItem('hh_owner');
+    const staff = localStorage.getItem('hh_staff');
+    if (owner) window.location.href = '/owner/branches';
+    if (staff) window.location.href = '/staff/dashboard';
+});
+
+// ---- Switch role tabs -----------------------------------
+function switchRole(role) {
+    document.getElementById('tab-owner').classList.toggle('active', role === 'owner');
+    document.getElementById('tab-staff').classList.toggle('active', role === 'staff');
+    document.getElementById('owner-section').style.display = role === 'owner' ? 'block' : 'none';
+    document.getElementById('staff-section').style.display = role === 'staff' ? 'block' : 'none';
+    clearAllAlerts();
+}
+
+// ---- Switch between owner login / register ---------------
+function showOwnerRegister() {
+    document.getElementById('owner-login').classList.remove('active');
+    document.getElementById('owner-register').classList.add('active');
+    clearAllAlerts();
+}
+function showOwnerLogin() {
+    document.getElementById('owner-register').classList.remove('active');
+    document.getElementById('owner-login').classList.add('active');
+    clearAllAlerts();
+}
+
+// ---- Alert helpers --------------------------------------
+function setAlert(id, msg, type = 'err') {
+    document.getElementById(id).innerHTML =
+        `<div class="alert alert-${type}">${msg}</div>`;
+}
+function clearAllAlerts() {
+    ['owner-login-alert','owner-reg-alert','staff-login-alert']
+        .forEach(id => { document.getElementById(id).innerHTML = ''; });
+}
+
+// ---- Loading state on button ----------------------------
+function setBtnLoading(id, on) {
+    const btn = document.getElementById(id);
+    btn.classList.toggle('loading', on);
+    btn.disabled = on;
+}
+
+// ---- Owner login ----------------------------------------
+async function ownerLogin() {
+    const phone = document.getElementById('ol-phone').value.trim();
+    const pass  = document.getElementById('ol-pass').value;
+    if (!phone || !pass) {
+        setAlert('owner-login-alert', 'Please enter phone and password.'); return;
+    }
+    setBtnLoading('ol-btn', true);
+    try {
+        const res  = await fetch('/auth/owner/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password: pass }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('hh_owner', JSON.stringify(data));
+            window.location.href = '/owner/branches';
+        } else {
+            setAlert('owner-login-alert', data.error || 'Wrong phone or password.');
+        }
+    } catch {
+        setAlert('owner-login-alert', 'Cannot connect to server.');
+    }
+    setBtnLoading('ol-btn', false);
+}
+
+// ---- Owner register -------------------------------------
+async function ownerRegister() {
+    const name  = document.getElementById('or-name').value.trim();
+    const phone = document.getElementById('or-phone').value.trim();
+    const pass  = document.getElementById('or-pass').value;
+    const pass2 = document.getElementById('or-pass2').value;
+
+    if (!name || !phone || !pass) {
+        setAlert('owner-reg-alert', 'Please fill in all fields.'); return;
+    }
+    if (pass !== pass2) {
+        setAlert('owner-reg-alert', 'Passwords do not match.'); return;
+    }
+    if (pass.length < 6) {
+        setAlert('owner-reg-alert', 'Password must be at least 6 characters.'); return;
+    }
+
+    setBtnLoading('or-btn', true);
+    try {
+        const res  = await fetch('/auth/owner/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, phone, password: pass }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('hh_owner', JSON.stringify(data));
+            window.location.href = '/owner/branches';
+        } else {
+            setAlert('owner-reg-alert', data.error || 'Could not create account.');
+        }
+    } catch {
+        setAlert('owner-reg-alert', 'Cannot connect to server.');
+    }
+    setBtnLoading('or-btn', false);
+}
+
+// ---- Staff login ----------------------------------------
+async function staffLogin() {
+    const phone = document.getElementById('sl-phone').value.trim();
+    const pass  = document.getElementById('sl-pass').value;
+    if (!phone || !pass) {
+        setAlert('staff-login-alert', 'Please enter phone and password.'); return;
+    }
+    setBtnLoading('sl-btn', true);
+    try {
+        const res  = await fetch('/auth/staff/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, password: pass }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            localStorage.setItem('hh_staff', JSON.stringify(data));
+            window.location.href = '/staff/dashboard';
+        } else {
+            setAlert('staff-login-alert', data.error || 'Wrong phone or password.');
+        }
+    } catch {
+        setAlert('staff-login-alert', 'Cannot connect to server.');
+    }
+    setBtnLoading('sl-btn', false);
+}
+</script>
+</body>
+</html>

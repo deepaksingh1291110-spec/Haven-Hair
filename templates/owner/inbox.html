@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Inbox</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+        /* ---- Thread view (hidden by default) ---- */
+        #view-thread { display: none; }
+
+        /* Scrollable messages area between header and input bar */
+        .thread-messages {
+            padding: 12px 16px;
+            padding-top: calc(var(--header-h) + 12px); 
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        /* Message bubbles */
+        .msg-row { display: flex; animation: fadeUp 0.18s ease; }
+        .msg-row.from-owner    { justify-content: flex-end; }
+        .msg-row.from-customer { justify-content: flex-start; }
+
+        .msg-bubble {
+            max-width: 78%;
+            min-width: 80px; 
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            word-break: normal;
+            overflow-wrap: break-word;
+            white-space: pre-wrap;  
+        }
+        .from-owner   .msg-bubble {
+            background: var(--amber);
+            color: #0a0806;
+            border-bottom-right-radius: 4px;
+        }
+        .from-customer .msg-bubble {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+        }
+        .msg-time {
+            font-size: 0.62rem;
+            margin-top: 4px;
+            opacity: 0.6;
+        }
+        .from-owner    .msg-time { text-align: right; color: #0a0806; }
+        .from-customer .msg-time { text-align: left;  color: var(--text-muted); }
+
+        /* Date separator */
+        .date-sep {
+            text-align: center;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 6px 0;
+        }
+
+        /* AI context card shown at top of each thread */
+        .ai-context-card {
+            margin: calc(var(--header-h) + 12px) 16px 4px;
+            padding: 12px 14px;
+            background: var(--amber-glow);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--amber);
+            border-radius: var(--radius-sm);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .ai-context-card strong { color: var(--amber); }
+        .ai-context-card .ctx-topic {
+            margin-top: 6px;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Star rating display */
+        .stars { color: var(--amber); font-size: 0.82rem; letter-spacing: 1px; }
+
+        /* Fixed message input bar */
+        .msg-input-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0; right: 0;
+            padding: 10px 14px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            background: rgba(10,8,6,0.97);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            z-index: 80;
+        }
+        .msg-input-bar textarea {
+            flex: 1;
+            height: 42px;
+            max-height: 100px;
+            resize: none;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            overflow-y: hidden;
+            line-height: 1.4;
+        }
+        .msg-send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--amber);
+            border: none;
+            color: #0a0806;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background var(--ease), transform var(--ease);
+        }
+        .msg-send-btn:hover   { background: var(--amber-light, #d9b96a); }
+        .msg-send-btn:active  { transform: scale(0.93); }
+        .msg-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+
+<!-- ============================================================ -->
+<!-- VIEW 1 — CONVERSATION LIST                                   -->
+<!-- ============================================================ -->
+<div id="view-list">
+
+    <!-- Header -->
+    <header class="app-header">
+        <button class="hamburger" onclick="openDrawer()">☰</button>
+        <span class="header-title">Inbox</span>
+        <span style="width:40px"></span>
+    </header>
+
+    <!-- Drawer -->
+    <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+    <nav class="drawer" id="drawer">
+        <div class="drawer-head">
+            <div class="drawer-logo">Haven<em>Hair</em></div>
+            <div class="drawer-user" id="drawer-name">—</div>
+            <span class="drawer-role">Owner</span>
+        </div>
+        <div class="drawer-nav">
+            <button class="drawer-item" onclick="go('/owner/branches')">
+                <span class="d-icon">🏪</span> My Shops
+            </button>
+            <button class="drawer-item" onclick="go('/owner/dashboard')">
+                <span class="d-icon">📋</span> Dashboard
+            </button>
+            <button class="drawer-item" onclick="go('/owner/settings')">
+                <span class="d-icon">⚙️</span> Settings
+            </button>
+            <button class="drawer-item active" onclick="closeDrawer()">
+                <span class="d-icon">💬</span> Inbox
+            </button>
+            <button class="drawer-item" onclick="go('/owner/reports')">
+                <span class="d-icon">📊</span> Reports
+            </button>
+            <div class="drawer-sep"></div>
+            <button class="drawer-item danger" onclick="signOut()">
+                <span class="d-icon">🚪</span> Sign Out
+            </button>
+        </div>
+    </nav>
+
+    <!-- List content -->
+    <main class="app-content page-enter">
+
+        <div class="page-hero">
+            <h1>Customer <em>Inbox</em></h1>
+            <p>Respond in your own words — customers can tell the difference.</p>
+        </div>
+
+        <!-- Loading state -->
+        <div id="conv-loader" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading conversations...</p>
+        </div>
+
+        <!-- Empty state -->
+        <div id="conv-empty" class="q-empty" style="display:none; margin: 20px 16px;">
+            💬 No conversations yet.<br>
+            <span style="font-size:0.78rem; margin-top:6px; display:block">
+                When a customer leaves a review, AI will suggest reaching out here.
+            </span>
+        </div>
+
+        <!-- Conversation list -->
+        <div id="conv-list"></div>
+
+    </main>
+
+</div><!-- /view-list -->
+
+
+<!-- ============================================================ -->
+<!-- VIEW 2 — CHAT THREAD                                         -->
+<!-- ============================================================ -->
+<div id="view-thread">
+
+    <!-- Thread header -->
+    <header class="app-header" id="thread-header">
+        <button class="hamburger" style="font-size:1rem; letter-spacing:0"
+                onclick="closeThread()">← Back</button>
+        <span class="header-title" id="thread-customer-name">—</span>
+        <span id="thread-stars" class="stars" style="font-size:0.78rem; padding-right:4px"></span>
+    </header>
+
+    <!-- AI context card (nudge from AI — shown above messages) -->
+    <div class="ai-context-card" id="ai-context-card" style="display:none">
+        💡 <span id="ai-context-text">—</span>
+        <div class="ctx-topic" id="ai-context-topic"></div>
+    </div>
+
+    <!-- Scrollable messages -->
+    <div class="thread-messages" id="thread-messages">
+        <div class="loading-state" style="padding: 40px 0">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- Fixed message input bar -->
+    <div class="msg-input-bar">
+        <textarea id="msg-input"
+                  placeholder="Write your message..."
+                  rows="1"
+                  oninput="autoResize(this)"
+                  onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendMessage(); }">
+        </textarea>
+        <button class="msg-send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+
+</div><!-- /view-thread -->
+
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="{{ url_for('static', filename='owner/js/inbox_list.js') }}"></script>
+<script src="{{ url_for('static', filename='owner/js/inbox_thread.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,793 @@
+/* ============================================================
+   HAVEN HAIR — main.css
+   Sections:
+     1.  Variables & Reset
+     2.  Typography
+     3.  Utilities & Buttons
+     4.  Navigation
+     5.  Hero
+     6.  Barbershop Scene
+     7.  How it Works
+     8.  Features
+     9.  Philosophy
+    10.  CTA
+    11.  Footer
+    12.  Scroll Reveal
+    13.  Responsive
+============================================================ */
+
+
+/* --- 1. Variables & Reset -------------------------------- */
+
+:root {
+    --bg:          #0d0a06;
+    --bg-2:        #121009;
+    --surface:     #1a1508;
+    --surface-2:   #221c0d;
+    --amber:       #c8902a;
+    --amber-light: #f0b840;
+    --amber-dim:   #7a5a18;
+    --text:        #f2e4cc;
+    --text-muted:  #9a856a;
+    --border:      rgba(200, 144, 42, 0.14);
+    --glow:        rgba(200, 144, 42, 0.10);
+
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body:    'DM Sans', sans-serif;
+
+    --max-w: 1100px;
+    --pad:   0 40px;
+    --ease:  0.3s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Disable Chrome's tap-to-search on all elements */
+* {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* But allow selecting text in inputs and textareas */
+input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 400;
+    line-height: 1.65;
+    overflow-x: hidden;
+}
+
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+
+
+/* --- 2. Typography --------------------------------------- */
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+h2 em, h1 em {
+    font-style: italic;
+    color: var(--amber);
+}
+
+blockquote {
+    font-family: var(--font-display);
+    font-style: italic;
+}
+
+
+/* --- 3. Utilities & Buttons ------------------------------ */
+
+.container {
+    max-width: var(--max-w);
+    margin: 0 auto;
+    padding: var(--pad);
+}
+
+.section { padding: 96px 0; }
+
+.section-header { text-align: center; margin-bottom: 60px; }
+
+.section-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 14px;
+}
+
+.section-header h2 {
+    font-size: clamp(1.9rem, 3.5vw, 2.7rem);
+    margin-bottom: 14px;
+}
+
+.section-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 26px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    font-weight: 500;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--ease);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--amber);
+    color: #0d0a06;
+    border-color: var(--amber);
+}
+.btn-primary:hover {
+    background: var(--amber-light);
+    border-color: var(--amber-light);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200, 144, 42, 0.25);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text);
+    border-color: rgba(242, 228, 204, 0.28);
+}
+.btn-outline:hover {
+    border-color: var(--amber);
+    color: var(--amber);
+    transform: translateY(-2px);
+}
+
+
+/* --- 4. Navigation --------------------------------------- */
+
+.navbar {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 44px;
+    transition: background var(--ease), padding var(--ease), backdrop-filter var(--ease);
+}
+
+.navbar.scrolled {
+    background: rgba(13, 10, 6, 0.92);
+    padding: 14px 44px;
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--amber);
+    letter-spacing: 0.3px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 36px;
+}
+
+.nav-links a {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+    transition: color var(--ease);
+}
+.nav-links a:hover { color: var(--amber); }
+
+/* Hamburger */
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+}
+.nav-toggle span {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: var(--ease);
+}
+
+
+/* --- 5. Hero -------------------------------------------- */
+
+.hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 620px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse 70% 70% at 72% 50%, #1c1006 0%, #0d0a06 65%);
+}
+
+/* Canvas sits above scene, below text */
+.leaf-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+}
+
+/* Gradient: opaque on left (text legibility), transparent on right (scene visible) */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        rgba(13,10,6,0.88) 0%,
+        rgba(13,10,6,0.60) 45%,
+        rgba(13,10,6,0.15) 75%,
+        rgba(13,10,6,0.04) 100%
+    );
+    z-index: 2;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 4;
+    padding: 0 80px;
+    padding-top: 72px;
+    max-width: 600px;
+}
+
+.eyebrow {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 22px;
+}
+
+.hero-title {
+    font-size: clamp(2.8rem, 5vw, 4.4rem);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 22px;
+}
+
+.hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 460px;
+    margin-bottom: 38px;
+    line-height: 1.7;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+}
+
+/* Stats row */
+.hero-stats {
+    display: flex;
+    gap: 40px;
+    padding-top: 36px;
+    border-top: 1px solid var(--border);
+}
+
+.stat-value {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+}
+
+/* Scroll hint */
+.scroll-hint {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    animation: bounce 2.2s ease-in-out infinite;
+    cursor: pointer;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(9px); }
+}
+
+
+/* --- 6. Barbershop Scene --------------------------------- */
+
+/* Container positioned on the right of hero */
+.scene {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 55%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* SVG autumn tree */
+.tree-svg {
+    position: absolute;
+    right: 12%;
+    bottom: 28%;
+    width: 200px;
+    height: auto;
+    filter: drop-shadow(0 0 24px rgba(80, 36, 0, 0.35));
+    animation: tree-sway 8s ease-in-out infinite;
+    transform-origin: 50% 100%;
+}
+
+@keyframes tree-sway {
+    0%, 100% { transform: rotate(0deg); }
+    30%       { transform: rotate(0.8deg); }
+    70%       { transform: rotate(-0.6deg); }
+}
+
+/* Building silhouette */
+.building {
+    position: absolute;
+    right: 4%;
+    bottom: 0;
+    width: 260px;
+    height: 62%;
+    background: #100c05;
+    border-top:   2px solid #1e1608;
+    border-left:  2px solid #1e1608;
+    border-right: 2px solid #1e1608;
+}
+
+/* Shop sign on building top */
+.sign {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--amber-dim);
+    white-space: nowrap;
+    border: 1px solid var(--amber-dim);
+    padding: 3px 8px;
+    background: #100c05;
+}
+
+/* Glowing amber windows */
+.window {
+    position: absolute;
+    background: rgba(240, 184, 64, 0.06);
+    border: 1px solid rgba(240, 184, 64, 0.18);
+    box-shadow:
+        0 0 28px rgba(240, 184, 64, 0.10),
+        inset 0 0 14px rgba(240, 184, 64, 0.05);
+    animation: win-flicker 4s ease-in-out infinite;
+}
+
+.window-left  { top: 14%; left: 12%;  width: 72px; height: 95px; }
+.window-right { top: 14%; right: 12%; width: 72px; height: 95px; animation-delay: 1.8s; }
+.window-lower {
+    top: 44%; left: 50%; transform: translateX(-50%);
+    width: 82px; height: 105px;
+    animation-delay: 0.9s;
+}
+
+@keyframes win-flicker {
+    0%, 100% { opacity: 1; }
+    45%       { opacity: 0.82; }
+    70%       { opacity: 0.94; }
+}
+
+/* Arched door */
+.door {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 54px;
+    height: 82px;
+    background: #1c1408;
+    border: 1px solid rgba(240, 184, 64, 0.12);
+    border-bottom: none;
+    border-radius: 27px 27px 0 0;
+}
+
+/* Barber pole */
+.barber-pole {
+    position: absolute;
+    right: 30%;
+    bottom: 0;
+    width: 16px;
+    height: 150px;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+    background: #18120a;
+}
+
+.pole-stripes {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        -45deg,
+        rgba(210, 50, 50, 0.55) 0px,
+        rgba(210, 50, 50, 0.55) 3px,
+        rgba(240, 240, 240, 0.35) 3px,
+        rgba(240, 240, 240, 0.35) 6px,
+        rgba(50, 90, 200, 0.50) 6px,
+        rgba(50, 90, 200, 0.50) 9px,
+        transparent 9px,
+        transparent 14px
+    );
+    animation: pole-spin 2.8s linear infinite;
+}
+
+@keyframes pole-spin {
+    from { background-position: 0 0; }
+    to   { background-position: 0 42px; }
+}
+
+.pole-cap {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 7px;
+    background: rgba(240, 184, 64, 0.25);
+    border: 1px solid rgba(240, 184, 64, 0.20);
+    border-radius: 3px;
+}
+.pole-top    { top: 0; }
+.pole-bottom { bottom: 0; }
+
+/* Ground glow line */
+.ground-line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(200, 144, 42, 0.18), transparent);
+}
+
+
+/* --- 7. How it Works ------------------------------------ */
+
+.how-section {
+    background: var(--bg-2);
+    border-top:    1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.step-card {
+    padding: 28px 22px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color var(--ease), transform var(--ease);
+}
+.step-card:hover {
+    border-color: var(--amber-dim);
+    transform: translateY(-4px);
+}
+
+.step-num {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 14px;
+    color: rgba(200, 144, 42, 0.18);
+}
+
+.step-card h3 { font-size: 1.05rem; margin-bottom: 10px; }
+.step-card p  { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
+
+
+/* --- 8. Features --------------------------------------- */
+
+.features-section { background: var(--bg); }
+
+/* Tab toggle pill */
+.tab-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 44px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px;
+}
+
+.tab-btn {
+    padding: 9px 26px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all var(--ease);
+}
+.tab-btn.active {
+    background: var(--amber);
+    color: #0d0a06;
+    font-weight: 500;
+}
+
+/* Feature grids — hidden/shown by JS */
+.features-grid        { display: none; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.features-grid.active { display: grid; }
+
+.feat-card {
+    padding: 26px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    transition: all var(--ease);
+}
+.feat-card:hover {
+    border-color: var(--amber-dim);
+    background: var(--surface-2);
+    transform: translateY(-3px);
+}
+
+.feat-card span { display: block; font-size: 1.7rem; margin-bottom: 14px; }
+.feat-card h4   { font-size: 0.96rem; margin-bottom: 9px; }
+.feat-card p    { font-size: 0.86rem; color: var(--text-muted); line-height: 1.6; }
+
+
+/* --- 9. Philosophy ------------------------------------- */
+
+.philosophy-section {
+    background: var(--bg-2);
+    border-top:    1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+}
+
+.philosophy-quote { margin-bottom: 60px; }
+
+.quote-mark {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 7rem;
+    color: var(--amber);
+    opacity: 0.12;
+    line-height: 0.55;
+    margin-bottom: 22px;
+}
+
+blockquote {
+    font-size: clamp(1.5rem, 3vw, 2.3rem);
+    line-height: 1.45;
+    color: var(--text);
+}
+
+.phil-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+}
+
+.phil-card {
+    padding: 26px 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all var(--ease);
+}
+.phil-card:hover {
+    border-color: var(--amber-dim);
+    transform: translateY(-3px);
+}
+
+.phil-card span { display: block; font-size: 1.5rem; margin-bottom: 12px; }
+.phil-card h4   { font-size: 0.92rem; margin-bottom: 9px; }
+.phil-card p    { font-size: 0.84rem; color: var(--text-muted); line-height: 1.6; }
+
+
+/* --- 10. CTA ------------------------------------------- */
+
+.cta-section { background: var(--bg); text-align: center; }
+
+.cta-section h2 { font-size: clamp(1.9rem, 3.5vw, 2.7rem); margin-bottom: 14px; }
+
+.cta-sub { color: var(--text-muted); margin-bottom: 52px; }
+
+.cta-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+    max-width: 780px;
+    margin: 0 auto;
+}
+
+.cta-card {
+    padding: 38px 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: left;
+    transition: all var(--ease);
+}
+.cta-card:hover {
+    border-color: var(--amber-dim);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.cta-card h3 { font-size: 1.15rem; margin-bottom: 11px; }
+.cta-card p  { color: var(--text-muted); font-size: 0.88rem; margin-bottom: 22px; line-height: 1.6; }
+
+
+/* --- 11. Footer ---------------------------------------- */
+
+.footer {
+    background: var(--bg-2);
+    border-top: 1px solid var(--border);
+    padding: 36px 0;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+}
+
+.footer-logo {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--amber);
+}
+
+.footer-links { display: flex; gap: 26px; }
+
+.footer-links a {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    transition: color var(--ease);
+}
+.footer-links a:hover { color: var(--amber); }
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.footer-bottom p { font-size: 0.78rem; color: var(--text-muted); }
+.footer-bottom em { color: var(--amber-dim); }
+
+
+/* --- 12. Scroll Reveal --------------------------------- */
+
+.reveal {
+    opacity: 0;
+    transform: translateY(22px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+}
+.reveal.visible {
+    opacity: 1;
+    transform: none;
+}
+
+
+/* --- 13. Responsive ------------------------------------ */
+
+@media (max-width: 1024px) {
+    .steps-grid     { grid-template-columns: repeat(2, 1fr); }
+    .phil-grid      { grid-template-columns: repeat(2, 1fr); }
+    .features-grid  { grid-template-columns: repeat(2, 1fr); }
+    .hero-content   { padding: 72px 44px 0; }
+    .building       { width: 200px; }
+    .tree-svg       { width: 160px; }
+}
+
+@media (max-width: 768px) {
+    .section { padding: 72px 0; }
+
+    /* Navbar */
+    .navbar  { padding: 16px 20px; }
+    .navbar.scrolled { padding: 12px 20px; }
+
+    .nav-links {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0; right: 0;
+        flex-direction: column;
+        background: rgba(13, 10, 6, 0.97);
+        padding: 18px 20px;
+        gap: 14px;
+        border-bottom: 1px solid var(--border);
+    }
+    .nav-links.open  { display: flex; }
+    .nav-toggle      { display: flex; }
+
+    /* Hero */
+    .hero-content { padding: 80px 22px 0; max-width: 100%; }
+    .hero-buttons { flex-direction: column; align-items: flex-start; }
+    .hero-stats   { gap: 22px; }
+    .scene        { opacity: 0.25; }
+
+    /* Sections */
+    .steps-grid    { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .phil-grid     { grid-template-columns: 1fr; }
+    .cta-cards     { grid-template-columns: 1fr; }
+
+    /* Footer */
+    .footer-top    { flex-direction: column; gap: 18px; text-align: center; }
+    .footer-bottom { flex-direction: column; gap: 6px; text-align: center; }
+
+    .container { padding: 0 18px; }
+}

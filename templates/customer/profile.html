@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+        /* ---- Profile card ---- */
+        .profile-card {
+            margin: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--amber-glow);
+            border: 2px solid var(--amber-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+        }
+        .profile-name {
+            font-family: var(--font-display);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .profile-phone {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .profile-edit-btn {
+            margin-left: auto;
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-family: var(--font-body);
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all var(--ease);
+            flex-shrink: 0;
+        }
+        .profile-edit-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+        /* ---- Score bar ---- */
+        .score-bar {
+            margin: 0 16px 16px;
+            padding: 14px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--amber);
+            border-radius: var(--radius-sm);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .score-label { font-size: 0.78rem; color: var(--text-muted); }
+        .score-value {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+        .score-desc { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* ---- Menu items ---- */
+        .menu-section { margin: 0 16px 8px; }
+        .menu-section-title {
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 10px 2px 6px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all var(--ease);
+        }
+        .menu-item:hover { border-color: var(--amber-dim); }
+        .menu-item:active { background: var(--surface-2); }
+        .menu-icon { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+        .menu-label { flex: 1; font-size: 0.88rem; }
+        .menu-arrow { font-size: 0.75rem; color: var(--text-muted); }
+        .menu-item.danger .menu-label { color: var(--red); }
+        .menu-item.danger .menu-icon  { filter: grayscale(0); }
+
+        /* ---- Visit history ---- */
+        .history-item {
+            padding: 13px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .history-shop  { font-size: 0.88rem; font-weight: 500; margin-bottom: 3px; }
+        .history-meta  { font-size: 0.72rem; color: var(--text-muted); }
+        .history-price {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--amber);
+        }
+
+        /* ---- Favourites ---- */
+        .fav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all var(--ease);
+        }
+        .fav-item:hover { border-color: var(--amber-dim); }
+        .fav-icon  { font-size: 1.1rem; }
+        .fav-name  { flex: 1; font-size: 0.88rem; font-weight: 500; }
+        .fav-go    { font-size: 0.75rem; color: var(--amber); }
+
+        /* ---- Edit modal ---- */
+        .edit-overlay {
+        padding-bottom: var(--nav-h);
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .edit-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+        .edit-sheet {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+            width: 100%;
+            max-width: 540px;
+            padding: 24px 20px;
+            animation: slideUp 0.3s var(--ease-out);
+        }
+        .edit-sheet h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 18px;
+        }
+        .edit-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <span class="header-logo">Haven<em>Hair</em></span>
+    <span class="header-title">Profile</span>
+    <span></span>
+</header>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Guest notice -->
+    <div id="guest-notice" style="display:none;margin:16px">
+        <div class="alert alert-warn">
+            You are browsing as a guest.
+            <a href="/customer/auth" style="color:var(--amber);font-weight:500"> Sign in →</a>
+        </div>
+    </div>
+
+    <!-- Profile card -->
+    <div class="profile-card" id="profile-card" style="display:none">
+        <div class="profile-avatar">✂️</div>
+        <div>
+            <div class="profile-name"  id="p-name">—</div>
+            <div class="profile-phone" id="p-phone">—</div>
+        </div>
+        <button class="profile-edit-btn" onclick="openEdit()">Edit</button>
+    </div>
+
+    <!-- Behaviour score -->
+    <div class="score-bar" id="score-bar" style="display:none">
+        <div>
+            <div class="score-label">Behaviour Score</div>
+            <div class="score-desc">Affects your ability to join queues</div>
+        </div>
+        <div style="text-align:right">
+            <div class="score-value" id="p-score">100</div>
+        </div>
+    </div>
+
+    <!-- Favourite shops -->
+    <div class="menu-section" id="fav-section">
+        <div class="menu-section-title">Favourite Shops</div>
+        <div id="fav-list">
+            <p class="text-muted text-sm" style="padding:6px 2px">No favourites yet.</p>
+        </div>
+    </div>
+
+    <!-- Visit history -->
+    <div class="menu-section" id="history-section" style="display:none">
+        <div class="menu-section-title">History</div>
+        <div class="menu-item" onclick="window.location.href='/customer/history'">
+            <span class="menu-icon">📋</span>
+            <span class="menu-label">View Full History</span>
+            <span class="menu-arrow">›</span>
+        </div>
+    </div>
+
+    <!-- Account settings -->
+    <div class="menu-section" id="settings-section" style="display:none">
+        <div class="menu-section-title">Account</div>
+
+        <div class="menu-item" onclick="openEdit()">
+            <span class="menu-icon">✏️</span>
+            <span class="menu-label">Edit Name</span>
+            <span class="menu-arrow">›</span>
+        </div>
+
+        <div class="menu-item" onclick="switchRole()">
+            <span class="menu-icon">🔄</span>
+            <span class="menu-label">Switch to Shop Owner</span>
+            <span class="menu-arrow">›</span>
+        </div>
+
+        <div class="menu-item danger" onclick="confirmSignOut()">
+            <span class="menu-icon">🚪</span>
+            <span class="menu-label">Sign Out</span>
+            <span class="menu-arrow">›</span>
+        </div>
+
+        <div class="menu-item danger" onclick="confirmDelete()">
+            <span class="menu-icon">🗑️</span>
+            <span class="menu-label">Delete Account</span>
+            <span class="menu-arrow">›</span>
+        </div>
+    </div>
+
+</main>
+
+<!-- ======= EDIT NAME BOTTOM SHEET ======= -->
+<div class="edit-overlay" id="edit-overlay">
+    <div class="edit-sheet">
+        <h3>Edit Name</h3>
+        <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="edit-name" placeholder="Mohammed" autocomplete="name">
+        </div>
+        <div id="edit-alert"></div>
+        <div class="edit-actions">
+            <button class="btn btn-outline" onclick="closeEdit()" style="flex:1">Cancel</button>
+            <button class="btn btn-primary" id="save-btn" onclick="saveName()" style="flex:1">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Save →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= BOTTOM NAV ======= -->
+<nav class="bottom-nav">
+
+    <!-- Explore — resets flag, goes back to Shops root -->
+    <a class="nav-item" onclick="sessionStorage.removeItem('hh_left_shops'); window.location.replace('/customer/shops')">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Explore</span>
+    </a>
+
+    <!-- My Queue — use navTo -->
+    <a class="nav-item" id="nav-queue" onclick="navTo('/customer/queue')">
+        <span class="nav-icon">🪙</span>
+        <span class="nav-label">My Queue</span>
+    </a>
+
+    <!-- Messages — use navTo -->
+    <a class="nav-item" onclick="navTo('/customer/messages')">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Messages</span>
+        <span class="nav-badge" id="nav-msg-badge"></span>
+    </a>
+
+    <!-- Profile — active page, replace itself so no stacking -->
+    <a class="nav-item active" onclick="window.location.replace('/customer/profile')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+    </a>
+
+</nav>
+
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script src="{{ url_for('static', filename='customer/js/profile.js') }}"></script>
+</body>
+</html>

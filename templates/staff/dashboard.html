@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Staff</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='staff/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+    /* Fix 3: Home Service action button */
+    .hs-action-btn {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-family: var(--font-body);
+        font-size: 0.84rem;
+        color: var(--text);
+        cursor: pointer;
+        width: calc(100% - 24px);
+        margin: 0 12px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        position: relative;
+        transition: border-color var(--ease);
+    }
+    .hs-action-btn:hover { border-color: var(--amber); }
+
+    .action-btn-secondary {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        font-family: var(--font-body);
+        font-size: 0.84rem;
+        color: var(--text);
+        cursor: pointer;
+        width: calc(100% - 24px);
+        margin: 0 12px 8px;
+        display: block;
+        text-align: center;
+        transition: border-color var(--ease);
+    }
+    .action-btn-secondary:hover { border-color: var(--border-strong, #444); }
+    </style>
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <span class="header-logo" style="font-family:var(--font-display); color:var(--amber); font-style:italic">
+        Haven<em style="font-style:normal; color:var(--text)">Hair</em>
+    </span>
+    <span class="header-title" id="header-shop-name">—</span>
+    <button class="notif-btn" onclick="confirmSignOut()" title="Sign Out">
+        🚪
+    </button>
+</header>
+
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Staff greeting -->
+    <div class="dash-head" style="padding-bottom: 10px">
+        <div class="dash-shop-name" id="staff-greeting">Loading...</div>
+        <div class="dash-shop-addr" id="staff-chair-label"></div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="staff-loader" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading your chair...</p>
+    </div>
+
+    <!-- Chair + Queue content -->
+    <div id="staff-content" style="display:none">
+
+        <!-- ── CHAIR CARD ── -->
+        <div class="chair-card" id="staff-chair-card">
+
+            <!-- Chair header: barber name + customer count badge -->
+            <div class="chair-head">
+                <div>
+                    <div class="chair-barber" id="chair-barber-name">—</div>
+                    <div class="chair-status" id="chair-status-label">Ready</div>
+                </div>
+                <div class="chair-badge" id="chair-queue-count">0</div>
+            </div>
+
+            <!-- Current customer info (shown when seated) -->
+            <div id="current-customer-row" style="display:none">
+                <div class="current-customer">
+                    <span class="cc-name"    id="cc-name">—</span>
+                    <span class="cc-service" id="cc-service">—</span>
+                    <span class="cc-timer"   id="cc-timer">0:00</span>
+                </div>
+            </div>
+
+            <!-- 2-Tap action buttons — Fix 3: includes 🏠 HS button -->
+            <div class="chair-actions" id="chair-actions">
+                <!-- Rendered by staff_core.js -->
+            </div>
+
+        </div><!-- /chair-card -->
+
+        <!-- ── ADD WALK-IN BUTTON ── -->
+        <button class="btn btn-outline"
+                style="width:calc(100% - 24px); margin: 0 12px 12px; display:flex; align-items:center; justify-content:center; gap:6px"
+                onclick="openAddCustSheet()">
+            ＋ Add Walk-in Customer
+        </button>
+
+        <!-- ── WAITING QUEUE ── -->
+        <div style="padding: 0 12px">
+            <span class="section-label">Waiting Queue</span>
+        </div>
+
+        <div id="queue-list">
+            <!-- Rendered by staff_queue.js -->
+        </div>
+
+    </div><!-- /staff-content -->
+
+</main>
+
+
+<!-- ======= Fix 3: HOME SERVICE BOTTOM SHEET ======= -->
+<div class="bottom-sheet" id="hs-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>🏠 Home Service Requests</h3>
+            <button class="sheet-close" onclick="closeHsSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="staff-hs-list">
+                <div class="loading-state" style="padding:20px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ======= ADD WALK-IN BOTTOM SHEET ======= -->
+<div class="bottom-sheet" id="add-cust-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>Add Walk-in Customer</h3>
+            <button class="sheet-close" onclick="closeAddCustSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="add-cust-alert"></div>
+
+            <div class="form-group">
+                <label>Customer Name</label>
+                <input type="text" id="ac-name" placeholder="Mohammed" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Phone <span class="text-xs text-muted">(optional)</span></label>
+                <input type="tel" id="ac-phone" placeholder="05xxxxxxxx">
+            </div>
+
+            <span class="section-label">Select Service</span>
+            <div class="svc-grid" id="ac-service-grid">
+                <!-- Populated from shop services by staff_actions.js -->
+            </div>
+
+            <button class="btn btn-primary" id="ac-btn" onclick="submitAddCustomer()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Add to Queue →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ======= SERVICE SELECTION SHEET ======= -->
+<div class="bottom-sheet" id="service-select-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>What service?</h3>
+            <button class="sheet-close" onclick="closeServiceSelectSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="service-select-alert"></div>
+            <div class="svc-grid" id="service-select-grid">
+                <!-- Populated by staff_actions.js -->
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ======= SIGN OUT CONFIRM MODAL ======= -->
+<div class="modal-overlay" id="signout-modal">
+    <div class="modal">
+        <div class="modal-head">
+            <h3>Sign Out</h3>
+            <button class="modal-close" onclick="closeSignOutModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="text-muted text-sm mb-12">
+                Are you sure you want to sign out?
+            </p>
+            <div style="display:flex; gap:8px">
+                <button class="btn btn-danger btn-auto" onclick="signOut()">
+                    Yes, Sign Out
+                </button>
+                <button class="btn btn-outline btn-auto" onclick="closeSignOutModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="{{ url_for('static', filename='staff/js/staff_core.js') }}"></script>
+<script src="{{ url_for('static', filename='staff/js/staff_queue.js') }}"></script>
+<script src="{{ url_for('static', filename='staff/js/staff_actions.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/morphdom@2.7.2/dist/morphdom.min.js"></script>
+</body>
+</html>

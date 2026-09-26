@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Skip the Wait, Keep the Style</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+    <!-- ======= NAVIGATION ======= -->
+    <nav class="navbar" id="navbar">
+        <a class="nav-logo" href="#hero">HavenHair</a>
+        <ul class="nav-links" id="nav-links">
+            <li><a href="#how">How it Works</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#philosophy">Philosophy</a></li>
+            <li><a href="#cta">Get Started</a></li>
+        </ul>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- ======= HERO ======= -->
+    <section class="hero" id="hero">
+
+        <!-- Leaf canvas — drawn by js/leaves.js -->
+        <canvas class="leaf-canvas" id="leaf-canvas"></canvas>
+
+        <!-- Barbershop scene (right side visual) -->
+        <div class="scene" aria-hidden="true">
+
+            <!-- Autumn tree SVG -->
+            <svg class="tree-svg" id="tree-svg" viewBox="0 0 200 420" xmlns="http://www.w3.org/2000/svg">
+                <!-- Trunk -->
+                <rect x="88" y="260" width="22" height="160" rx="5" fill="#1e1008"/>
+                <!-- Main branches -->
+                <line x1="99"  y1="290" x2="38"  y2="200" stroke="#1e1008" stroke-width="9"  stroke-linecap="round"/>
+                <line x1="99"  y1="270" x2="162" y2="195" stroke="#1e1008" stroke-width="9"  stroke-linecap="round"/>
+                <line x1="99"  y1="250" x2="99"  y2="155" stroke="#1e1008" stroke-width="10" stroke-linecap="round"/>
+                <!-- Sub branches -->
+                <line x1="62"  y1="228" x2="25"  y2="178" stroke="#1e1008" stroke-width="5"  stroke-linecap="round"/>
+                <line x1="136" y1="222" x2="178" y2="165" stroke="#1e1008" stroke-width="5"  stroke-linecap="round"/>
+                <line x1="99"  y1="200" x2="65"  y2="155" stroke="#1e1008" stroke-width="4"  stroke-linecap="round"/>
+                <line x1="99"  y1="195" x2="135" y2="148" stroke="#1e1008" stroke-width="4"  stroke-linecap="round"/>
+                <!-- Autumn crown clusters -->
+                <ellipse cx="100" cy="135" rx="72" ry="58" fill="#4a2000" opacity="0.55"/>
+                <ellipse cx="55"  cy="165" rx="46" ry="36" fill="#5e2a00" opacity="0.65"/>
+                <ellipse cx="148" cy="160" rx="46" ry="36" fill="#4a2000" opacity="0.65"/>
+                <ellipse cx="100" cy="105" rx="58" ry="46" fill="#6e3200" opacity="0.50"/>
+                <ellipse cx="75"  cy="120" rx="36" ry="28" fill="#7a3800" opacity="0.45"/>
+                <ellipse cx="125" cy="118" rx="36" ry="28" fill="#6e3200" opacity="0.45"/>
+            </svg>
+
+            <!-- Building -->
+            <div class="building">
+                <div class="window window-left"></div>
+                <div class="window window-right"></div>
+                <div class="window window-lower"></div>
+                <div class="door"></div>
+                <div class="sign">HAVEN HAIR</div>
+            </div>
+
+            <!-- Barber pole -->
+            <div class="barber-pole">
+                <div class="pole-stripes"></div>
+                <div class="pole-cap pole-top"></div>
+                <div class="pole-cap pole-bottom"></div>
+            </div>
+
+            <!-- Ground line -->
+            <div class="ground-line"></div>
+        </div>
+
+        <!-- Gradient overlay so left side text is readable -->
+        <div class="hero-overlay"></div>
+
+        <!-- Hero text content -->
+        <div class="hero-content">
+            <span class="eyebrow">✂️ Smart Barbershop Platform</span>
+            <h1 class="hero-title">
+                Skip the wait,<br>
+                <em>keep the style.</em>
+            </h1>
+            <p class="hero-desc">
+                Haven Hair connects customers to barbershops in real time —
+                live queue tracking, smart booking, and a reputation system
+                that rewards quality.
+            </p>
+            <div class="hero-buttons">
+                <a href="/customer/auth" class="btn btn-primary">✂️ I'm a Customer</a>
+                <a href="/owner/auth"    class="btn btn-outline">💈 I'm a Shop Owner</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat">
+                    <span class="stat-value">2</span>
+                    <span class="stat-label">Taps per customer</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">0</span>
+                    <span class="stat-label">Minutes wasted</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">Live</span>
+                    <span class="stat-label">Queue updates</span>
+                </div>
+            </div>
+        </div>
+
+        <a href="#how" class="scroll-hint" aria-label="Scroll down">↓ See how it works</a>
+    </section>
+
+    <!-- ======= HOW IT WORKS ======= -->
+    <section class="section how-section" id="how">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">How it Works</span>
+                <h2>Effortless for <em>everyone.</em></h2>
+                <p>The entire barbershop experience — redesigned around your time.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <span class="step-num">01</span>
+                    <h3>Find your barber</h3>
+                    <p>See nearby shops on the map with live queue status, wait times, and ratings — all in real time.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-num">02</span>
+                    <h3>Grab your token</h3>
+                    <p>Book a slot or grab a walk-in token. Track your position from home — no plastic chair required.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-num">03</span>
+                    <h3>Arrive on time</h3>
+                    <p>Get notified when you're 2 customers away. Walk in, sit down, get your cut. Simple.</p>
+                </div>
+                <div class="step-card">
+                    <span class="step-num">04</span>
+                    <h3>Leave your review</h3>
+                    <p>Your verified review shapes the reputation of the shop — keeping quality high for everyone.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= FEATURES ======= -->
+    <section class="section features-section" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Features</span>
+                <h2>Built for <em>both sides.</em></h2>
+            </div>
+
+            <!-- Tab toggle -->
+            <div class="tab-toggle">
+                <button class="tab-btn active" data-tab="customer">For Customers</button>
+                <button class="tab-btn"         data-tab="owner">For Shop Owners</button>
+            </div>
+
+            <!-- Customer features -->
+            <div class="features-grid active" id="tab-customer">
+                <div class="feat-card"><span>🗺️</span><h4>Live Map</h4><p>See every open barbershop near you with real-time queue counts and wait times on an interactive map.</p></div>
+                <div class="feat-card"><span>🪙</span><h4>Virtual Token</h4><p>Grab a walk-in token without going to the shop. Track your queue position from anywhere.</p></div>
+                <div class="feat-card"><span>🔔</span><h4>Smart Alerts</h4><p>Get notified when you're 2 customers away. No more guessing, no more wasted time.</p></div>
+                <div class="feat-card"><span>📅</span><h4>Advance Booking</h4><p>Reserve your slot in advance. Pick your barber, pick your time, show up ready.</p></div>
+                <div class="feat-card"><span>⭐</span><h4>Verified Reviews</h4><p>Only real customers who booked through Haven Hair can leave reviews — no fake ratings.</p></div>
+                <div class="feat-card"><span>🔍</span><h4>Smart Filters</h4><p>Filter by distance, rating, availability, or specialty. Find exactly what you need fast.</p></div>
+            </div>
+
+            <!-- Owner features -->
+            <div class="features-grid" id="tab-owner">
+                <div class="feat-card"><span>👆</span><h4>2-Button System</h4><p>Your entire workflow is two taps. Customer Sits → Haircut Done. Nothing more, nothing less.</p></div>
+                <div class="feat-card"><span>🔁</span><h4>Auto Queue</h4><p>Queue manages itself. Tokens issue automatically, wait times update instantly for everyone.</p></div>
+                <div class="feat-card"><span>🛡️</span><h4>No-Show Protection</h4><p>If a booked slot passes without being started, the system auto-skips and moves the queue forward.</p></div>
+                <div class="feat-card"><span>💬</span><h4>Customer Outreach</h4><p>The system flags unhappy customers and nudges you to reach out — in your own words, always.</p></div>
+                <div class="feat-card"><span>📊</span><h4>Weekly Reports</h4><p>Every week, a full summary — complaints, happy customers, reputation change, and insights.</p></div>
+                <div class="feat-card"><span>🏅</span><h4>Reputation Score</h4><p>Your shop gets scored and awarded badges. Top Rated shops appear first in customer search.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= PHILOSOPHY ======= -->
+    <section class="section philosophy-section" id="philosophy">
+        <div class="container">
+            <div class="philosophy-quote">
+                <span class="quote-mark">"</span>
+                <blockquote>We give you intelligence,<br>you bring the humanity.</blockquote>
+            </div>
+            <div class="phil-grid">
+                <div class="phil-card"><span>🤖</span><h4>Intelligence in the background</h4><p>The system handles timing, scoring, and patterns — invisibly, constantly.</p></div>
+                <div class="phil-card"><span>✋</span><h4>Humans in front</h4><p>Every customer interaction is driven by a real person, not a script.</p></div>
+                <div class="phil-card"><span>💬</span><h4>Real words matter</h4><p>A message with imperfections feels genuine. The system never writes for you.</p></div>
+                <div class="phil-card"><span>⏱️</span><h4>Time is dignity</h4><p>No one should sit in a plastic chair guessing when their turn comes.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= CTA ======= -->
+    <section class="section cta-section" id="cta">
+        <div class="container">
+            <h2>Join Haven <em>Hair.</em></h2>
+            <p class="cta-sub">Whether you're a customer tired of waiting or a shop owner ready to level up.</p>
+            <div class="cta-cards">
+                <div class="cta-card">
+                    <h3>For Customers</h3>
+                    <p>Find live queues, grab a token, and show up only when it's your turn.</p>
+                    <a href="/customer/auth" class="btn btn-primary">Find a Barber →</a>
+                </div>
+                <div class="cta-card">
+                    <h3>For Shop Owners</h3>
+                    <p>2-tap workflow, performance insights, and a reputation system that rewards quality.</p>
+                    <a href="/owner/auth" class="btn btn-outline">Owner Dashboard →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= FOOTER ======= -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <span class="footer-logo">HavenHair</span>
+                <nav class="footer-links" aria-label="Footer navigation">
+                    <a href="#how">How it Works</a>
+                    <a href="#features">Features</a>
+                    <a href="#philosophy">Philosophy</a>
+                </nav>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 Haven Hair. All rights reserved.</p>
+                <p><em>Skip the wait, keep the style.</em></p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/leaves.js"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

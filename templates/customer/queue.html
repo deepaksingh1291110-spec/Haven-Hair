@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>My Queue · Haven Hair</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+.queue-page { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+.qp-header  { padding: 24px 20px 16px; background: var(--card); border-bottom: 1px solid var(--border); }
+.qp-title   { font-family: var(--font-display); font-size: 1.6rem; color: var(--text); }
+.qp-sub     { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
+.qp-body    { flex: 1; padding: 24px 20px; }
+
+.active-card {
+    background: var(--card);
+    border: 1px solid rgba(200,144,42,0.35);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    text-align: center;
+}
+.ac-token    { font-family: var(--font-display); font-size: 3.5rem; color: var(--amber); font-weight: 700; line-height: 1; }
+.ac-pos      { font-size: 1rem; color: var(--text-muted); margin: 8px 0 4px; }
+.ac-shop     { font-size: 0.88rem; color: var(--text); font-weight: 500; margin-bottom: 16px; }
+.ac-barber   { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 20px; }
+.ac-status   { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem;
+               background: rgba(200,144,42,0.15); color: var(--amber); font-weight: 600;
+               letter-spacing: 0.5px; margin-bottom: 20px; }
+.ac-status.seated { background: rgba(16,185,129,0.15); color: #10b981; }
+
+.empty-state { text-align: center; padding: 60px 20px; }
+.es-icon  { font-size: 3.5rem; margin-bottom: 16px; opacity: 0.5; }
+.es-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--text); margin-bottom: 8px; }
+.es-text  { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px; line-height: 1.6; }
+
+.spinner-wrap { text-align: center; padding: 60px 20px; }
+</style>
+</head>
+<body>
+<div class="queue-page">
+
+    <div class="qp-header">
+        <div class="qp-title">My <em>Queue</em></div>
+        <div class="qp-sub">Your current booking status</div>
+    </div>
+
+    <div class="qp-body">
+        <div id="loading" class="spinner-wrap"><div class="spinner" style="margin:auto"></div></div>
+        <div id="active-view"  style="display:none"></div>
+        <div id="empty-view"   style="display:none">
+            <div class="empty-state">
+                <div class="es-icon">🪑</div>
+                <div class="es-title">No Active Booking</div>
+                <div class="es-text">You haven't joined any queue yet.<br>Explore nearby shops to get started.</div>
+                <a href="/customer/shops" class="btn btn-primary" style="text-decoration:none;display:inline-block;padding:12px 28px">
+                    Explore Shops →
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom nav -->
+    <nav class="bottom-nav">
+
+        <!-- Explore — resets flag, goes back to Shops root -->
+        <a class="nav-item" onclick="sessionStorage.removeItem('hh_left_shops'); window.location.replace('/customer/shops')">
+            <span class="nav-icon">🔍</span>
+            <span class="nav-label">Explore</span>
+        </a>
+
+        <!-- My Queue — active page, replace itself so no stacking -->
+        <a class="nav-item active" id="nav-queue" onclick="window.location.replace('/customer/queue')">
+            <span class="nav-icon">🪙</span>
+            <span class="nav-label">My Queue</span>
+        </a>
+
+        <!-- Messages — use navTo -->
+        <a class="nav-item" onclick="navTo('/customer/messages')">
+            <span class="nav-icon">💬</span>
+            <span class="nav-label">Messages</span>
+        </a>
+
+        <!-- Profile — use navTo -->
+        <a class="nav-item" onclick="navTo('/customer/profile')">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Profile</span>
+        </a>
+
+    </nav>
+</div>
+
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    history.replaceState(null, '', '/customer/queue'); 
+    if (!Auth.isLoggedIn() && !Auth.isGuest()) {
+        window.location.replace('/customer/auth'); 
+        return;
+    }
+
+    const saved = Queue.get();
+    if (!saved) { showEmpty(); return; }
+
+    // Verify entry is still active
+    try {
+        const res  = await fetch(`/queue/status/${saved.entryId}`);
+        const data = await res.json();
+
+        if (!res.ok || (data.status !== 'waiting' && data.status !== 'active')) {
+            Queue.clear();
+            showEmpty();
+            return;
+        }
+
+        showActive(data, saved);
+    } catch(e) {
+        // Network error — show stale data from localStorage
+        showActiveFallback(saved);
+    }
+});
+
+function showEmpty() {
+    document.getElementById('loading').style.display    = 'none';
+    document.getElementById('empty-view').style.display = 'block';
+}
+
+function showActive(entry, saved) {
+    document.getElementById('loading').style.display     = 'none';
+    document.getElementById('active-view').style.display = 'block';
+
+    const isSeated   = entry.status === 'active';
+    const position   = entry.position || '?';
+    const waitMins   = entry.wait_mins;
+    const barberName = entry.barber_name || saved.barberName || '—';
+
+    document.getElementById('active-view').innerHTML = `
+        <div class="active-card">
+            <div class="ac-status ${isSeated ? 'seated' : ''}">
+                ${isSeated ? '💈 In Chair' : '⏳ Waiting'}
+            </div>
+            <div class="ac-token">#${Format.token(entry.token)}</div>
+            <div class="ac-pos">
+                ${isSeated ? 'You are being served' : `Position <strong>${position}</strong> in queue`}
+            </div>
+            ${waitMins && !isSeated ? `<div class="ac-barber">Estimated wait: ~${waitMins} min</div>` : ''}
+            <div class="ac-barber">Barber: <strong>${barberName}</strong></div>
+            <div class="ac-shop">📍 ${saved.shopName || 'Your shop'}</div>
+            <a href="/customer/shop/${saved.shopId}" class="btn btn-primary"
+               style="text-decoration:none;display:inline-block;padding:12px 24px;width:100%;box-sizing:border-box">
+                View Full Details →
+            </a>
+        </div>`;
+}
+
+function showActiveFallback(saved) {
+    document.getElementById('loading').style.display     = 'none';
+    document.getElementById('active-view').style.display = 'block';
+    document.getElementById('active-view').innerHTML = `
+        <div class="active-card">
+            <div class="ac-status">⏳ In Queue</div>
+            <div class="ac-token">#${Format.token(saved.token || 0)}</div>
+            <div class="ac-shop">📍 ${saved.shopName || 'Your shop'}</div>
+            <a href="/customer/shop/${saved.shopId}" class="btn btn-primary"
+               style="text-decoration:none;display:inline-block;padding:12px 24px;width:100%;box-sizing:border-box;margin-top:12px">
+                View Full Details →
+            </a>
+        </div>`;
+}
+
+</script>
+</body>
+</html>

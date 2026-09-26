@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+    /* ── Home Service request cards ── */
+    .home-req-card {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 14px;
+        margin-bottom: 10px;
+    }
+    .home-req-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .home-req-name  { font-weight: 600; font-size: 0.95rem; }
+    .home-req-detail { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; }
+    .home-req-note   { font-size: 0.8rem; font-style: italic; color: var(--text-muted); margin-bottom: 5px; }
+    .home-req-phone  { font-size: 0.82rem; margin-bottom: 6px; }
+    .home-req-status { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 1px; }
+    .status-pending  { color: var(--amber); }
+    .status-accepted { color: #4caf50; }
+    .status-rejected { color: var(--text-muted); }
+    /* ── HS badge on button ── */
+    #hs-badge {
+        background: var(--amber);
+        color: #0a0806;
+        border-radius: 50%;
+        width: 18px; height: 18px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        position: absolute;
+        top: 6px; right: 6px;
+    }
+    </style>
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+    <span class="header-title" id="header-shop-name">Dashboard</span>
+    <div class="header-right">
+        <button class="notif-btn" onclick="window.location.href='/owner/inbox'">
+            💬
+            <span class="notif-dot" id="msg-dot"></span>
+        </button>
+    </div>
+</header>
+
+<!-- ======= DRAWER ======= -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer">
+    <div class="drawer-head">
+        <div class="drawer-logo">Haven<em>Hair</em></div>
+        <div class="drawer-user" id="drawer-name">—</div>
+        <span class="drawer-role">Owner</span>
+    </div>
+    <div class="drawer-nav">
+        <button class="drawer-item" onclick="go('/owner/branches')">
+            <span class="d-icon">🏪</span> My Shops
+        </button>
+        <button class="drawer-item active" onclick="closeDrawer()">
+            <span class="d-icon">📋</span> Dashboard
+        </button>
+        <button class="drawer-item" onclick="go('/owner/settings')">
+            <span class="d-icon">⚙️</span> Settings
+        </button>
+        <button class="drawer-item" onclick="go('/owner/inbox')">
+            <span class="d-icon">💬</span> Inbox
+        </button>
+        <button class="drawer-item" onclick="go('/owner/reports')">
+            <span class="d-icon">📊</span> Reports
+        </button>
+        <div class="drawer-sep"></div>
+        <button class="drawer-item danger" onclick="signOut()">
+            <span class="d-icon">🚪</span> Sign Out
+        </button>
+    </div>
+</nav>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Shop header + status toggle -->
+    <div class="dash-head">
+        <div class="dash-shop-name" id="dash-shop-name">Loading...</div>
+        <div class="dash-shop-addr" id="dash-shop-addr"></div>
+        <div class="flex-between">
+            <div class="status-toggle">
+                <button class="st-btn" id="st-open"   onclick="setShopStatus('open')">🟢 Open</button>
+                <button class="st-btn" id="st-busy"   onclick="setShopStatus('busy')">🟡 Busy</button>
+                <button class="st-btn" id="st-closed" onclick="setShopStatus('closed')">🔴 Closed</button>
+            </div>
+            <button class="btn btn-outline btn-sm btn-auto"
+                    onclick="window.location.href='/owner/settings'">
+                ⚙️ Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- Reputation score strip -->
+    <div class="score-strip" id="score-strip" style="display:none">
+        <div>
+            <div class="text-xs text-muted">Reputation Score</div>
+        </div>
+        <div class="score-num" id="score-num">—</div>
+        <span class="score-badge" id="score-badge"></span>
+    </div>
+
+    <!-- Loading state -->
+    <div id="dash-loader" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading queue...</p>
+    </div>
+
+    <!-- Chair cards -->
+    <div class="chairs-wrap" id="chairs-wrap" style="display:none">
+
+        <div id="chair-cards"></div>
+
+        <!-- Fix 3: Replace "Add Barber/Chair" → "🏠 Home Service" button -->
+        <button class="add-branch-btn" onclick="openHsSheet()" style="position:relative">
+            🏠 Home Service
+            <span id="hs-badge" style="display:none"></span>
+        </button>
+
+    </div>
+
+</main>
+
+<!-- ======= Fix 3: HOME SERVICE BOTTOM SHEET ======= -->
+<div class="bottom-sheet" id="hs-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>🏠 Home Service Requests</h3>
+            <button class="sheet-close" onclick="closeHsSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="hs-request-list">
+                <div class="loading-state" style="padding:20px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= SERVICE SELECT SHEET ======= -->
+<div class="bottom-sheet" id="sit-service-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>What service?</h3>
+            <button class="sheet-close" onclick="closeSitSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:12px">
+                Pick the service — takes 2 seconds</p>
+            <div class="svc-grid" id="sit-service-grid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= ADD CUSTOMER BOTTOM SHEET ======= -->
+<div class="bottom-sheet" id="add-cust-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>Add Walk-in Customer</h3>
+            <button class="sheet-close" onclick="closeAddCustSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="add-cust-alert"></div>
+            <div class="alert alert-info mb-12" id="add-cust-chair-name"></div>
+            <div class="form-group">
+                <label>Customer Name</label>
+                <input type="text" id="ac-name" placeholder="Mohammed" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Phone <span class="text-xs text-muted">(optional)</span></label>
+                <input type="tel" id="ac-phone" placeholder="05xxxxxxxx">
+            </div>
+            <span class="section-label">Select Service</span>
+            <div class="svc-grid" id="ac-service-grid"></div>
+            <button class="btn btn-primary" id="ac-btn" onclick="submitAddCustomer()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Add to Queue →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= MOVE CUSTOMER MODAL ======= -->
+<div class="modal-overlay" id="move-modal">
+    <div class="modal">
+        <div class="modal-head">
+            <h3>Move to Barber</h3>
+            <button class="modal-close" onclick="closeMoveModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <p class="text-muted text-sm mb-12">
+                Move <strong id="move-customer-name">—</strong> to another barber in this shop.
+            </p>
+            <div id="move-options"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ======= ADD CHAIR BOTTOM SHEET (accessible from Settings) ======= -->
+<div class="bottom-sheet" id="add-chair-sheet">
+    <div class="sheet-body">
+        <div class="sheet-head">
+            <h3>Add Barber / Chair</h3>
+            <button class="sheet-close" onclick="closeAddChairSheet()">✕</button>
+        </div>
+        <div class="sheet-content">
+            <div id="add-chair-alert"></div>
+            <div class="form-group">
+                <label>Barber Name</label>
+                <input type="text" id="chr-name" placeholder="Ahmed">
+            </div>
+            <div class="form-group">
+                <label>Phone (for staff login)</label>
+                <input type="tel" id="chr-phone" placeholder="05xxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="chr-pass" placeholder="Min 6 characters">
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:10px">
+                <input type="checkbox" id="chr-home" style="width:auto">
+                <label style="margin:0;text-transform:none;letter-spacing:0;font-size:0.88rem;color:var(--text)">
+                    Offers home service
+                </label>
+            </div>
+            <button class="btn btn-primary" id="add-chair-btn" onclick="submitAddChair()">
+                <div class="btn-spinner"></div>
+                <span class="btn-text">Add Barber →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<script src="{{ url_for('static', filename='owner/js/dashboard_core.js') }}"></script>
+<script src="{{ url_for('static', filename='owner/js/dashboard_queue.js') }}"></script>
+<script src="{{ url_for('static', filename='owner/js/dashboard_actions.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/morphdom@2.7.2/dist/morphdom.min.js"></script>
+</body>
+</html>

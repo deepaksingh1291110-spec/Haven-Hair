@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Shop Rules</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+        /* Full screen layout — header + scrollable content + fixed footer */
+        body { display:flex; flex-direction:column; min-height:100vh; }
+
+        .rules-header {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 90;
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 18px;
+            background: rgba(10,8,6,0.92);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .rules-main {
+            padding-top: calc(var(--header-h) + 24px);
+            padding-bottom: 120px;
+            flex: 1;
+        }
+
+        /* Shop name banner */
+        .rules-shop-banner {
+            margin: 0 16px 20px;
+            padding: 16px 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--amber);
+            border-radius: var(--radius-sm);
+        }
+        .rules-shop-label {
+            font-size: 0.68rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--amber);
+            margin-bottom: 4px;
+        }
+        .rules-shop-name {
+            font-family: var(--font-display);
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        /* Notice box */
+        .rules-notice {
+            margin: 0 16px 20px;
+            padding: 12px 14px;
+            background: rgba(200,144,42,0.06);
+            border: 1px solid rgba(200,144,42,0.18);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        .rules-notice strong { color: var(--amber); }
+
+        /* Rules text box */
+        .rules-text-box {
+            margin: 0 16px;
+            padding: 18px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.88rem;
+            line-height: 1.8;
+            color: var(--text-muted);
+            white-space: pre-wrap;
+            min-height: 120px;
+        }
+
+        /* Loading state inside text box */
+        .rules-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+        }
+
+        /* Fixed bottom footer with buttons */
+        .rules-footer {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            padding: 14px 16px;
+            padding-bottom: calc(14px + env(safe-area-inset-bottom));
+            background: rgba(10,8,6,0.96);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+        }
+
+        .rules-footer-inner {
+            max-width: 540px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .rules-version {
+            text-align: center;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* Error state */
+        .rules-error {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--red);
+            font-size: 0.88rem;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Shop ID and redirect target passed from Flask -->
+<script>
+    const SHOP_ID   = {{ shop_id }};
+    const NEXT_URL  = "{{ next_url | default('/customer/shops') }}";
+</script>
+
+<!-- ======= HEADER ======= -->
+<header class="rules-header">
+    <button class="header-back" onclick="goBack()">← Back</button>
+    <span class="header-title">Shop Rules</span>
+</header>
+
+<!-- ======= MAIN ======= -->
+<main class="rules-main page-enter">
+
+    <!-- Shop name banner -->
+    <div class="rules-shop-banner">
+        <div class="rules-shop-label">Rules & Terms</div>
+        <div class="rules-shop-name" id="shop-name">Loading...</div>
+    </div>
+
+    <!-- Notice -->
+    <div class="rules-notice">
+        <strong>First visit?</strong> This shop has rules you must accept
+        before joining the queue. Please read carefully.
+        If the owner updates their rules, you will be asked to accept again.
+    </div>
+
+    <!-- Rules text -->
+    <div class="rules-text-box" id="rules-text">
+        <div class="rules-loading">
+            <div class="spinner" style="width:18px;height:18px"></div>
+            Loading rules...
+        </div>
+    </div>
+
+    <!-- Version stamp (shown after load) -->
+    <div class="rules-version" id="rules-version"></div>
+
+</main>
+
+<!-- ======= FOOTER ======= -->
+<footer class="rules-footer">
+    <div class="rules-footer-inner">
+        <button class="btn btn-primary" id="accept-btn" onclick="acceptRules()" disabled>
+            <div class="btn-spinner"></div>
+            <span class="btn-text">I Accept — Continue →</span>
+        </button>
+        <button class="btn btn-ghost" onclick="goBack()" style="font-size:0.82rem">
+            Decline — Go Back
+        </button>
+    </div>
+</footer>
+
+<!-- ======= SCRIPTS ======= -->
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script src="{{ url_for('static', filename='customer/js/rules.js') }}"></script>
+</body>
+</html>

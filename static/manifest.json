@@ -1,0 +1,22 @@
+{
+    "name": "Haven Hair",
+    "short_name": "HavenHair",
+    "description": "Skip the wait, keep the style",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0806",
+    "theme_color": "#c8902a",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/static/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/static/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

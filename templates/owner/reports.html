@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Reports</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='owner/css/owner.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+    <span class="header-title">Reports</span>
+    <div class="header-right">
+        <button class="notif-btn" onclick="window.location.href='/owner/inbox'">
+            💬
+            <span class="notif-dot" id="msg-dot"></span>
+        </button>
+    </div>
+</header>
+
+<!-- ======= DRAWER ======= -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<nav class="drawer" id="drawer">
+    <div class="drawer-head">
+        <div class="drawer-logo">Haven<em>Hair</em></div>
+        <div class="drawer-user" id="drawer-name">—</div>
+        <span class="drawer-role">Owner</span>
+    </div>
+    <div class="drawer-nav">
+        <button class="drawer-item" onclick="go('/owner/branches')">
+            <span class="d-icon">🏪</span> My Shops
+        </button>
+        <button class="drawer-item" onclick="go('/owner/dashboard')">
+            <span class="d-icon">📋</span> Dashboard
+        </button>
+        <button class="drawer-item" onclick="go('/owner/settings')">
+            <span class="d-icon">⚙️</span> Settings
+        </button>
+        <button class="drawer-item" onclick="go('/owner/inbox')">
+            <span class="d-icon">💬</span> Inbox
+        </button>
+        <button class="drawer-item active" onclick="closeDrawer()">
+            <span class="d-icon">📊</span> Reports
+        </button>
+        <div class="drawer-sep"></div>
+        <button class="drawer-item danger" onclick="signOut()">
+            <span class="d-icon">🚪</span> Sign Out
+        </button>
+    </div>
+</nav>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter">
+
+    <!-- Page hero -->
+    <div class="page-hero">
+        <h1>Weekly <em>Report</em></h1>
+        <p id="report-shop-name">Loading...</p>
+    </div>
+
+    <!-- Week selector -->
+    <div class="report-header">
+        <div class="report-period" id="report-period">This Week</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:6px">
+            <button class="btn btn-outline btn-sm btn-auto" id="prev-week-btn"
+                    onclick="changeWeek(-1)">← Prev</button>
+            <span id="report-date-range" style="font-size:0.78rem; color:var(--text); flex:1; text-align:center">—</span>
+            <button class="btn btn-outline btn-sm btn-auto" id="next-week-btn"
+                    onclick="changeWeek(1)">Next →</button>
+        </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="report-loader" class="loading-state" style="padding: 60px 0">
+        <div class="spinner"></div>
+        <p>Building your report...</p>
+    </div>
+
+    <!-- Report content -->
+    <div id="report-content" style="display:none; padding-bottom: 40px;">
+
+        <!-- 1. Stat Cards (2x2 grid) -->
+        <div class="stat-cards">
+            <div class="stat-card positive">
+                <div class="s-val" id="stat-happy">—</div>
+                <div class="s-lbl">Happy Customers</div>
+            </div>
+            <div class="stat-card negative">
+                <div class="s-val" id="stat-complaints">—</div>
+                <div class="s-lbl">Complaints</div>
+            </div>
+            <div class="stat-card">
+                <div class="s-val" id="stat-total">—</div>
+                <div class="s-lbl">Total Served</div>
+            </div>
+            <div class="stat-card">
+                <div class="s-val" id="stat-avg-wait">—</div>
+                <div class="s-lbl">Avg Wait (min)</div>
+            </div>
+        </div>
+
+        <!-- 2. Reputation Score -->
+        <div class="settings-section" style="margin: 0 14px 14px;">
+            <div class="settings-section-head">
+                <h3>⭐ Reputation Score</h3>
+            </div>
+            <div class="settings-section-body" style="padding: 14px 18px 6px;">
+                <div style="display:flex; align-items:flex-end; gap:10px; margin-bottom:10px">
+                    <span id="rep-score-val"
+                          style="font-family:var(--font-display); font-size:3rem; font-weight:700; color:var(--amber); line-height:1">
+                        —
+                    </span>
+                    <span id="rep-score-change"
+                          style="font-size:0.8rem; padding-bottom:8px; color:var(--text-muted)">
+                        —
+                    </span>
+                </div>
+                <!-- Score bar -->
+                <div class="bar-track" style="height:10px; margin-bottom:8px">
+                    <div class="bar-fill" id="rep-score-bar" style="width:0%"></div>
+                </div>
+                <!-- Badge -->
+                <div id="rep-badge" style="font-size:0.78rem; color:var(--text-muted)">—</div>
+            </div>
+        </div>
+
+        <!-- 3. Complaints Breakdown -->
+        <div class="settings-section" style="margin: 0 14px 14px;" id="complaints-section">
+            <div class="settings-section-head">
+                <h3>⚠️ Complaints Breakdown</h3>
+            </div>
+            <div class="settings-section-body" id="complaints-body" style="padding: 10px 0 4px;">
+                <!-- Rendered by reports.js -->
+            </div>
+        </div>
+
+        <!-- 4. Resolved & Updated Reviews -->
+        <div class="settings-section" style="margin: 0 14px 14px;">
+            <div class="settings-section-head">
+                <h3>💬 Customer Follow-ups</h3>
+            </div>
+            <div class="settings-section-body" style="padding: 10px 18px">
+                <div class="info-row">
+                    <span class="info-label">Complaints Resolved</span>
+                    <span class="info-value" id="stat-resolved">—</span>
+                </div>
+                <div class="info-row" style="border:none">
+                    <span class="info-label">Reviews Updated After Chat</span>
+                    <span class="info-value" id="stat-updated">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Busiest Days Bar Chart -->
+        <div class="settings-section" style="margin: 0 14px 14px;">
+            <div class="settings-section-head">
+                <h3>📅 Customers Per Day</h3>
+            </div>
+            <div class="bar-chart" id="days-chart" style="padding-top:10px">
+                <!-- Rendered by reports.js -->
+            </div>
+        </div>
+
+        <!-- 6. AI Insight Box -->
+        <div class="insight-box" id="ai-insight" style="display:none">
+            💡 <span id="ai-insight-text">—</span>
+        </div>
+
+        <!-- 7. No data fallback -->
+        <div id="no-data-msg" class="q-empty" style="display:none; margin: 0 14px;">
+            No customer activity recorded this week.
+        </div>
+
+    </div><!-- /report-content -->
+
+</main>
+
+<!-- ======= TOAST ======= -->
+<div class="toast-container" id="toast-container"></div>
+
+<style>
+/* ---- Reports inline styles (extend owner.css) ---- */
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+}
+.info-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.info-value {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Complaint tag rows */
+.complaint-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.84rem;
+}
+.complaint-row:last-child { border: none; }
+.complaint-tag {
+    display: inline-block;
+    background: rgba(239,68,68,0.12);
+    color: var(--red);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+}
+.complaint-count {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--amber);
+    font-weight: 700;
+}
+</style>
+
+<script src="{{ url_for('static', filename='owner/js/reports.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Shop</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" media="print" onload="this.media='all'">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <!-- Leaflet for map -->
+    <style>
+        /* ---- Shop hero ---- */
+        .leaflet-pane,
+        .leaflet-tile,
+        .leaflet-marker-pane,
+        .leaflet-overlay-pane,
+        .leaflet-shadow-pane,
+        .leaflet-map-pane canvas,
+        .leaflet-map-pane svg {
+            z-index: 1 !important;
+        }
+
+        .shop-hero {
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+        }
+        .shop-hero-name {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .shop-hero-addr {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+        .shop-hero-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ---- Stats bar ---- */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-bottom: 1px solid var(--border);
+        }
+        .stats-bar .stat-cell { padding: 14px 8px; }
+
+        /* ---- Price list ---- */
+        .price-section { border-bottom: 1px solid var(--border); }
+        .price-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            width: 100%;
+            color: var(--text);
+            font-family: var(--font-body);
+            transition: background var(--ease);
+        }
+        .price-toggle:hover { background: rgba(255,255,255,0.02); }
+        .price-toggle-title {
+            font-size: 0.68rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--amber);
+        }
+        .price-toggle-arrow {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            transition: transform var(--ease);
+        }
+        .price-toggle-arrow.open { transform: rotate(180deg); }
+        .price-list { display: none; padding: 0 18px 14px; }
+        .price-list.open { display: block; animation: fadeIn 0.2s ease; }
+        .price-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+        }
+        .price-row:last-child { border-bottom: none; }
+        .price-icon { font-size: 1rem; flex-shrink: 0; }
+        .price-name { flex: 1; }
+        .price-duration { font-size: 0.72rem; color: var(--text-muted); }
+        .price-amount {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--amber);
+            white-space: nowrap;
+        }
+        .price-empty {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            padding: 8px 0;
+            text-align: center;
+        }
+
+        /* ---- Join card ---- */
+        .join-card {
+            margin: 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 18px;
+        }
+        .join-card-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .join-card-title h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+        }
+        .booking-as {
+            font-size: 0.72rem;
+            color: var(--amber);
+        }
+
+        /* Barber selection */
+        .barber-list { margin-bottom: 14px; }
+        .barber-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all var(--ease);
+            background: var(--surface);
+        }
+        .barber-item:hover { border-color: var(--amber-dim); }
+        .barber-item.picked {
+            border-color: var(--amber);
+            background: var(--amber-glow);
+        }
+        .barber-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .barber-info { flex: 1; }
+        .barber-name { font-size: 0.9rem; font-weight: 500; }
+        .barber-wait { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+        .barber-pick-btn {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 3px 10px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: all var(--ease);
+            flex-shrink: 0;
+        }
+        .barber-item.picked .barber-pick-btn {
+            background: var(--amber);
+            border-color: var(--amber);
+            color: #0a0806;
+        }
+
+        /* Selected barber bar */
+        .selected-barber-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--amber-glow);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 14px;
+            font-size: 0.84rem;
+        }
+        .selected-barber-bar.show { display: flex; }
+        .change-barber-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            cursor: pointer;
+            font-family: var(--font-body);
+            flex-shrink: 0;
+        }
+        .change-barber-btn:hover { color: var(--amber); }
+
+        /* ---- Smart arrival hint ---- */
+        .smart-arrival {
+            display: none;
+            margin: 0 14px 14px;
+            padding: 14px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--amber);
+            border-radius: var(--radius-sm);
+            font-size: 0.84rem;
+        }
+        .smart-arrival.show { display: block; animation: fadeIn 0.3s ease; }
+        .smart-arrival-title {
+            font-weight: 500;
+            color: var(--amber);
+            margin-bottom: 4px;
+        }
+        .smart-arrival p { color: var(--text-muted); font-size: 0.78rem; }
+
+        /* ---- Rules modal (bottom sheet) ---- */
+        .rules-overlay {
+        padding-bottom: 0;
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .rules-overlay.show {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+        .rules-sheet {
+            background: var(--bg-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+            width: 100%;
+            max-width: 540px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s var(--ease-out);
+        }
+        .rules-sheet-head {
+            padding: 18px 18px 14px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .rules-sheet-head h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+        }
+        .rules-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 2px;
+        }
+        .rules-body {
+            padding: 16px 18px;
+            overflow-y: auto;
+            flex: 1;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            white-space: pre-wrap;
+        }
+        .rules-footer {
+            padding: 14px 18px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        /* ---- Map ---- */
+        .map-container {
+            height: 220px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .map-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        /* ---- Reviews ---- */
+        .review-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 8px;
+        }
+        .review-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .review-name { font-size: 0.84rem; font-weight: 500; }
+        .review-stars { color: var(--amber); font-size: 0.88rem; letter-spacing: 2px; }
+        .review-comment { font-size: 0.78rem; color: var(--text-muted); line-height: 1.55; }
+        .review-time { font-size: 0.66rem; color: var(--text-dim); margin-top: 4px; }
+
+        /* ---- Closed message ---- */
+        .closed-msg {
+            display: none;
+            margin: 14px;
+            padding: 14px 16px;
+            background: rgba(224,85,85,0.06);
+            border: 1px solid rgba(224,85,85,0.2);
+            border-radius: var(--radius-sm);
+            color: var(--red);
+            font-size: 0.88rem;
+            text-align: center;
+        }
+        .closed-msg.show { display: block; }
+
+        /* Cancel countdown */
+        .cancel-area {
+            text-align: center;
+            margin-top: 14px;
+        }
+        .cancel-countdown {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        /* ---- Review expand/collapse ---- */
+        .review-customer-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+        .review-customer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: background var(--ease);
+        }
+        .review-customer-header:hover { 
+            background: var(--surface-2); 
+        }
+
+        .review-customer-left { flex: 1; }
+
+        .review-customer-name { 
+            font-size: 0.88rem; 
+            font-weight: 500; 
+            margin-bottom: 2px; 
+        }
+
+        .review-customer-avg {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.78rem;
+            color: var(--amber);
+        }
+
+        .review-customer-latest {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+        .review-expand-arrow {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            transition: transform var(--ease);
+            flex-shrink: 0;
+        }
+        .review-expand-arrow.open { 
+            transform: rotate(180deg); 
+        }
+
+        .review-entries {
+            display: none;
+            padding: 0 14px 12px;
+            border-top: 1px solid var(--border);
+        }
+        .review-entries.open { 
+            display: block; 
+            animation: fadeIn 0.2s ease; 
+        }
+
+        .review-entry {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .review-entry:last-child { 
+            border-bottom: none; 
+        }
+
+        .review-entry-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .review-entry-stars { 
+            color: var(--amber); 
+            font-size: 0.82rem; 
+        }
+
+        .review-entry-time { 
+            font-size: 0.66rem; 
+            color: var(--text-dim); 
+        }
+
+        .review-entry-comment { 
+            font-size: 0.78rem; 
+            color: var(--text-muted); 
+            line-height: 1.55; 
+        }
+    /* ---- Chair Status Modal ---- */
+        #chair-status-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            align-items: flex-end;
+            justify-content: center;
+        }
+        #chair-status-modal.show {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+        #chair-status-modal .cs-modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px 20px;
+            animation: slideUp 0.3s ease;
+        }
+        #chair-status-modal h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        #chair-status-modal p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+        /* ---- Conflict Modal ---- */
+        #conflict-modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 3000;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            align-items: flex-end;
+            justify-content: center;
+        }
+        #conflict-modal.show {
+            display: flex;
+            animation: fadeIn 0.2s ease;
+        }
+        #conflict-modal .cs-modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+            width: 100%;
+            max-width: 480px;
+            padding: 24px 20px;
+            animation: slideUp 0.3s ease;
+        }
+        #conflict-modal h3 {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        #conflict-modal p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 18px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Pass shop_id from Flask to JS -->
+<script>const SHOP_ID = {{ shop_id }};</script>
+
+<!-- ======= HEADER ======= -->
+<header class="app-header">
+    <button class="header-back" onclick="history.back()">← Shops</button>
+    <span class="header-title" id="header-title">Loading...</span>
+    <button class="header-action" id="fav-btn" onclick="toggleFavourite()" title="Save shop">♡</button>
+</header>
+
+<!-- ======= MAIN CONTENT ======= -->
+<main class="app-content page-enter" style="padding-bottom: calc(var(--nav-h) + 8px);">
+
+    <!-- Loading state -->
+    <div id="page-loader" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading shop...</p>
+    </div>
+
+    <!-- Main content (hidden until loaded) -->
+    <div id="page-content" style="display:none">
+
+        <!-- Shop hero -->
+        <div class="shop-hero">
+            <div class="shop-hero-name" id="shop-name">—</div>
+            <div class="shop-hero-addr" id="shop-addr">—</div>
+            <div class="shop-hero-meta">
+                <span class="pill" id="status-pill"></span>
+                <span id="shop-badge" class="badge"></span>
+                <span id="shop-dist"  class="text-xs text-muted"></span>
+            </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="stats-bar">
+            <div class="stat-cell">
+                <span class="val" id="stat-waiting">0</span>
+                <span class="lbl">Waiting</span>
+            </div>
+            <div class="stat-cell">
+                <span class="val" id="stat-score">—</span>
+                <span class="lbl">Score</span>
+            </div>
+            <div class="stat-cell">
+                <span class="val" id="stat-seated">0</span>
+                <span class="lbl">In Chair</span>
+            </div>
+        </div>
+
+        <!-- Price list (collapsible) -->
+        <div class="price-section">
+            <button class="price-toggle" onclick="togglePrices()">
+                <span class="price-toggle-title">Service Menu & Prices</span>
+                <span class="price-toggle-arrow" id="price-arrow">▼</span>
+            </button>
+            <div class="price-list" id="price-list">
+                <div class="price-empty">Loading prices...</div>
+            </div>
+        </div>
+
+        <!-- Closed message -->
+        <div class="closed-msg" id="closed-bar">🔴 This shop is currently closed</div>
+
+        <!-- Join queue card -->
+        <div class="join-card" id="join-card">
+            <div class="join-card-title">
+                <h3>Join Queue</h3>
+                <span class="booking-as" id="booking-as"></span>
+            </div>
+            <div id="join-alert"></div>
+
+            <!-- Step 1: Pick barber -->
+            <div id="step-barber">
+                <span class="section-label">Choose Your Barber</span>
+                <div class="barber-list" id="barber-list">
+                    <div class="loading-state" style="padding:16px">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Service + details (shown after picking barber) -->
+            <div id="step-service" style="display:none">
+                <!-- Selected barber bar -->
+                <div class="selected-barber-bar" id="sel-barber-bar">
+                    <span>✂️</span>
+                    <div>
+                        <div style="font-size:0.85rem;font-weight:500" id="sel-barber-name">—</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted)" id="sel-barber-wait">—</div>
+                    </div>
+                    <button class="change-barber-btn" onclick="resetBarber()">Change</button>
+                </div>
+
+                <!-- Guest name/phone fields (hidden if logged in) -->
+                <div id="guest-fields">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="join-name" placeholder="Mohammed" autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone <span class="text-xs text-muted">(optional)</span></label>
+                        <input type="tel" id="join-phone" placeholder="05xxxxxxxx" autocomplete="tel">
+                    </div>
+                </div>
+
+                <!-- Service picker -->
+                <span class="section-label">Select Service</span>
+                <div class="service-grid" id="service-grid">
+                    <!-- Populated from price list data -->
+                </div>
+
+                <button class="btn btn-primary" id="join-btn" onclick="startJoinFlow()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Join Queue →</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Token card (shown when in queue) -->
+        <div id="token-section" style="display:none">
+            <div class="token-card">
+                <div class="token-label">Your Token Number</div>
+                <div class="token-number" id="token-number">—</div>
+                <div class="token-info"  id="token-info"></div>
+                <div class="cancel-area">
+                    <div class="cancel-countdown" id="cancel-cd"></div>
+                    <button class="btn btn-danger btn-sm" id="cancel-btn"
+                            onclick="cancelQueue()" disabled>✕ Leave Queue</button>
+                </div>
+            </div>
+
+            <!-- Smart arrival hint -->
+            <div class="smart-arrival" id="smart-arrival">
+                <div class="smart-arrival-title" id="smart-title">🚶 Smart Arrival</div>
+                <p id="smart-text"></p>
+            </div>
+        </div>
+
+        <!-- Live queue section -->
+        <div class="section-block">
+            <div class="flex-between mb-12">
+                <span class="section-label" style="margin:0">Live Queue</span>
+                <button class="btn-ghost btn-sm" onclick="loadQueue()" style="font-size:0.72rem">↻ Refresh</button>
+            </div>
+            <div id="queue-list">
+                <div class="loading-state" style="padding:16px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Home Service section (shown only if shop offers home service) -->
+        <div class="section-block" id="home-svc-section" style="display:none">
+            <span class="section-label">🏠 Home Service</span>
+            <div id="home-svc-body">
+                <div class="loading-state" style="padding:12px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map section -->
+        <div class="section-block">
+            <span class="section-label">Location</span>
+            <div class="map-container" id="map-box"></div>
+            <div class="map-actions" id="map-actions"></div>
+        </div>
+
+        <!-- Reviews section -->
+        <div class="section-block">
+            <span class="section-label">Reviews</span>
+            <div id="reviews-list">
+                <div class="loading-state" style="padding:16px">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+
+            <!-- Leave a review -->
+            <div style="margin-top:20px" id="review-form-wrap">
+                <span class="section-label">Leave a Review</span>
+                <div id="review-alert"></div>
+                <div class="star-row" id="star-row">
+                    <span class="star" onclick="setStar(1)">★</span>
+                    <span class="star" onclick="setStar(2)">★</span>
+                    <span class="star" onclick="setStar(3)">★</span>
+                    <span class="star" onclick="setStar(4)">★</span>
+                    <span class="star" onclick="setStar(5)">★</span>
+                </div>
+                <div class="form-group">
+                    <textarea id="review-comment" 
+                              placeholder="Share your experience...">
+                    </textarea>
+                </div>
+                <button class="btn btn-primary" onclick="submitReview()">
+                    <span class="btn-text">Submit Review →</span>
+                </button>
+            </div>
+
+        </div>
+
+    </div><!-- /page-content -->
+</main>
+
+<!-- ======= CHAIR STATUS MODAL (break/closed) ======= -->
+<div id="chair-status-modal">
+    <div class="cs-modal">
+        <h3 id="chair-modal-title">—</h3>
+        <p id="chair-modal-msg">—</p>
+        <div style="display:flex;gap:8px">
+            <button class="btn btn-primary"
+                    id="chair-modal-confirm"
+                    style="display:none">
+                Yes, Book Anyway
+            </button>
+            <button class="btn btn-outline"
+                    onclick="closeChairModal()">
+                Got it
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= Fix 7: BOOKING CONFLICT MODAL ======= -->
+<!-- Shown when customer tries to join while having an active booking elsewhere -->
+<div id="conflict-modal">
+    <div class="cs-modal">
+        <h3>⚠️ Active Booking Found</h3>
+        <p id="conflict-msg">
+            You have an active booking at another shop.
+            Cancel it and join here instead?
+        </p>
+        <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-auto" 
+                    onclick="confirmCancelOther()">
+                ✅ Cancel Other & Join
+            </button>
+            <button class="btn btn-outline btn-auto" 
+                    onclick="dismissConflictModal()">
+                Keep Current
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= RULES BOTTOM SHEET ======= -->
+<div class="rules-overlay" id="rules-overlay">
+    <div class="rules-sheet">
+        <div class="rules-sheet-head">
+            <h3>Shop Rules</h3>
+            <button class="rules-close" onclick="closeRules()">✕</button>
+        </div>
+        <div class="rules-body" id="rules-body"></div>
+        <div class="rules-footer">
+            <button class="btn btn-primary" onclick="acceptRules()">
+                <span class="btn-text">I Accept — Continue →</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======= BOTTOM NAV ======= -->
+<nav class="bottom-nav">
+    <a class="nav-item" onclick="sessionStorage.removeItem('hh_left_shops'); window.location.replace('/customer/shops')">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Explore</span>
+    </a>
+    <a class="nav-item active" onclick="navTo('/customer/queue')">
+        <span class="nav-icon">🪙</span>
+        <span class="nav-label">My Queue</span>
+    </a>
+    <a class="nav-item" onclick="navTo('/customer/messages')">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Messages</span>
+        <span class="nav-badge" id="nav-msg-badge"></span>
+    </a>
+    <a class="nav-item" onclick="navTo('/customer/profile')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+    </a>
+</nav>
+
+<!-- ======= SCRIPTS ======= -->
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script src="{{ url_for('static', filename='customer/js/shop_detail.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/morphdom@2.7.2/dist/morphdom.min.js"></script>
+</body>
+</html>

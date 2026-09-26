@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Messages</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+    <style>
+        /* ---- Conversation list ---- */
+        .conv-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background var(--ease);
+        }
+        .conv-item:hover { background: var(--surface); }
+        .conv-item:active { background: var(--surface-2); }
+
+        .conv-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .conv-avatar.unread { border-color: var(--amber); }
+
+        .conv-info { flex: 1; min-width: 0; }
+        .conv-name {
+            font-size: 0.92rem;
+            font-weight: 500;
+            margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .conv-preview {
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .conv-preview.unread-preview { color: var(--text); font-weight: 500; }
+
+        .conv-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .conv-time { font-size: 0.68rem; color: var(--text-muted); }
+        .conv-unread-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--amber);
+            display: none;
+        }
+        .conv-unread-dot.show { display: block; }
+
+        /* ---- Thread view ---- */
+        #view-thread { display: none; }
+
+        /* Thread messages area — scrolls between header and input */
+        .thread-messages {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            /* height calculated by JS on open */
+        }
+
+        /* Message bubbles */
+        .msg-row {
+            display: flex;
+            animation: fadeUp 0.2s ease;
+        }
+        .msg-row.from-me     { justify-content: flex-end; }
+        .msg-row.from-owner  { justify-content: flex-start; }
+
+        .msg-bubble {
+            max-width: 78%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+        .from-me    .msg-bubble {
+            background: var(--amber);
+            color: #0a0806;
+            border-bottom-right-radius: 4px;
+        }
+        .from-owner .msg-bubble {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+        }
+        .msg-time {
+            font-size: 0.62rem;
+            margin-top: 4px;
+            opacity: 0.6;
+        }
+        .from-me    .msg-time { text-align: right; color: #0a0806; }
+        .from-owner .msg-time { text-align: left;  color: var(--text-muted); }
+
+        /* Date separator */
+        .date-sep {
+            text-align: center;
+            font-size: 0.68rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 6px 0;
+        }
+
+        /* Fixed message input bar */
+        .msg-input-bar {
+            position: fixed;
+            bottom: var(--nav-h);
+            left: 0; right: 0;
+            padding: 10px 14px;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+            background: rgba(10, 8, 6, 0.97);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            z-index: 80;
+        }
+        .msg-input-bar textarea {
+            flex: 1;
+            height: 42px;
+            max-height: 100px;
+            resize: none;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            overflow-y: hidden;
+            line-height: 1.4;
+        }
+        .msg-send-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--amber);
+            border: none;
+            color: #0a0806;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: background var(--ease), transform var(--ease);
+        }
+        .msg-send-btn:hover  { background: var(--amber-light); }
+        .msg-send-btn:active { transform: scale(0.93); }
+        .msg-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<!-- ======= VIEW: CONVERSATION LIST ======= -->
+<div id="view-list">
+
+    <header class="app-header">
+        <span class="header-logo">Haven<em>Hair</em></span>
+        <span class="header-title">Messages</span>
+        <span></span>
+    </header>
+
+    <main class="app-content page-enter" id="list-content">
+
+        <!-- Loading / empty / list -->
+        <div id="conv-loader" class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading conversations...</p>
+        </div>
+
+        <div id="conv-empty" class="empty-state" style="display:none">
+            <h3>💬 No messages yet</h3>
+            <p>When a shop owner reaches out, it will appear here.</p>
+        </div>
+
+        <div id="conv-list"></div>
+
+    </main>
+
+</div><!-- /view-list -->
+
+
+<!-- ======= VIEW: CHAT THREAD ======= -->
+<div id="view-thread">
+
+    <header class="app-header" id="thread-header">
+        <button class="header-back" onclick="closeThread()">← Back</button>
+        <span class="header-title" id="thread-shop-name">—</span>
+        <span></span>
+    </header>
+
+    <!-- Scrollable messages -->
+    <div class="thread-messages" id="thread-messages"></div>
+
+    <!-- Fixed input bar -->
+    <div class="msg-input-bar">
+        <textarea id="msg-input"
+                  placeholder="Type a message..."
+                  rows="1"
+                  oninput="autoResize(this)"
+                  onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); sendMessage(); }">
+        </textarea>
+        <button class="msg-send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+
+</div><!-- /view-thread -->
+
+<!-- ======= BOTTOM NAV ======= -->
+<nav class="bottom-nav">
+
+    <!-- Explore — resets flag, goes back to Shops root -->
+    <a class="nav-item" onclick="sessionStorage.removeItem('hh_left_shops'); window.location.replace('/customer/shops')">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">Explore</span>
+    </a>
+
+    <!-- My Queue — use navTo -->
+    <a class="nav-item" id="nav-queue" onclick="navTo('/customer/queue')">
+        <span class="nav-icon">🪙</span>
+        <span class="nav-label">My Queue</span>
+    </a>
+
+    <!-- Messages — active page, replace itself so no stacking -->
+    <a class="nav-item active" onclick="window.location.replace('/customer/messages')">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Messages</span>
+    </a>
+
+    <!-- Profile — use navTo -->
+    <a class="nav-item" onclick="navTo('/customer/profile')">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">Profile</span>
+    </a>
+
+</nav>
+
+<!-- ======= SCRIPTS ======= -->
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script src="{{ url_for('static', filename='customer/js/messages.js') }}"></script>
+</body>
+</html>

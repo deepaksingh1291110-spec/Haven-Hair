@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="nositelinkssearchbox">
+    <meta name="google" content="notranslate">
+    <title>Haven Hair — Sign In</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='customer/css/customer.css') }}">
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#c8902a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HavenHair">
+</head>
+<body>
+
+<!-- ======= AUTH PAGE ======= -->
+<div class="auth-page">
+
+    <!-- Ambient background orbs -->
+    <div class="auth-orb auth-orb-1"></div>
+    <div class="auth-orb auth-orb-2"></div>
+
+    <div class="auth-card">
+
+        <!-- Brand -->
+        <div class="auth-brand">
+            <div class="auth-logo">Haven<em>Hair</em></div>
+            <div class="auth-tagline">✂️ Customer Portal</div>
+        </div>
+
+        <!-- Tab switcher -->
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-login"    onclick="switchTab('login')">Sign In</button>
+            <button class="auth-tab"        id="tab-register" onclick="switchTab('register')">Create Account</button>
+        </div>
+
+        <div class="auth-box">
+
+            <!-- Alert (shared between forms) -->
+            <div id="auth-alert"></div>
+
+            <!-- LOGIN FORM -->
+            <div class="auth-form active" id="form-login">
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="login-name" placeholder="Mohammed" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel"  id="login-phone" placeholder="05xxxxxxxx" autocomplete="tel"
+                           onkeydown="if(event.key==='Enter') doLogin()">
+                </div>
+                <button class="btn btn-primary" id="login-btn" onclick="doLogin()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Sign In →</span>
+                </button>
+            </div>
+
+            <!-- REGISTER FORM -->
+            <div class="auth-form" id="form-register">
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="reg-name" placeholder="Mohammed" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel"  id="reg-phone" placeholder="05xxxxxxxx" autocomplete="tel"
+                           onkeydown="if(event.key==='Enter') doRegister()">
+                </div>
+                <button class="btn btn-primary" id="reg-btn" onclick="doRegister()">
+                    <div class="btn-spinner"></div>
+                    <span class="btn-text">Create Account →</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Footer options -->
+        <div class="auth-footer">
+            <div>
+                <span class="auth-guest" onclick="browseAsGuest()">Browse as guest →</span>
+            </div>
+            <div>
+                <span class="auth-back" onclick="window.location.href='/'">← Back to home</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ======= SCRIPTS ======= -->
+<script src="{{ url_for('static', filename='customer/js/shared.js') }}"></script>
+<script>
+
+    // Redirect if already logged in
+    document.addEventListener('DOMContentLoaded', () => {
+        if (Auth.isLoggedIn()) {
+            window.location.replace('/customer/shops');
+        }
+    });
+
+    // Switch between Login and Register tabs
+    function switchTab(tab) {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('form-' + tab).classList.add('active');
+        clearAlert();
+    }
+
+    // Show an error/success message
+    function showAlert(msg, type = 'err') {
+        document.getElementById('auth-alert').innerHTML =
+            `<div class="alert alert-${type}">${msg}</div>`;
+    }
+
+    function clearAlert() {
+        document.getElementById('auth-alert').innerHTML = '';
+    }
+
+    // Set button loading state
+    function setLoading(btnId, loading) {
+        const btn = document.getElementById(btnId);
+        btn.classList.toggle('loading', loading);
+        btn.disabled = loading;
+    }
+
+    // Login / Register (same API endpoint)
+    async function doLogin() {
+        const name  = document.getElementById('login-name').value.trim();
+        const phone = document.getElementById('login-phone').value.trim();
+
+        clearAlert();
+
+        if (!name || !phone) {
+            showAlert('Please enter your name and phone number.');
+            return;
+        }
+
+        setLoading('login-btn', true);
+
+        const { ok, data } = await API.post('/auth/customer/register', { name, phone });
+
+        setLoading('login-btn', false);
+
+        if (ok) {
+            localStorage.removeItem('hh_guest');   
+            Auth.set({ name: data.name, phone, token: data.token }); 
+            window.location.replace('/customer/shops');
+        } else {
+            showAlert(data.error || 'Something went wrong. Try again.');
+        }
+    }
+
+    async function doRegister() {
+        const name  = document.getElementById('reg-name').value.trim();
+        const phone = document.getElementById('reg-phone').value.trim();
+
+        clearAlert();
+
+        if (!name || !phone) {
+            showAlert('Please fill in all fields.');
+            return;
+        }
+
+        if (phone.length < 9) {
+            showAlert('Please enter a valid phone number.');
+            return;
+        }
+
+        setLoading('reg-btn', true);
+
+        const { ok, data } = await API.post('/auth/customer/register', { name, phone });
+
+        setLoading('reg-btn', false);
+
+        if (ok) {
+            localStorage.removeItem('hh_guest');   
+            Auth.set({ name: data.name, phone, token: data.token }); 
+            window.location.replace('/customer/shops');
+        } else {
+            showAlert(data.error || 'Could not create account. Try again.');
+        }
+    }
+
+    // Browse without logging in
+    function browseAsGuest() {
+        Auth.setGuest();
+        window.location.replace('/customer/shops');
+    }
+
+</script>
+</body>
+</html>
